@@ -52,6 +52,7 @@ import org.apache.fineract.client.feign.services.CollectionSheetApi;
 import org.apache.fineract.client.feign.services.CreditBureauConfigurationApi;
 import org.apache.fineract.client.feign.services.CurrencyApi;
 import org.apache.fineract.client.feign.services.DataTablesApi;
+import org.apache.fineract.client.feign.services.DataTablesApiFixed;
 import org.apache.fineract.client.feign.services.DefaultApi;
 import org.apache.fineract.client.feign.services.DelinquencyRangeAndBucketsManagementApi;
 import org.apache.fineract.client.feign.services.DepositAccountOnHoldFundTransactionsApi;
@@ -344,6 +345,10 @@ public final class FineractFeignClient {
 
     public DataTablesApi dataTables() {
         return create(DataTablesApi.class);
+    }
+
+    public DataTablesApiFixed dataTablesFixed() {
+        return create(DataTablesApiFixed.class);
     }
 
     public DefaultApi defaultApi() {
