@@ -19,18 +19,14 @@
 package org.apache.fineract.cob.converter;
 
 import org.apache.fineract.cob.data.COBParameter;
-import org.apache.fineract.cob.data.LoanCOBParameter;
 
 public final class COBParameterConverter {
 
     private COBParameterConverter() {}
 
     public static COBParameter convert(Object obj) {
-        if (obj instanceof COBParameter) {
-            return (COBParameter) obj;
-        } else if (obj instanceof LoanCOBParameter loanCOBParameter) {
-            // for backward compatibility
-            return loanCOBParameter.toCOBParameter();
+        if (obj instanceof COBParameter cobParameter) {
+            return cobParameter;
         }
         return null;
     }
