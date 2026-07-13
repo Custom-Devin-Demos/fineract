@@ -18,68 +18,52 @@
  */
 package org.apache.fineract.integrationtests;
 
+import static org.apache.fineract.client.feign.util.FeignCalls.fail;
+import static org.apache.fineract.client.feign.util.FeignCalls.ok;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
-import java.util.HashMap;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.util.List;
 import org.apache.fineract.accounting.common.AccountingConstants.FinancialActivity;
 import org.apache.fineract.accounting.financialactivityaccount.exception.DuplicateFinancialActivityAccountFoundException;
 import org.apache.fineract.accounting.financialactivityaccount.exception.FinancialActivityAccountInvalidException;
-import org.apache.fineract.integrationtests.common.CommonConstants;
-import org.apache.fineract.integrationtests.common.Utils;
+import org.apache.fineract.client.feign.FeignException;
+import org.apache.fineract.client.feign.services.MappingFinancialActivitiesToAccountsApi;
+import org.apache.fineract.client.feign.util.CallFailedRuntimeException;
+import org.apache.fineract.client.models.GetFinancialActivityAccountsResponse;
+import org.apache.fineract.client.models.PostFinancialActivityAccountsRequest;
+import org.apache.fineract.client.models.PostFinancialActivityAccountsResponse;
+import org.apache.fineract.client.models.PutFinancialActivityAccountsResponse;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.accounting.Account;
 import org.apache.fineract.integrationtests.common.accounting.AccountHelper;
-import org.apache.fineract.integrationtests.common.accounting.FinancialActivityAccountHelper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("rawtypes")
 public class FinancialActivityAccountsTest {
 
-    private ResponseSpecification responseSpec;
-    private ResponseSpecification responseSpecForValidationError;
-    private ResponseSpecification responseSpecForDomainRuleViolation;
-    private ResponseSpecification responseSpecForResourceNotFoundError;
-    private RequestSpecification requestSpec;
-    private AccountHelper accountHelper;
-    private FinancialActivityAccountHelper financialActivityAccountHelper;
     private final Integer assetTransferFinancialActivityId = FinancialActivity.ASSET_TRANSFER.getValue();
     public static final Integer LIABILITY_TRANSFER_FINANCIAL_ACTIVITY_ID = FinancialActivity.LIABILITY_TRANSFER.getValue();
 
-    @BeforeEach
-    public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        this.responseSpecForValidationError = new ResponseSpecBuilder().expectStatusCode(400).build();
-        this.responseSpecForDomainRuleViolation = new ResponseSpecBuilder().expectStatusCode(403).build();
-        this.responseSpecForResourceNotFoundError = new ResponseSpecBuilder().expectStatusCode(404).build();
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
-        this.financialActivityAccountHelper = new FinancialActivityAccountHelper(this.requestSpec);
-    }
+    private final MappingFinancialActivitiesToAccountsApi financialActivityApi = FineractFeignClientHelper.getFineractFeignClient()
+            .mappingFinancialActivitiesToAccounts();
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testFinancialActivityAccounts() {
 
         /** Create a Liability and an Asset Transfer Account **/
-        Account liabilityTransferAccount = accountHelper.createLiabilityAccount();
-        Account assetTransferAccount = accountHelper.createAssetAccount();
+        Account liabilityTransferAccount = AccountHelper.createLiabilityGlAccount("liability-transfer");
+        Account assetTransferAccount = AccountHelper.createAssetGlAccount("asset-transfer");
         Assertions.assertNotNull(assetTransferAccount);
         Assertions.assertNotNull(liabilityTransferAccount);
 
         /*** Create A Financial Activity to Account Mapping **/
-        Integer financialActivityAccountId = (Integer) financialActivityAccountHelper.createFinancialActivityAccount(
-                LIABILITY_TRANSFER_FINANCIAL_ACTIVITY_ID, liabilityTransferAccount.getAccountID(), responseSpec,
-                CommonConstants.RESPONSE_RESOURCE_ID);
+        PostFinancialActivityAccountsResponse createResponse = ok(() -> financialActivityApi.createGLAccountMappingFinancialActivityAccount(
+                new PostFinancialActivityAccountsRequest().financialActivityId(LIABILITY_TRANSFER_FINANCIAL_ACTIVITY_ID.longValue())
+                        .glAccountId(liabilityTransferAccount.getAccountID().longValue())));
+        Long financialActivityAccountId = createResponse.getResourceId();
         Assertions.assertNotNull(financialActivityAccountId);
 
         /***
@@ -91,56 +75,67 @@ public class FinancialActivityAccountsTest {
         /**
          * Update Existing Financial Activity to Account Mapping and assert changes
          **/
-        Account newLiabilityTransferAccount = accountHelper.createLiabilityAccount();
+        Account newLiabilityTransferAccount = AccountHelper.createLiabilityGlAccount("new-liability-transfer");
         Assertions.assertNotNull(newLiabilityTransferAccount);
 
-        HashMap changes = (HashMap) financialActivityAccountHelper.updateFinancialActivityAccount(financialActivityAccountId,
-                LIABILITY_TRANSFER_FINANCIAL_ACTIVITY_ID, newLiabilityTransferAccount.getAccountID(), responseSpec,
-                CommonConstants.RESPONSE_CHANGES);
-        Assertions.assertEquals(newLiabilityTransferAccount.getAccountID(), changes.get("glAccountId"));
+        PutFinancialActivityAccountsResponse updateResponse = ok(
+                () -> financialActivityApi.updateGLAccountMappingFinancialActivityAccount(financialActivityAccountId,
+                        new PostFinancialActivityAccountsRequest().financialActivityId(LIABILITY_TRANSFER_FINANCIAL_ACTIVITY_ID.longValue())
+                                .glAccountId(newLiabilityTransferAccount.getAccountID().longValue())));
+        Assertions.assertEquals(financialActivityAccountId, updateResponse.getResourceId());
 
         /** Validate update works correctly **/
         assertFinancialActivityAccountCreation(financialActivityAccountId, LIABILITY_TRANSFER_FINANCIAL_ACTIVITY_ID,
                 newLiabilityTransferAccount);
 
         /** Update with Invalid Financial Activity should fail **/
-        List<HashMap> invalidFinancialActivityUpdateError = (List<HashMap>) financialActivityAccountHelper.updateFinancialActivityAccount(
-                financialActivityAccountId, 232, newLiabilityTransferAccount.getAccountID(), responseSpecForValidationError,
-                CommonConstants.RESPONSE_ERROR);
+        CallFailedRuntimeException invalidFinancialActivityUpdateError = fail(() -> financialActivityApi
+                .updateGLAccountMappingFinancialActivityAccount(financialActivityAccountId, new PostFinancialActivityAccountsRequest()
+                        .financialActivityId(232L).glAccountId(newLiabilityTransferAccount.getAccountID().longValue())));
+        assertEquals(400, invalidFinancialActivityUpdateError.getStatus());
         assertEquals("validation.msg.financialactivityaccount.financialActivityId.is.not.one.of.expected.enumerations",
-                invalidFinancialActivityUpdateError.get(0).get(CommonConstants.RESPONSE_ERROR_MESSAGE_CODE));
+                firstErrorCode(invalidFinancialActivityUpdateError));
 
         /** Creating Duplicate Financial Activity should fail **/
-        List<HashMap> duplicateFinancialActivityAccountError = (List<HashMap>) financialActivityAccountHelper
-                .createFinancialActivityAccount(LIABILITY_TRANSFER_FINANCIAL_ACTIVITY_ID, liabilityTransferAccount.getAccountID(),
-                        responseSpecForDomainRuleViolation, CommonConstants.RESPONSE_ERROR);
+        CallFailedRuntimeException duplicateFinancialActivityAccountError = fail(
+                () -> financialActivityApi.createGLAccountMappingFinancialActivityAccount(
+                        new PostFinancialActivityAccountsRequest().financialActivityId(LIABILITY_TRANSFER_FINANCIAL_ACTIVITY_ID.longValue())
+                                .glAccountId(liabilityTransferAccount.getAccountID().longValue())));
+        assertEquals(403, duplicateFinancialActivityAccountError.getStatus());
         assertEquals(DuplicateFinancialActivityAccountFoundException.getErrorcode(),
-                duplicateFinancialActivityAccountError.get(0).get(CommonConstants.RESPONSE_ERROR_MESSAGE_CODE));
+                firstErrorCode(duplicateFinancialActivityAccountError));
 
         /**
          * Associating incorrect GL account types with a financial activity should fail
          **/
-        List<HashMap> invalidFinancialActivityAccountError = (List<HashMap>) financialActivityAccountHelper.updateFinancialActivityAccount(
-                financialActivityAccountId, assetTransferFinancialActivityId, newLiabilityTransferAccount.getAccountID(),
-                responseSpecForDomainRuleViolation, CommonConstants.RESPONSE_ERROR);
-        assertEquals(FinancialActivityAccountInvalidException.getErrorcode(),
-                invalidFinancialActivityAccountError.get(0).get(CommonConstants.RESPONSE_ERROR_MESSAGE_CODE));
+        CallFailedRuntimeException invalidFinancialActivityAccountError = fail(
+                () -> financialActivityApi.updateGLAccountMappingFinancialActivityAccount(financialActivityAccountId,
+                        new PostFinancialActivityAccountsRequest().financialActivityId(assetTransferFinancialActivityId.longValue())
+                                .glAccountId(newLiabilityTransferAccount.getAccountID().longValue())));
+        assertEquals(403, invalidFinancialActivityAccountError.getStatus());
+        assertEquals(FinancialActivityAccountInvalidException.getErrorcode(), firstErrorCode(invalidFinancialActivityAccountError));
 
         /** Should be able to delete a Financial Activity to Account Mapping **/
-        Integer deletedFinancialActivityAccountId = financialActivityAccountHelper
-                .deleteFinancialActivityAccount(financialActivityAccountId, responseSpec, CommonConstants.RESPONSE_RESOURCE_ID);
+        Long deletedFinancialActivityAccountId = ok(
+                () -> financialActivityApi.deleteGLAccountMappingFinancialActivityAccount(financialActivityAccountId)).getResourceId();
         Assertions.assertNotNull(deletedFinancialActivityAccountId);
         Assertions.assertEquals(financialActivityAccountId, deletedFinancialActivityAccountId);
 
         /*** Trying to fetch a Deleted Account Mapping should give me a 404 **/
-        financialActivityAccountHelper.getFinancialActivityAccount(deletedFinancialActivityAccountId, responseSpecForResourceNotFoundError);
+        CallFailedRuntimeException notFoundError = fail(() -> financialActivityApi.retreive(deletedFinancialActivityAccountId));
+        assertEquals(404, notFoundError.getStatus());
     }
 
-    private void assertFinancialActivityAccountCreation(Integer financialActivityAccountId, Integer financialActivityId,
-            Account glAccount) {
-        HashMap mappingDetails = financialActivityAccountHelper.getFinancialActivityAccount(financialActivityAccountId, responseSpec);
-        Assertions.assertEquals(financialActivityId, ((HashMap) mappingDetails.get("financialActivityData")).get("id"));
-        Assertions.assertEquals(glAccount.getAccountID(), ((HashMap) mappingDetails.get("glAccountData")).get("id"));
+    private void assertFinancialActivityAccountCreation(Long financialActivityAccountId, Integer financialActivityId, Account glAccount) {
+        GetFinancialActivityAccountsResponse mappingDetails = ok(() -> financialActivityApi.retreive(financialActivityAccountId));
+        Assertions.assertEquals(financialActivityId, mappingDetails.getFinancialActivityData().getId());
+        Assertions.assertEquals(Long.valueOf(glAccount.getAccountID()), mappingDetails.getGlAccountData().getId());
+    }
+
+    private static String firstErrorCode(CallFailedRuntimeException exception) {
+        FeignException cause = (FeignException) exception.getCause();
+        JsonObject body = JsonParser.parseString(cause.responseBodyAsString()).getAsJsonObject();
+        return body.getAsJsonArray("errors").get(0).getAsJsonObject().get("userMessageGlobalisationCode").getAsString();
     }
 
     /**
@@ -148,11 +143,11 @@ public class FinancialActivityAccountsTest {
      */
     @AfterEach
     public void tearDown() {
-        List<HashMap> financialActivities = this.financialActivityAccountHelper.getAllFinancialActivityAccounts(this.responseSpec);
-        for (HashMap financialActivity : financialActivities) {
-            Integer financialActivityAccountId = (Integer) financialActivity.get("id");
-            Integer deletedFinancialActivityAccountId = this.financialActivityAccountHelper
-                    .deleteFinancialActivityAccount(financialActivityAccountId, this.responseSpec, CommonConstants.RESPONSE_RESOURCE_ID);
+        List<GetFinancialActivityAccountsResponse> financialActivities = ok(() -> financialActivityApi.retrieveAll());
+        for (GetFinancialActivityAccountsResponse financialActivity : financialActivities) {
+            Long financialActivityAccountId = financialActivity.getId();
+            Long deletedFinancialActivityAccountId = ok(
+                    () -> financialActivityApi.deleteGLAccountMappingFinancialActivityAccount(financialActivityAccountId)).getResourceId();
             Assertions.assertNotNull(deletedFinancialActivityAccountId);
             Assertions.assertEquals(financialActivityAccountId, deletedFinancialActivityAccountId);
         }
