@@ -27,6 +27,7 @@ import org.apache.fineract.client.feign.services.AuditsApi;
 import org.apache.fineract.client.feign.services.AuthenticationHttpBasicApi;
 import org.apache.fineract.client.feign.services.BatchApiApi;
 import org.apache.fineract.client.feign.services.BulkImportApi;
+import org.apache.fineract.client.feign.services.BulkImportApiFixed;
 import org.apache.fineract.client.feign.services.BulkLoansApi;
 import org.apache.fineract.client.feign.services.BusinessDateManagementApi;
 import org.apache.fineract.client.feign.services.BusinessStepConfigurationApi;
@@ -363,6 +364,10 @@ public final class FineractFeignClient {
 
     public DocumentsApiFixed documentsFixed() {
         return create(DocumentsApiFixed.class);
+    }
+
+    public BulkImportApiFixed bulkImportFixed() {
+        return create(BulkImportApiFixed.class);
     }
 
     public EntityDataTableApi entityDataTable() {

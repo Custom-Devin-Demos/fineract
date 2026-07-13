@@ -18,13 +18,9 @@
  */
 package org.apache.fineract.integrationtests.bulkimport.importhandler.office;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
-import java.io.ByteArrayInputStream;
+import static org.apache.fineract.client.feign.util.FeignCalls.ok;
+
+import feign.Response;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,30 +35,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.bulkimport.constants.OfficeConstants;
 import org.apache.fineract.infrastructure.bulkimport.constants.TemplatePopulateImportConstants;
 import org.apache.fineract.integrationtests.bulkimport.importhandler.LocalContentStorageUtil;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
 public class OfficeImportHandlerTest {
-
-    private static final String OFFICE_URL = "/fineract-provider/api/v1/offices";
-
-    private ResponseSpecification responseSpec;
-    private RequestSpecification requestSpec;
-
-    @BeforeEach
-    public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-    }
 
     @Test
     public void testOfficeImport() throws IOException, InterruptedException, NoSuchFieldException, ParseException {
@@ -113,22 +96,18 @@ public class OfficeImportHandlerTest {
     }
 
     private Workbook getOfficeWorkBook(final String dateFormat) throws IOException {
-        requestSpec.header(HttpHeaders.CONTENT_TYPE, "application/vnd.ms-excel");
-        byte[] byteArray = Utils.performGetBinaryResponse(requestSpec, responseSpec,
-                OFFICE_URL + "/downloadtemplate" + "?" + Utils.TENANT_IDENTIFIER + "&dateFormat=" + dateFormat);
-        InputStream inputStream = new ByteArrayInputStream(byteArray);
-        return new HSSFWorkbook(inputStream);
+        Response response = FineractFeignClientHelper.getFineractFeignClient().bulkImportFixed().getOfficeTemplate(dateFormat);
+        try (InputStream inputStream = response.body().asInputStream()) {
+            return new HSSFWorkbook(inputStream);
+        }
     }
 
     private String importOfficeTemplate(File file) {
-        requestSpec.header(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA);
-        return Utils.performServerTemplatePost(requestSpec, responseSpec, OFFICE_URL + "/uploadtemplate" + "?" + Utils.TENANT_IDENTIFIER,
-                null, file, "en", "dd MMMM yyyy");
+        return ok(() -> FineractFeignClientHelper.getFineractFeignClient().offices().postOfficeTemplate("dd MMMM yyyy", "en", file));
     }
 
     private String getOutputTemplateLocation(final String importDocumentId) {
-        requestSpec.header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN);
-        return Utils.performServerOutputTemplateLocationGet(requestSpec, responseSpec,
-                "/fineract-provider/api/v1/imports/getOutputTemplateLocation" + "?" + Utils.TENANT_IDENTIFIER, importDocumentId);
+        return ok(() -> FineractFeignClientHelper.getFineractFeignClient().bulkImport()
+                .retriveOutputTemplateLocation(Long.valueOf(importDocumentId)));
     }
 }
