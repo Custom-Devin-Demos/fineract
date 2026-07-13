@@ -24,47 +24,94 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import feign.Param;
+import feign.RequestLine;
+import feign.Response;
+import feign.Util;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.UUID;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.DelinquencyBucketResponse;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
+import org.apache.fineract.client.util.JSON;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.loans.LoanApplicationTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
-import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
 import org.apache.fineract.integrationtests.common.products.DelinquencyBucketsHelper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class LoanAccountOverpaidDateStatusTest extends BaseLoanIntegrationTest {
 
-    private ResponseSpecification responseSpec;
-    private RequestSpecification requestSpec;
-    private ClientHelper clientHelper;
-    private LoanTransactionHelper loanTransactionHelper;
+    private static final ObjectMapper RAW_MAPPER = new ObjectMapper();
+    private static final RawApi RAW = FineractFeignClientHelper.getFineractFeignClient().create(RawApi.class);
 
-    @BeforeEach
-    public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
-        this.clientHelper = new ClientHelper(this.requestSpec, this.responseSpec);
+    interface RawApi {
+
+        @RequestLine("POST v1/loanproducts")
+        Response createLoanProduct(JsonNode body);
+
+        @RequestLine("GET v1/loanproducts/{loanProductId}")
+        Response loanProduct(@Param("loanProductId") Integer loanProductId);
+
+        @RequestLine("POST v1/loans")
+        Response createLoan(JsonNode body);
+
+        @RequestLine("POST v1/loans/{loanId}?command={command}")
+        Response loanCommand(@Param("loanId") Integer loanId, @Param("command") String command, JsonNode body);
+    }
+
+    private static String rawBody(Response response) {
+        try (Response r = response) {
+            return Util.toString(r.body().asReader(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static JsonNode toJsonNode(String json) {
+        try {
+            return RAW_MAPPER.readTree(json);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static String localApproveLoanAsJSON(final String approvalDate, final String approvalAmount) {
+        final HashMap<String, Object> map = new HashMap<>();
+        map.put("locale", "en");
+        map.put("dateFormat", "dd MMMM yyyy");
+        if (approvalAmount != null) {
+            map.put("approvedLoanAmount", approvalAmount);
+        }
+        map.put("approvedOnDate", approvalDate);
+        map.put("note", "Approval NOTE");
+        return new Gson().toJson(map);
+    }
+
+    private static String localDisburseWithNetDisbursalAmountAsJSON(final String actualDisbursementDate, final String netDisbursalAmount) {
+        final HashMap<String, String> map = new HashMap<>();
+        map.put("locale", "en");
+        map.put("dateFormat", "dd MMMM yyyy");
+        map.put("actualDisbursementDate", actualDisbursementDate);
+        if (netDisbursalAmount != null) {
+            map.put("netDisbursalAmount", netDisbursalAmount);
+        }
+        map.put("note", "DISBURSE NOTE");
+        return new Gson().toJson(map);
     }
 
     @Test
@@ -75,7 +122,8 @@ public class LoanAccountOverpaidDateStatusTest extends BaseLoanIntegrationTest {
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, todaysDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(todaysDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
@@ -87,8 +135,7 @@ public class LoanAccountOverpaidDateStatusTest extends BaseLoanIntegrationTest {
             // Client and Loan account creation
 
             final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-            final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
-                    delinquencyBucketId);
+            final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(delinquencyBucketId);
             assertNotNull(getLoanProductsProductResponse);
 
             final Integer loanId = createLoanAccount(clientId, getLoanProductsProductResponse.getId(), loanExternalIdStr);
@@ -118,7 +165,7 @@ public class LoanAccountOverpaidDateStatusTest extends BaseLoanIntegrationTest {
             assertEquals(loanDetailsOverpaid.getOverpaidOnDate(), LocalDate.of(2022, 9, 9));
 
             // reverse repayment to make loan not overpaid and overpaid date is reset
-            loanTransactionHelper.reverseRepayment(loanId, repaymentTransaction_4.getResourceId().intValue(), "10 September 2022");
+            loanTransactionHelper.reverseLoanTransaction(loanId.longValue(), repaymentTransaction_4.getResourceId(), "10 September 2022");
             GetLoansLoanIdResponse loanDetailsNotOverpaidAfterReversal = loanTransactionHelper.getLoanDetails((long) loanId);
             assertFalse(loanDetailsNotOverpaidAfterReversal.getStatus().getOverpaid());
             assertNull(loanDetailsNotOverpaidAfterReversal.getOverpaidOnDate());
@@ -135,13 +182,15 @@ public class LoanAccountOverpaidDateStatusTest extends BaseLoanIntegrationTest {
             assertEquals(loanDetailsOverpaid_1.getOverpaidOnDate(), LocalDate.of(2022, 9, 11));
 
             // Credit balance refund to reset overpaid status
-            loanTransactionHelper.creditBalanceRefund("12 September 2022", Float.valueOf(100), null, loanId, "");
+            loanTransactionHelper.makeCreditBalanceRefund(loanId.longValue(),
+                    new PostLoansLoanIdTransactionsRequest().dateFormat("dd MMMM yyyy").transactionDate("12 September 2022").locale("en")
+                            .transactionAmount(100.0).note("Credit Balance Refund Made!!!"));
             GetLoansLoanIdResponse loanDetailsNotOverpaidAfterCBR = loanTransactionHelper.getLoanDetails((long) loanId);
             assertFalse(loanDetailsNotOverpaidAfterCBR.getStatus().getOverpaid());
             assertNull(loanDetailsNotOverpaidAfterCBR.getOverpaidOnDate());
 
             // reverse repayment to make loan active again
-            loanTransactionHelper.reverseRepayment(loanId, repaymentTransaction_2.getResourceId().intValue(), "13 September 2022");
+            loanTransactionHelper.reverseLoanTransaction(loanId.longValue(), repaymentTransaction_2.getResourceId(), "13 September 2022");
             GetLoansLoanIdResponse loanDetailsNotOverpaidAfterReversal_1 = loanTransactionHelper.getLoanDetails((long) loanId);
             assertFalse(loanDetailsNotOverpaidAfterReversal_1.getStatus().getOverpaid());
             assertNull(loanDetailsNotOverpaidAfterReversal_1.getOverpaidOnDate());
@@ -163,11 +212,11 @@ public class LoanAccountOverpaidDateStatusTest extends BaseLoanIntegrationTest {
 
     }
 
-    private GetLoanProductsProductIdResponse createLoanProduct(final LoanTransactionHelper loanTransactionHelper,
-            final Long delinquencyBucketId) {
+    private GetLoanProductsProductIdResponse createLoanProduct(final Long delinquencyBucketId) {
         final HashMap<String, Object> loanProductMap = new LoanProductTestBuilder().build(null, delinquencyBucketId);
-        final Integer loanProductId = loanTransactionHelper.getLoanProductId(Utils.convertToJson(loanProductMap));
-        return loanTransactionHelper.getLoanProduct(loanProductId);
+        final Integer loanProductId = toJsonNode(rawBody(RAW.createLoanProduct(toJsonNode(Utils.convertToJson(loanProductMap)))))
+                .get("resourceId").asInt();
+        return new JSON().getGson().fromJson(rawBody(RAW.loanProduct(loanProductId)), GetLoanProductsProductIdResponse.class);
     }
 
     private Integer createLoanAccount(final Integer clientID, final Long loanProductID, final String externalId) {
@@ -179,9 +228,9 @@ public class LoanAccountOverpaidDateStatusTest extends BaseLoanIntegrationTest {
                 .withExpectedDisbursementDate("03 September 2022").withSubmittedOnDate("01 September 2022").withLoanType("individual")
                 .withExternalId(externalId).build(clientID.toString(), loanProductID.toString(), null);
 
-        final Integer loanId = loanTransactionHelper.getLoanId(loanApplicationJSON);
-        loanTransactionHelper.approveLoan("02 September 2022", "1000", loanId, null);
-        loanTransactionHelper.disburseLoanWithNetDisbursalAmount("03 September 2022", loanId, "1000");
+        final Integer loanId = toJsonNode(rawBody(RAW.createLoan(toJsonNode(loanApplicationJSON)))).get("loanId").asInt();
+        rawBody(RAW.loanCommand(loanId, "approve", toJsonNode(localApproveLoanAsJSON("02 September 2022", "1000"))));
+        rawBody(RAW.loanCommand(loanId, "disburse", toJsonNode(localDisburseWithNetDisbursalAmountAsJSON("03 September 2022", "1000"))));
         return loanId;
     }
 }

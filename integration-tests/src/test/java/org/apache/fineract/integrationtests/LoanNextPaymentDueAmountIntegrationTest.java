@@ -26,8 +26,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.avro.loan.v1.LoanAccountDataV1;
+import org.apache.fineract.client.models.ExternalEventResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
-import org.apache.fineract.infrastructure.event.external.data.ExternalEventResponse;
 import org.apache.fineract.integrationtests.common.ClientHelper;
 import org.apache.fineract.integrationtests.common.externalevents.ExternalEventHelper;
 import org.junit.jupiter.api.Assertions;
@@ -291,7 +291,7 @@ public class LoanNextPaymentDueAmountIntegrationTest extends BaseLoanIntegration
      *            expected amount
      */
     private void verifyAllLoanAccountTypedExternalEventHasNextPaymentDueAmount(String dueDate, Double amount) {
-        List<ExternalEventResponse> allExternalEvents = ExternalEventHelper.getAllExternalEvents(requestSpec, responseSpec);
+        List<ExternalEventResponse> allExternalEvents = ExternalEventHelper.getAllExternalEvents();
         allExternalEvents.stream().filter(e -> LOAN_ACCOUNT_DATA_V_1.equals(e.getSchema()))
                 .forEach(event -> verifyLoanEvent(event, data -> verifyNextPayment(data, dueDate, BigDecimal.valueOf(amount))));
 
