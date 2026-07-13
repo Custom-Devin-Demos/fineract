@@ -21,54 +21,40 @@ package org.apache.fineract.integrationtests.accounting;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
-import java.util.ArrayList;
+import java.util.List;
 import org.apache.fineract.client.models.AccountingRuleData;
 import org.apache.fineract.client.models.GetOfficesResponse;
 import org.apache.fineract.client.models.PostAccountingRulesResponse;
+import org.apache.fineract.integrationtests.client.feign.helpers.FeignAccountHelper;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.OfficeHelper;
-import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.accounting.Account;
-import org.apache.fineract.integrationtests.common.accounting.AccountHelper;
 import org.apache.fineract.integrationtests.common.accounting.AccountRuleHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class AccountingRuleIntegrationTest {
 
-    private ResponseSpecification responseSpec;
-    private RequestSpecification requestSpec;
-
-    private AccountHelper accountHelper;
+    private FeignAccountHelper accountHelper;
     private AccountRuleHelper accountRuleHelper;
 
     @BeforeEach
     public void setup() {
-        Utils.initializeRESTAssured();
-
-        requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-
-        accountRuleHelper = new AccountRuleHelper(requestSpec, responseSpec);
-        accountHelper = new AccountHelper(requestSpec, responseSpec);
+        accountHelper = new FeignAccountHelper(FineractFeignClientHelper.getFineractFeignClient());
+        accountRuleHelper = new AccountRuleHelper(FineractFeignClientHelper.getFineractFeignClient());
     }
 
     @Test
     public void testAccountingRuleCreation() {
         // given
-        final Account accountToCredit = accountHelper.createIncomeAccount();
-        final Account accountToDebit = accountHelper.createExpenseAccount();
+        final Account accountToCredit = accountHelper.createIncomeAccount("income");
+        final Account accountToDebit = accountHelper.createExpenseAccount("expense");
         final GetOfficesResponse headOffice = OfficeHelper.getHeadOffice();
 
         // when
         final PostAccountingRulesResponse accountingRule = accountRuleHelper.createAccountRule(headOffice.getId(), accountToCredit,
                 accountToDebit);
-        final ArrayList<AccountingRuleData> accountingRules = accountRuleHelper.getAccountingRules();
+        final List<AccountingRuleData> accountingRules = accountRuleHelper.getAccountingRules();
 
         // then
         assertNotNull(accountingRule);
