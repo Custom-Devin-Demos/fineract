@@ -29,11 +29,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -44,21 +39,28 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import org.apache.fineract.client.models.GetCodeValuesDataResponse;
+import org.apache.fineract.client.models.GetCodesResponse;
 import org.apache.fineract.client.models.GetDataTablesResponse;
+import org.apache.fineract.client.models.PostCodeValuesDataRequest;
+import org.apache.fineract.client.models.PostCodesRequest;
 import org.apache.fineract.client.models.PostDataTablesAppTableIdResponse;
 import org.apache.fineract.client.models.PostDataTablesResponse;
+import org.apache.fineract.client.models.PostLoanProductsRequest;
+import org.apache.fineract.client.models.PostLoansRequest;
 import org.apache.fineract.client.models.PutDataTablesAppTableIdDatatableIdResponse;
 import org.apache.fineract.client.models.PutDataTablesAppTableIdResponse;
 import org.apache.fineract.client.models.PutDataTablesResponse;
 import org.apache.fineract.client.models.ResultsetColumnHeaderData;
 import org.apache.fineract.client.util.Calls;
+import org.apache.fineract.client.util.JSON;
 import org.apache.fineract.integrationtests.client.IntegrationTest;
 import org.apache.fineract.integrationtests.common.ClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.loans.LoanApplicationTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanTestLifecycleExtension;
-import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
 import org.apache.fineract.integrationtests.common.system.CodeHelper;
 import org.apache.fineract.integrationtests.common.system.DatatableHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,43 +89,43 @@ public class DatatableIntegrationTest extends IntegrationTest {
     public static final String ACCOUNT_TYPE_INDIVIDUAL = "INDIVIDUAL";
     public static final String MINIMUM_OPENING_BALANCE = "1000.0";
     public static final String DEPOSIT_AMOUNT = "7000";
-    private RequestSpecification requestSpec;
-    private ResponseSpecification responseSpec;
-    private DatatableHelper datatableHelper;
 
-    private LoanTransactionHelper loanTransactionHelper;
+    private static final Gson SDK_GSON = new JSON().getGson();
+
+    private DatatableHelper datatableHelper;
+    private CodeHelper codeHelper;
 
     @BeforeEach
     public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         this.datatableHelper = new DatatableHelper();
-        this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
+        this.codeHelper = new CodeHelper();
     }
 
     @Test
     public void validateCreateReadDeleteDatatable() throws ParseException {
         // Fetch / Create tst code
         String tst_tst_tst = "TST_TST_TST".toLowerCase();
-        HashMap<String, Object> codeResponse = CodeHelper.getCodeByName(this.requestSpec, this.responseSpec, tst_tst_tst);
+        GetCodesResponse existingCode = this.codeHelper.retrieveCodes().stream().filter(code -> tst_tst_tst.equals(code.getName()))
+                .findFirst().orElse(null);
 
-        Integer createdCodeId = (Integer) codeResponse.get("id");
+        Integer createdCodeId = existingCode == null ? null : existingCode.getId().intValue();
         Integer createdCodeValueId;
         Integer createdCodeValueIdSecond;
         if (createdCodeId == null) {
-            createdCodeId = (Integer) CodeHelper.createCode(this.requestSpec, this.responseSpec, tst_tst_tst, "resourceId");
+            createdCodeId = this.codeHelper.createCode(new PostCodesRequest().name(tst_tst_tst)).getResourceId().intValue();
 
-            createdCodeValueId = CodeHelper.createCodeValue(this.requestSpec, this.responseSpec, createdCodeId,
-                    Utils.randomStringGenerator("cv_", 8), 1);
-            createdCodeValueIdSecond = CodeHelper.createCodeValue(this.requestSpec, this.responseSpec, createdCodeId,
-                    Utils.randomStringGenerator("cv_", 8), 2);
+            createdCodeValueId = this.codeHelper
+                    .createCodeValue(createdCodeId.longValue(),
+                            new PostCodeValuesDataRequest().name(Utils.randomStringGenerator("cv_", 8)).position(1))
+                    .getSubResourceId().intValue();
+            createdCodeValueIdSecond = this.codeHelper
+                    .createCodeValue(createdCodeId.longValue(),
+                            new PostCodeValuesDataRequest().name(Utils.randomStringGenerator("cv_", 8)).position(2))
+                    .getSubResourceId().intValue();
         } else {
-            List<HashMap<String, Object>> codeValuesForCode = CodeHelper.getCodeValuesForCode(this.requestSpec, this.responseSpec,
-                    createdCodeId, "");
-            createdCodeValueId = (Integer) codeValuesForCode.get(0).get("id");
-            createdCodeValueIdSecond = (Integer) codeValuesForCode.get(1).get("id");
+            List<GetCodeValuesDataResponse> codeValuesForCode = this.codeHelper.getCodeValuesForCode(createdCodeId.longValue());
+            createdCodeValueId = codeValuesForCode.get(0).getId().intValue();
+            createdCodeValueIdSecond = codeValuesForCode.get(1).getId().intValue();
         }
 
         // creating datatable for client entity
@@ -196,7 +198,8 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals("validation.msg.validation.errors.exist", ((Map) errorResponse).get("userMessageGlobalisationCode"));
 
         // creating client with datatables
-        final Integer clientID = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.addClientAsPerson("1", ClientHelper.LEGALFORM_ID_PERSON, UUID.randomUUID().toString())
+                .getClientId().intValue();
 
         // creating new client datatable entry
         final boolean genericResultSet = true;
@@ -251,7 +254,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals(datatableEntryMap.get(itsADate), Utils.arrayDateToString((List) ((List) data.get("row")).get(2)));
 
         assertEquals(itsADatetime, ((Map) columnHeaders.get(3)).get("columnName"));
-        assertEquals(datatableEntryMap.get(itsADatetime), Utils.arrayDateTimeToString((List) ((List) data.get("row")).get(3)));
+        assertEquals(datatableEntryMap.get(itsADatetime), Utils.arrayDateTimeToString(toIntegerList(((List) data.get("row")).get(3))));
 
         assertEquals(itsADecimal, ((Map) columnHeaders.get(4)).get("columnName"));
         assertEquals(datatableEntryMap.get(itsADecimal), ((List) data.get("row")).get(4));
@@ -283,7 +286,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals(datatableEntryMap.get(itsABoolean), Boolean.valueOf((String) responseMap.get(itsABoolean)));
         assertEquals(datatableEntryMap.get(itsADate), Utils.arrayDateToString((List) responseMap.get(itsADate)));
         assertEquals(datatableEntryMap.get(itsADecimal), responseMap.get(itsADecimal));
-        assertEquals(datatableEntryMap.get(itsADatetime), Utils.arrayDateTimeToString((List<Integer>) responseMap.get(itsADatetime)));
+        assertEquals(datatableEntryMap.get(itsADatetime), Utils.arrayDateTimeToString(toIntegerList(responseMap.get(itsADatetime))));
         assertEquals(datatableEntryMap.get(tst_tst_tst_cd_itsADropdown), responseMap.get(tst_tst_tst_cd_itsADropdown));
         assertEquals(datatableEntryMap.get(itsANumber), responseMap.get(itsANumber));
         assertEquals(datatableEntryMap.get(itsAString), responseMap.get(itsAString));
@@ -317,7 +320,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
                 Utils.arrayDateToString((List) ((Map) updatedDatatableEntryResponse.get("changes")).get(itsADate)));
         assertEquals(datatableEntryMap.get(itsADecimal), ((Map) updatedDatatableEntryResponse.get("changes")).get(itsADecimal));
         assertEquals(datatableEntryMap.get(itsADatetime),
-                Utils.arrayDateTimeToString((List<Integer>) ((Map) updatedDatatableEntryResponse.get("changes")).get(itsADatetime)));
+                Utils.arrayDateTimeToString(toIntegerList(((Map) updatedDatatableEntryResponse.get("changes")).get(itsADatetime))));
         assertEquals(datatableEntryMap.get(tst_tst_tst_cd_itsADropdown),
                 ((Map) updatedDatatableEntryResponse.get("changes")).get(tst_tst_tst_cd_itsADropdown));
         assertEquals(datatableEntryMap.get(itsANumber), ((Map) updatedDatatableEntryResponse.get("changes")).get(itsANumber));
@@ -386,7 +389,8 @@ public class DatatableIntegrationTest extends IntegrationTest {
         this.datatableHelper.verifyDatatableCreated(datatableName);
 
         // creating client with datatables
-        final Integer clientID = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.addClientAsPerson("1", ClientHelper.LEGALFORM_ID_PERSON, UUID.randomUUID().toString())
+                .getClientId().intValue();
 
         // creating new client datatable entry
         final boolean genericResultSet = true;
@@ -463,9 +467,6 @@ public class DatatableIntegrationTest extends IntegrationTest {
 
     @Test
     public void validateInsertNullValues() {
-        // Fetch / Create TST code
-        HashMap<String, Object> codeResponse = CodeHelper.getCodeByName(this.requestSpec, this.responseSpec, "TST_TST_TST");
-
         // creating datatable for client entity
         final HashMap<String, Object> columnMap = new HashMap<>();
         final List<HashMap<String, Object>> datatableColumnsList = new ArrayList<>();
@@ -494,7 +495,8 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals("validation.msg.validation.errors.exist", ((Map) response).get("userMessageGlobalisationCode"));
 
         // creating client with datatables
-        final Integer clientID = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.addClientAsPerson("1", ClientHelper.LEGALFORM_ID_PERSON, UUID.randomUUID().toString())
+                .getClientId().intValue();
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingEnabled();
         final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -586,7 +588,8 @@ public class DatatableIntegrationTest extends IntegrationTest {
     @Test
     public void validateCreateAndEditDatatable() {
         // Creating client
-        final Integer clientId = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
+        final Integer clientId = ClientHelper.addClientAsPerson("1", ClientHelper.LEGALFORM_ID_PERSON, UUID.randomUUID().toString())
+                .getClientId().intValue();
         final Integer randomNumber = Utils.randomNumberGenerator(3);
 
         // Creating datatable for Client Person
@@ -707,23 +710,27 @@ public class DatatableIntegrationTest extends IntegrationTest {
     public void validateReadDatatableMultirow() {
         // Fetch / Create TST code
         String tst_tst_tst = "tst_tst_tst";
-        HashMap<String, Object> codeResponse = CodeHelper.getCodeByName(this.requestSpec, this.responseSpec, tst_tst_tst);
+        GetCodesResponse existingCode = this.codeHelper.retrieveCodes().stream().filter(code -> tst_tst_tst.equals(code.getName()))
+                .findFirst().orElse(null);
 
-        Integer createdCodeId = (Integer) codeResponse.get("id");
+        Integer createdCodeId = existingCode == null ? null : existingCode.getId().intValue();
         Integer createdCodeValueId;
         Integer createdCodeValueIdSecond;
         if (createdCodeId == null) {
-            createdCodeId = (Integer) CodeHelper.createCode(this.requestSpec, this.responseSpec, tst_tst_tst, "resourceId");
+            createdCodeId = this.codeHelper.createCode(new PostCodesRequest().name(tst_tst_tst)).getResourceId().intValue();
 
-            createdCodeValueId = CodeHelper.createCodeValue(this.requestSpec, this.responseSpec, createdCodeId,
-                    Utils.randomStringGenerator("cv_", 8), 1);
-            createdCodeValueIdSecond = CodeHelper.createCodeValue(this.requestSpec, this.responseSpec, createdCodeId,
-                    Utils.randomStringGenerator("cv_", 8), 2);
+            createdCodeValueId = this.codeHelper
+                    .createCodeValue(createdCodeId.longValue(),
+                            new PostCodeValuesDataRequest().name(Utils.randomStringGenerator("cv_", 8)).position(1))
+                    .getSubResourceId().intValue();
+            createdCodeValueIdSecond = this.codeHelper
+                    .createCodeValue(createdCodeId.longValue(),
+                            new PostCodeValuesDataRequest().name(Utils.randomStringGenerator("cv_", 8)).position(2))
+                    .getSubResourceId().intValue();
         } else {
-            List<HashMap<String, Object>> codeValuesForCode = CodeHelper.getCodeValuesForCode(this.requestSpec, this.responseSpec,
-                    createdCodeId, "");
-            createdCodeValueId = (Integer) codeValuesForCode.get(0).get("id");
-            createdCodeValueIdSecond = (Integer) codeValuesForCode.get(1).get("id");
+            List<GetCodeValuesDataResponse> codeValuesForCode = this.codeHelper.getCodeValuesForCode(createdCodeId.longValue());
+            createdCodeValueId = codeValuesForCode.get(0).getId().intValue();
+            createdCodeValueIdSecond = codeValuesForCode.get(1).getId().intValue();
         }
 
         // creating datatable for client entity
@@ -754,7 +761,8 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals("validation.msg.validation.errors.exist", ((Map) response).get("userMessageGlobalisationCode"));
 
         // creating client with datatables
-        final Integer clientID = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.addClientAsPerson("1", ClientHelper.LEGALFORM_ID_PERSON, UUID.randomUUID().toString())
+                .getClientId().intValue();
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingEnabled();
         final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -800,7 +808,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
                 Utils.arrayDateToString((List) ((List) ((Map) ((List) items.get("data")).get(0)).get("row")).get(3)));
         assertEquals("itsADatetime", ((Map) ((List) items.get("columnHeaders")).get(4)).get("columnName"));
         assertEquals(datatableEntryMap.get("itsADatetime"),
-                Utils.arrayDateTimeToString((List) ((List) ((Map) ((List) items.get("data")).get(0)).get("row")).get(4)));
+                Utils.arrayDateTimeToString(toIntegerList(((List) ((Map) ((List) items.get("data")).get(0)).get("row")).get(4))));
         assertEquals("itsADecimal", ((Map) ((List) items.get("columnHeaders")).get(5)).get("columnName"));
         assertEquals(datatableEntryMap.get("itsADecimal"), ((List) ((Map) ((List) items.get("data")).get(0)).get("row")).get(5));
         assertEquals(tst_tst_tst + "_cd_itsADropdown", ((Map) ((List) items.get("columnHeaders")).get(6)).get("columnName"));
@@ -819,7 +827,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals(datatableEntryMap.get("itsADate"),
                 Utils.arrayDateToString((List) ((List) ((Map) ((List) items.get("data")).get(1)).get("row")).get(3)));
         assertEquals(datatableEntryMap.get("itsADatetime"),
-                Utils.arrayDateTimeToString((List) ((List) ((Map) ((List) items.get("data")).get(1)).get("row")).get(4)));
+                Utils.arrayDateTimeToString(toIntegerList(((List) ((Map) ((List) items.get("data")).get(1)).get("row")).get(4))));
         assertEquals(datatableEntryMap.get("itsADecimal"), ((List) ((Map) ((List) items.get("data")).get(1)).get("row")).get(5));
         assertEquals(datatableEntryMap.get(tst_tst_tst + "_cd_itsADropdown"),
                 ((List) ((Map) ((List) items.get("data")).get(1)).get("row")).get(6));
@@ -840,7 +848,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
                 Utils.arrayDateToString((List) datatableEntryResponseNoGenericResult.get(0).get("itsADate")));
         assertEquals(datatableEntryMap.get("itsADecimal"), datatableEntryResponseNoGenericResult.get(0).get("itsADecimal"));
         assertEquals(datatableEntryMap.get("itsADatetime"),
-                Utils.arrayDateTimeToString((List<Integer>) datatableEntryResponseNoGenericResult.get(0).get("itsADatetime")));
+                Utils.arrayDateTimeToString(toIntegerList(datatableEntryResponseNoGenericResult.get(0).get("itsADatetime"))));
         assertEquals(datatableEntryMap.get(tst_tst_tst + "_cd_itsADropdown"),
                 datatableEntryResponseNoGenericResult.get(0).get(tst_tst_tst + "_cd_itsADropdown"));
         assertEquals(datatableEntryMap.get("itsANumber"), datatableEntryResponseNoGenericResult.get(0).get("itsANumber"));
@@ -944,7 +952,10 @@ public class DatatableIntegrationTest extends IntegrationTest {
                 .withInterestCalculationPeriodTypeSameAsRepaymentPeriod().withExpectedDisbursementDate(EXPECTED_DISBURSAL_DATE)
                 .withSubmittedOnDate(LOAN_APPLICATION_SUBMISSION_DATE).withLoanType(INDIVIDUAL_LOAN)
                 .build(clientID.toString(), loanProductID.toString(), null);
-        return this.loanTransactionHelper.getLoanId(loanApplicationJSON);
+        return Calls
+                .ok(fineractClient().loans
+                        .calculateLoanScheduleOrSubmitLoanApplication(SDK_GSON.fromJson(loanApplicationJSON, PostLoansRequest.class), null))
+                .getLoanId().intValue();
     }
 
     private Integer createLoanProductWithPeriodicAccrualAccountingEnabled() {
@@ -954,7 +965,16 @@ public class DatatableIntegrationTest extends IntegrationTest {
                 .withinterestRatePerPeriod(LP_INTEREST_RATE).withInterestRateFrequencyTypeAsMonths()
                 .withAmortizationTypeAsEqualPrincipalPayment().withInterestTypeAsFlat().withAccountingRuleAsNone().withDaysInMonth("30")
                 .withDaysInYear("365").build(null);
-        return this.loanTransactionHelper.getLoanProductId(loanProductJSON);
+        return Calls.ok(fineractClient().loanProducts.createLoanProduct(SDK_GSON.fromJson(loanProductJSON, PostLoanProductsRequest.class)))
+                .getResourceId().intValue();
+    }
+
+    private static List<Integer> toIntegerList(final Object raw) {
+        final List<Integer> result = new ArrayList<>();
+        for (Object element : (List<?>) raw) {
+            result.add((Integer) element);
+        }
+        return result;
     }
 
     @Test
@@ -981,7 +1001,8 @@ public class DatatableIntegrationTest extends IntegrationTest {
         this.datatableHelper.verifyDatatableCreated(datatableName);
 
         // Create a client
-        final Integer clientId = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
+        final Integer clientId = ClientHelper.addClientAsPerson("1", ClientHelper.LEGALFORM_ID_PERSON, UUID.randomUUID().toString())
+                .getClientId().intValue();
 
         // Create a datatable entry with data in one column and NULL in the other
         final HashMap<String, Object> datatableEntryMap = new HashMap<>();

@@ -40,41 +40,49 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.apache.fineract.client.models.AdvancedQueryData;
 import org.apache.fineract.client.models.AdvancedQueryRequest;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.ColumnFilterData;
 import org.apache.fineract.client.models.FilterData;
 import org.apache.fineract.client.models.GetDataTablesResponse;
 import org.apache.fineract.client.models.PagedLocalRequestAdvancedQueryData;
 import org.apache.fineract.client.models.PagedLocalRequestAdvancedQueryRequest;
+import org.apache.fineract.client.models.PostClientsRequest;
 import org.apache.fineract.client.models.PostDataTablesResponse;
+import org.apache.fineract.client.models.PostSavingsAccountTransactionsRequest;
+import org.apache.fineract.client.models.PostSavingsAccountsAccountIdRequest;
+import org.apache.fineract.client.models.PostSavingsAccountsAccountIdResponse;
+import org.apache.fineract.client.models.PostSavingsAccountsRequest;
+import org.apache.fineract.client.models.PostSavingsProductsRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.models.ResultsetColumnHeaderData;
 import org.apache.fineract.client.models.SortOrder;
 import org.apache.fineract.client.models.TableQueryData;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
+import org.apache.fineract.client.util.Calls;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
 import org.apache.fineract.integrationtests.common.CommonConstants;
+import org.apache.fineract.integrationtests.common.FineractClientHelper;
 import org.apache.fineract.integrationtests.common.GlobalConfigurationHelper;
 import org.apache.fineract.integrationtests.common.Utils;
-import org.apache.fineract.integrationtests.common.savings.SavingsAccountHelper;
 import org.apache.fineract.integrationtests.common.savings.SavingsProductHelper;
 import org.apache.fineract.integrationtests.common.savings.SavingsStatusChecker;
 import org.apache.fineract.integrationtests.common.system.DatatableHelper;
@@ -103,22 +111,14 @@ public class DatatableAdvancedQueryTest {
     private static final String COLUMN_SUBMITTED_DATE = "submitted_on_date";
     private static final String COLUMN_AMOUNT = "amount";
 
-    private RequestSpecification requestSpec;
-    private ResponseSpecification responseSpec;
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private DatatableHelper datatableHelper;
-    private SavingsProductHelper savingsProductHelper;
-    private SavingsAccountHelper savingsAccountHelper;
     private GlobalConfigurationHelper globalConfigurationHelper;
 
     @BeforeEach
     public void setup() {
-        Utils.initializeRESTAssured();
-        requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         datatableHelper = new DatatableHelper();
-        savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
-        savingsProductHelper = new SavingsProductHelper();
         globalConfigurationHelper = new GlobalConfigurationHelper();
     }
 
@@ -132,24 +132,22 @@ public class DatatableAdvancedQueryTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, today);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(today)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, yesterdayS);
+            final Integer clientId = ClientHelper.createClient(clientRequest(yesterdayS)).getClientId().intValue();
             assertNotNull(clientId);
             final Integer savingsId = createSavingsAccountDailyPosting(clientId, yesterdayS);
             assertNotNull(savingsId);
 
-            final Integer transactionIdD1 = (Integer) savingsAccountHelper.depositToSavingsAccount(savingsId, "100", yesterdayS,
-                    CommonConstants.RESPONSE_RESOURCE_ID);
+            final Integer transactionIdD1 = deposit(savingsId, "100", yesterdayS);
             assertNotNull(transactionIdD1);
             BigDecimal decValue1 = new BigDecimal("1.111");
             createDatatableEntry(datatable, transactionIdD1, yesterday, true, 1, decValue1);
-            final Integer transactionIdD2 = (Integer) savingsAccountHelper.depositToSavingsAccount(savingsId, "300", yesterdayS,
-                    CommonConstants.RESPONSE_RESOURCE_ID);
+            final Integer transactionIdD2 = deposit(savingsId, "300", yesterdayS);
             assertNotNull(transactionIdD2);
             createDatatableEntry(datatable, transactionIdD2, yesterday, false, 2, new BigDecimal("2.2"));
-            final Integer transactionIdW1 = (Integer) savingsAccountHelper.withdrawalFromSavingsAccount(savingsId, "100", todayS,
-                    CommonConstants.RESPONSE_RESOURCE_ID);
+            final Integer transactionIdW1 = withdrawal(savingsId, "100", todayS);
             assertNotNull(transactionIdW1);
             createDatatableEntry(datatable, transactionIdW1, today, true, 3, new BigDecimal("3"));
 
@@ -168,10 +166,10 @@ public class DatatableAdvancedQueryTest {
             Map<String, Object> response = datatableHelper.queryDatatable(datatable, pagedQuery);
 
             assertEquals(1, response.get("total"));
-            List content = (List) response.get("content");
+            List<?> content = (List<?>) response.get("content");
             assertNotNull(content);
             assertEquals(1, content.size());
-            Map<String, Object> first = (Map<String, Object>) content.get(0);
+            Map<?, ?> first = (Map<?, ?>) content.get(0);
             assertEquals(transactionIdD1, first.get(COLUMN_TRANSACTION_ID));
             assertEquals(transactionIdD1.toString(), first.get(COLUMN_TEXT));
             assertEquals(yesterdayIsoS, first.get(COLUMN_DATE));
@@ -187,17 +185,17 @@ public class DatatableAdvancedQueryTest {
             response = datatableHelper.queryDatatable(datatable, pagedQuery);
 
             assertEquals(3, response.get("total"));
-            content = (List) response.get("content");
+            content = (List<?>) response.get("content");
             assertNotNull(content);
             assertEquals(3, content.size());
-            first = (Map) content.get(0);
+            first = (Map<?, ?>) content.get(0);
             assertEquals(transactionIdW1, first.get(COLUMN_TRANSACTION_ID));
             assertNull(first.get(COLUMN_TEXT));
             assertNull(first.get(COLUMN_DATE));
             assertNull(first.get(COLUMN_BOOLEAN));
             assertNull(first.get(COLUMN_INTEGER));
             assertNull(first.get(COLUMN_DECIMAL));
-            assertEquals(transactionIdD2, ((Map) content.get(1)).get(COLUMN_TRANSACTION_ID));
+            assertEquals(transactionIdD2, ((Map<?, ?>) content.get(1)).get(COLUMN_TRANSACTION_ID));
 
             deleteDatatable(datatable, transactionIdD1, transactionIdD2, transactionIdW1);
 
@@ -218,25 +216,23 @@ public class DatatableAdvancedQueryTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, today);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(today)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, yesterdayS);
+            final Integer clientId = ClientHelper.createClient(clientRequest(yesterdayS)).getClientId().intValue();
             assertNotNull(clientId);
             final Integer savingsId = createSavingsAccountDailyPosting(clientId, yesterdayS);
             assertNotNull(savingsId);
 
-            final Integer transactionIdD1 = (Integer) savingsAccountHelper.depositToSavingsAccount(savingsId, "100", yesterdayS,
-                    CommonConstants.RESPONSE_RESOURCE_ID);
+            final Integer transactionIdD1 = deposit(savingsId, "100", yesterdayS);
             assertNotNull(transactionIdD1);
             BigDecimal decValue1 = new BigDecimal("1.111");
             createDatatableEntry(datatable, transactionIdD1, yesterday, true, 1, decValue1);
-            final Integer transactionIdD2 = (Integer) savingsAccountHelper.depositToSavingsAccount(savingsId, "300", yesterdayS,
-                    CommonConstants.RESPONSE_RESOURCE_ID);
+            final Integer transactionIdD2 = deposit(savingsId, "300", yesterdayS);
             assertNotNull(transactionIdD2);
             BigDecimal decValue2 = new BigDecimal("2.2");
             createDatatableEntry(datatable, transactionIdD2, yesterday, false, 2, decValue2);
-            final Integer transactionIdW1 = (Integer) savingsAccountHelper.withdrawalFromSavingsAccount(savingsId, "100", todayS,
-                    CommonConstants.RESPONSE_RESOURCE_ID);
+            final Integer transactionIdW1 = withdrawal(savingsId, "100", todayS);
             assertNotNull(transactionIdW1);
             createDatatableEntry(datatable, transactionIdW1, today, true, 3, new BigDecimal("3"));
 
@@ -260,13 +256,13 @@ public class DatatableAdvancedQueryTest {
             PagedLocalRequestAdvancedQueryRequest pagedRequest = new PagedLocalRequestAdvancedQueryRequest().page(0).size(2)
                     .addSortsItem(new SortOrder().property(COLUMN_SUBMITTED_DATE).direction(SortOrder.DirectionEnum.DESC))
                     .addSortsItem(new SortOrder().property(COLUMN_ID).direction(SortOrder.DirectionEnum.DESC)).request(queryRequest);
-            Map<String, Object> response = savingsAccountHelper.querySavingsTransactions(savingsId, pagedRequest);
+            Map<String, Object> response = querySavingsTransactions(savingsId, pagedRequest);
 
             assertEquals(1, response.get("total"));
-            List content = (List) response.get("content");
+            List<?> content = (List<?>) response.get("content");
             assertNotNull(content);
             assertEquals(1, content.size());
-            Map<String, Object> first = (Map<String, Object>) content.get(0);
+            Map<?, ?> first = (Map<?, ?>) content.get(0);
             assertEquals(transactionIdD2, first.get(COLUMN_ID));
             assertEquals(todayIsoS, first.get(COLUMN_SUBMITTED_DATE));
             assertEquals(transactionIdD2, first.get(COLUMN_TRANSACTION_ID));
@@ -285,13 +281,13 @@ public class DatatableAdvancedQueryTest {
                     new ColumnFilterData().column(COLUMN_INTEGER).addFiltersItem(new FilterData().operator(GTE).values(List.of("1"))),
                     new ColumnFilterData().column(COLUMN_DATE)
                             .addFiltersItem(new FilterData().operator(BTW).values(List.of(yesterdayIsoS, todayIsoS)))));
-            response = savingsAccountHelper.querySavingsTransactions(savingsId, pagedRequest);
+            response = querySavingsTransactions(savingsId, pagedRequest);
 
             assertEquals(3, response.get("total"));
-            content = (List) response.get("content");
+            content = (List<?>) response.get("content");
             assertNotNull(content);
             assertEquals(2, content.size()); // page size 2
-            first = (Map) content.get(0);
+            first = (Map<?, ?>) content.get(0);
             assertEquals(transactionIdW1, first.get(COLUMN_ID));
             assertEquals(todayIsoS, first.get(COLUMN_SUBMITTED_DATE));
             assertEquals(transactionIdW1, first.get(COLUMN_TRANSACTION_ID));
@@ -300,7 +296,7 @@ public class DatatableAdvancedQueryTest {
             assertNull(first.get(COLUMN_BOOLEAN));
             assertNull(first.get(COLUMN_INTEGER));
             assertNull(first.get(COLUMN_DECIMAL));
-            assertEquals(transactionIdD2, ((Map) content.get(1)).get(COLUMN_TRANSACTION_ID));
+            assertEquals(transactionIdD2, ((Map<?, ?>) content.get(1)).get(COLUMN_TRANSACTION_ID));
 
             deleteDatatable(datatable, transactionIdD1, transactionIdD2, transactionIdW1);
 
@@ -373,21 +369,129 @@ public class DatatableAdvancedQueryTest {
     }
 
     private Integer createSavingsProductDailyPosting() {
-        final String savingsProductJSON = savingsProductHelper.withInterestCompoundingPeriodTypeAsDaily()
-                .withInterestPostingPeriodTypeAsDaily().withInterestCalculationPeriodTypeAsDailyBalance().build();
-        return SavingsProductHelper.createSavingsProduct(savingsProductJSON, requestSpec, responseSpec);
+        return SavingsProductHelper.createSavingsProduct(dailyPostingSavingsProductRequest()).getResourceId().intValue();
     }
 
     private Integer createSavingsAccountDailyPosting(final Integer clientID, final String startDate) {
         final Integer savingsProductID = createSavingsProductDailyPosting();
         assertNotNull(savingsProductID);
-        final Integer savingsId = savingsAccountHelper.applyForSavingsApplicationOnDate(clientID, savingsProductID, ACCOUNT_TYPE_INDIVIDUAL,
-                startDate);
+        PostSavingsAccountsRequest applicationRequest = new PostSavingsAccountsRequest().clientId(clientID.longValue())
+                .productId(savingsProductID.longValue()).dateFormat(Utils.DATE_FORMAT).locale("en_GB").submittedOnDate(startDate);
+        final Integer savingsId = Calls
+                .ok(FineractClientHelper.getFineractClient().savingsAccounts.submitSavingsApplication(applicationRequest)).getSavingsId()
+                .intValue();
         assertNotNull(savingsId);
-        HashMap savingsStatusHashMap = savingsAccountHelper.approveSavingsOnDate(savingsId, startDate);
-        SavingsStatusChecker.verifySavingsIsApproved(savingsStatusHashMap);
-        savingsStatusHashMap = savingsAccountHelper.activateSavingsAccount(savingsId, startDate);
-        SavingsStatusChecker.verifySavingsIsActive(savingsStatusHashMap);
+        PostSavingsAccountsAccountIdResponse approveResponse = Calls.ok(FineractClientHelper.getFineractClient().savingsAccounts
+                .handleCommandsSavingsAccount(savingsId.longValue(), new PostSavingsAccountsAccountIdRequest()
+                        .locale(CommonConstants.LOCALE).dateFormat(CommonConstants.DATE_FORMAT).approvedOnDate(startDate), "approve"));
+        SavingsStatusChecker.verifySavingsIsApproved(statusChanges(approveResponse));
+        PostSavingsAccountsAccountIdResponse activateResponse = Calls.ok(FineractClientHelper.getFineractClient().savingsAccounts
+                .handleCommandsSavingsAccount(savingsId.longValue(), new PostSavingsAccountsAccountIdRequest()
+                        .locale(CommonConstants.LOCALE).dateFormat(CommonConstants.DATE_FORMAT).activatedOnDate(startDate), "activate"));
+        SavingsStatusChecker.verifySavingsIsActive(statusChanges(activateResponse));
         return savingsId;
+    }
+
+    private Integer deposit(final Integer savingsId, final String amount, final String date) {
+        return transaction(savingsId, amount, date, "deposit");
+    }
+
+    private Integer withdrawal(final Integer savingsId, final String amount, final String date) {
+        return transaction(savingsId, amount, date, "withdrawal");
+    }
+
+    private Integer transaction(final Integer savingsId, final String amount, final String date, final String command) {
+        PostSavingsAccountTransactionsRequest request = new PostSavingsAccountTransactionsRequest().locale(CommonConstants.LOCALE)
+                .dateFormat(CommonConstants.DATE_FORMAT).transactionDate(date).transactionAmount(new BigDecimal(amount)).paymentTypeId(1);
+        return Calls.ok(FineractClientHelper.getFineractClient().savingsTransactions.createSavingsAccountTransaction(savingsId.longValue(),
+                request, command)).getResourceId().intValue();
+    }
+
+    private Map<String, Object> querySavingsTransactions(final Integer savingsId, final PagedLocalRequestAdvancedQueryRequest request) {
+        String response = Calls.ok(FineractClientHelper.getFineractClient().savingsTransactions
+                .advancedQuerySavingsAccountTransactions(savingsId.longValue(), request));
+        final JsonNode root = readTree(response);
+        final Map<String, Object> result = new LinkedHashMap<>();
+        final Iterator<String> names = root.fieldNames();
+        while (names.hasNext()) {
+            final String name = names.next();
+            result.put(name, toPlainValue(root.get(name)));
+        }
+        return result;
+    }
+
+    private static PostClientsRequest clientRequest(final String activationDate) {
+        return new PostClientsRequest().officeId(1L).legalFormId(ClientHelper.LEGALFORM_ID_PERSON)
+                .firstname(Utils.randomFirstNameGenerator()).lastname(Utils.randomLastNameGenerator())
+                .externalId(UUID.randomUUID().toString()).dateFormat(Utils.DATE_FORMAT).locale("en").active(true)
+                .activationDate(activationDate);
+    }
+
+    private static PostSavingsProductsRequest dailyPostingSavingsProductRequest() {
+        return new PostSavingsProductsRequest().name(Utils.uniqueRandomStringGenerator("SAVINGS_PRODUCT_", 6))
+                .shortName(Utils.uniqueRandomStringGenerator("", 4)).description(Utils.randomStringGenerator("", 20)).currencyCode("USD")
+                .interestCalculationDaysInYearType(365).locale("en_GB").digitsAfterDecimal(4).inMultiplesOf(0).interestCalculationType(1)
+                .nominalAnnualInterestRate(10.0).interestCompoundingPeriodType(1).interestPostingPeriodType(1).accountingRule(1)
+                .withdrawalFeeForTransfers(true).allowOverdraft(false).enforceMinRequiredBalance(false).withHoldTax(false);
+    }
+
+    private static HashMap<String, Object> statusChanges(final PostSavingsAccountsAccountIdResponse response) {
+        final Map<?, ?> changes = (Map<?, ?>) response.getChanges();
+        final Map<?, ?> status = (Map<?, ?>) changes.get("status");
+        final HashMap<String, Object> result = new HashMap<>();
+        status.forEach((key, value) -> result.put((String) key, value));
+        return result;
+    }
+
+    private static JsonNode readTree(final String json) {
+        try {
+            return OBJECT_MAPPER.readTree(json);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Unable to parse advanced query response", e);
+        }
+    }
+
+    private static Object toPlainValue(final JsonNode node) {
+        if (node == null || node.isNull()) {
+            return null;
+        }
+        if (node.isObject()) {
+            final Map<String, Object> map = new LinkedHashMap<>();
+            final Iterator<String> names = node.fieldNames();
+            while (names.hasNext()) {
+                final String name = names.next();
+                map.put(name, toPlainValue(node.get(name)));
+            }
+            return map;
+        }
+        if (node.isArray()) {
+            final List<Object> list = new ArrayList<>();
+            for (JsonNode child : node) {
+                list.add(toPlainValue(child));
+            }
+            return list;
+        }
+        if (node.isBoolean()) {
+            return node.booleanValue();
+        }
+        if (node.isTextual()) {
+            return node.textValue();
+        }
+        if (node.isIntegralNumber()) {
+            final long longValue = node.longValue();
+            if (longValue >= Integer.MIN_VALUE && longValue <= Integer.MAX_VALUE) {
+                return Integer.valueOf((int) longValue);
+            }
+            return Long.valueOf(longValue);
+        }
+        if (node.isFloatingPointNumber()) {
+            final double doubleValue = node.doubleValue();
+            final float floatValue = (float) doubleValue;
+            if ((double) floatValue == doubleValue) {
+                return Float.valueOf(floatValue);
+            }
+            return Double.valueOf(doubleValue);
+        }
+        return node.asText();
     }
 }
