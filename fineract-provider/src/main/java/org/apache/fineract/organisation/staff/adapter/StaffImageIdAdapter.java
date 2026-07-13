@@ -31,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-@Deprecated
 class StaffImageIdAdapter implements EntityImageIdAdapter {
 
     private static final String ENTITY_TYPE = "staff";
