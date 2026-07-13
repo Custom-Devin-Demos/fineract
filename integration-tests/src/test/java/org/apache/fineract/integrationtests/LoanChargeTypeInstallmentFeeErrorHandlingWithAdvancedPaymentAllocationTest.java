@@ -21,51 +21,69 @@ package org.apache.fineract.integrationtests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.Param;
+import feign.RequestLine;
+import feign.Response;
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.UUID;
 import org.apache.fineract.client.models.AdvancedPaymentData;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
+import org.apache.fineract.client.models.ChargeRequest;
+import org.apache.fineract.client.models.PostLoansLoanIdRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
-import org.apache.fineract.integrationtests.common.CommonConstants;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.accounting.Account;
-import org.apache.fineract.integrationtests.common.accounting.AccountHelper;
 import org.apache.fineract.integrationtests.common.charges.ChargesHelper;
 import org.apache.fineract.integrationtests.common.loans.LoanApplicationTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
-import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.domain.LoanScheduleType;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class LoanChargeTypeInstallmentFeeErrorHandlingWithAdvancedPaymentAllocationTest extends BaseLoanIntegrationTest {
 
-    private static LoanTransactionHelper LOAN_TRANSACTION_HELPER;
-    private static ResponseSpecification RESPONSE_SPEC;
-    private static RequestSpecification REQUEST_SPEC;
-    private static ClientHelper CLIENT_HELPER;
-    private static AccountHelper ACCOUNT_HELPER;
+    private static final String DATE_FORMAT = "dd MMMM yyyy";
+    private static final DateTimeFormatter DATE_FORMATTER = new DateTimeFormatterBuilder().appendPattern(DATE_FORMAT).toFormatter();
 
-    @BeforeAll
-    public static void setupTests() {
-        Utils.initializeRESTAssured();
-        REQUEST_SPEC = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        REQUEST_SPEC.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        RESPONSE_SPEC = new ResponseSpecBuilder().expectStatusCode(200).build();
-        LOAN_TRANSACTION_HELPER = new LoanTransactionHelper(REQUEST_SPEC, RESPONSE_SPEC);
-        CLIENT_HELPER = new ClientHelper(REQUEST_SPEC, RESPONSE_SPEC);
-        ACCOUNT_HELPER = new AccountHelper(REQUEST_SPEC, RESPONSE_SPEC);
+    private static final ObjectMapper RAW_MAPPER = new ObjectMapper();
+    private static final RawApi RAW = FineractFeignClientHelper.getFineractFeignClient().create(RawApi.class);
+
+    interface RawApi {
+
+        @RequestLine("POST v1/loanproducts")
+        Response createLoanProduct(JsonNode body);
+
+        @RequestLine("POST v1/loans")
+        Response createLoan(JsonNode body);
+
+        @RequestLine("POST v1/loans/{loanId}/charges")
+        Response addLoanCharge(@Param("loanId") Integer loanId, JsonNode body);
+    }
+
+    private static JsonNode body(Response response) {
+        try (Response r = response) {
+            return RAW_MAPPER.readTree(r.body().asInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static JsonNode json(String raw) {
+        try {
+            return RAW_MAPPER.readTree(raw);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Disabled
@@ -77,46 +95,47 @@ public class LoanChargeTypeInstallmentFeeErrorHandlingWithAdvancedPaymentAllocat
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(DATE_FORMATTER.format(businessDate)).dateFormat(DATE_FORMAT).locale("en"));
 
             // Accounts oof periodic accrual
-            final Account assetAccount = ACCOUNT_HELPER.createAssetAccount();
-            final Account incomeAccount = ACCOUNT_HELPER.createIncomeAccount();
-            final Account expenseAccount = ACCOUNT_HELPER.createExpenseAccount();
-            final Account overpaymentAccount = ACCOUNT_HELPER.createLiabilityAccount();
-
-            final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
-            final LoanTransactionHelper validationErrorHelper = new LoanTransactionHelper(REQUEST_SPEC, errorResponse);
+            final Account assetAccount = accountHelper.createAssetAccount();
+            final Account incomeAccount = accountHelper.createIncomeAccount();
+            final Account expenseAccount = accountHelper.createExpenseAccount();
+            final Account overpaymentAccount = accountHelper.createLiabilityAccount();
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
 
-            final Integer clientId = CLIENT_HELPER.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
             final Integer loanProductId = createLoanProduct(assetAccount, incomeAccount, expenseAccount, overpaymentAccount);
 
             final Integer loanId = createLoanAccount(clientId, loanProductId, loanExternalIdStr);
 
             // disburse principal amount
-            LOAN_TRANSACTION_HELPER.disburseLoanWithTransactionAmount("15 February 2023", loanId, "1000");
+            loanTransactionHelper.disburseLoan(loanId.longValue(), new PostLoansLoanIdRequest().actualDisbursementDate("15 February 2023")
+                    .dateFormat(DATE_FORMAT).locale("en").transactionAmount(new BigDecimal("1000")).note("DISBURSE NOTE"));
 
             // add loan charge
             // apply Installment fee
-            Integer installmentFeeCharge = ChargesHelper.createCharges(REQUEST_SPEC, RESPONSE_SPEC,
-                    ChargesHelper.getLoanInstallmentJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "50", false));
+            Long installmentFeeCharge = chargesHelper.createCharges(new ChargeRequest().active(true).amount(50.0).chargeAppliesTo(1)
+                    .chargeCalculationType(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT).currencyCode("USD").locale("en")
+                    .monthDayFormat("dd MMM").name(Utils.uniqueRandomStringGenerator("Charge_Loans_", 6))
+                    .chargeTimeType(ChargesHelper.CHARGE_INSTALLMENT_FEE).chargePaymentMode(0).penalty(false)).getResourceId();
 
-            List<HashMap<String, Object>> loanChargeErrorData = (List<HashMap<String, Object>>) validationErrorHelper
-                    .addChargesForLoanWithError(loanId,
-                            LoanTransactionHelper.getInstallmentChargesForLoanAsJSON(String.valueOf(installmentFeeCharge), "50"),
-                            CommonConstants.RESPONSE_ERROR);
+            JsonNode addChargeRequest = RAW_MAPPER.createObjectNode().put("locale", "en").put("dateFormat", DATE_FORMAT).put("amount", "50")
+                    .put("chargeId", installmentFeeCharge);
+            JsonNode errorResponse = body(RAW.addLoanCharge(loanId, addChargeRequest));
+            JsonNode loanChargeErrorData = errorResponse.get("errors");
             assertNotNull(loanChargeErrorData);
 
             assertEquals(
                     "Charge with identifier %d cannot be applied: Installment fee charges are not supported for Advanced payment allocation strategy"
                             .formatted(installmentFeeCharge),
-                    loanChargeErrorData.get(0).get("defaultUserMessage"));
+                    loanChargeErrorData.get(0).get("defaultUserMessage").asText());
             assertEquals("error.msg.charge.cannot.be.applied.toloan",
-                    loanChargeErrorData.get(0).get(CommonConstants.RESPONSE_ERROR_MESSAGE_CODE));
+                    loanChargeErrorData.get(0).get("userMessageGlobalisationCode").asText());
 
         } finally {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
@@ -133,7 +152,7 @@ public class LoanChargeTypeInstallmentFeeErrorHandlingWithAdvancedPaymentAllocat
                 .withAccountingRulePeriodicAccrual(accounts).withInterestCalculationPeriodTypeAsRepaymentPeriod(true)
                 .addAdvancedPaymentAllocation(defaultAllocation).withLoanScheduleType(LoanScheduleType.PROGRESSIVE).withMultiDisburse()
                 .withDisallowExpectedDisbursements(true).build();
-        return LOAN_TRANSACTION_HELPER.getLoanProductId(loanProductCreateJSON);
+        return body(RAW.createLoanProduct(json(loanProductCreateJSON))).get("resourceId").intValue();
 
     }
 
@@ -146,8 +165,9 @@ public class LoanChargeTypeInstallmentFeeErrorHandlingWithAdvancedPaymentAllocat
                 .withSubmittedOnDate("15 February 2023").withLoanType("individual").withExternalId(externalId)
                 .withRepaymentStrategy("advanced-payment-allocation-strategy").build(clientID.toString(), loanProductID.toString(), null);
 
-        final Integer loanId = LOAN_TRANSACTION_HELPER.getLoanId(loanApplicationJSON);
-        LOAN_TRANSACTION_HELPER.approveLoan("15 February 2023", "1000", loanId, null);
+        final Integer loanId = body(RAW.createLoan(json(loanApplicationJSON))).get("loanId").intValue();
+        loanTransactionHelper.approveLoan(loanId.longValue(), new PostLoansLoanIdRequest().approvedOnDate("15 February 2023")
+                .approvedLoanAmount(new BigDecimal("1000")).dateFormat(DATE_FORMAT).locale("en"));
         return loanId;
     }
 }
