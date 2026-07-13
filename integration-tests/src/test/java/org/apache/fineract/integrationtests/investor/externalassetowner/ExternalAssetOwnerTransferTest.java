@@ -18,37 +18,41 @@
  */
 package org.apache.fineract.integrationtests.investor.externalassetowner;
 
-import static org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType.BUSINESS_DATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.path.json.JsonPath;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.Gson;
+import feign.Headers;
+import feign.RequestLine;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
+import org.apache.fineract.client.models.ChargeRequest;
 import org.apache.fineract.client.models.ExternalAssetOwnerRequest;
 import org.apache.fineract.client.models.ExternalOwnerJournalEntryData;
 import org.apache.fineract.client.models.ExternalOwnerTransferJournalEntryData;
 import org.apache.fineract.client.models.ExternalTransferData;
 import org.apache.fineract.client.models.PageExternalTransferData;
 import org.apache.fineract.client.models.PostInitiateTransferResponse;
+import org.apache.fineract.client.models.PostLoanProductsRequest;
+import org.apache.fineract.client.models.PostLoansLoanIdRequest;
+import org.apache.fineract.client.models.PostLoansResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
+import org.apache.fineract.client.util.JSON;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.BaseLoanIntegrationTest;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
@@ -56,69 +60,61 @@ import org.apache.fineract.integrationtests.common.BusinessStepHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
 import org.apache.fineract.integrationtests.common.CollateralManagementHelper;
 import org.apache.fineract.integrationtests.common.ExternalAssetOwnerHelper;
-import org.apache.fineract.integrationtests.common.SchedulerJobHelper;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.accounting.Account;
-import org.apache.fineract.integrationtests.common.accounting.AccountHelper;
 import org.apache.fineract.integrationtests.common.accounting.FinancialActivityAccountHelper;
-import org.apache.fineract.integrationtests.common.charges.ChargesHelper;
 import org.apache.fineract.integrationtests.common.loans.LoanApplicationTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanStatusChecker;
-import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.lang.NonNull;
 
 @Slf4j
 public class ExternalAssetOwnerTransferTest extends BaseLoanIntegrationTest {
 
-    protected static ResponseSpecification RESPONSE_SPEC;
-    protected static RequestSpecification REQUEST_SPEC;
-    protected static Account ASSET_ACCOUNT;
-    protected static Account FEE_PENALTY_ACCOUNT;
-    protected static Account TRANSFER_ACCOUNT;
-    protected static Account EXPENSE_ACCOUNT;
-    protected static Account INCOME_ACCOUNT;
-    protected static Account OVERPAYMENT_ACCOUNT;
-    protected static FinancialActivityAccountHelper FINANCIAL_ACTIVITY_ACCOUNT_HELPER;
+    protected Account assetAccount;
+    protected Account feePenaltyAccount;
+    protected Account transferAccount;
+    protected Account expenseAccount;
+    protected Account incomeAccount;
+    protected Account overpaymentAccount;
     protected static ExternalAssetOwnerHelper EXTERNAL_ASSET_OWNER_HELPER;
-    protected static LoanTransactionHelper LOAN_TRANSACTION_HELPER;
-    protected static SchedulerJobHelper SCHEDULER_JOB_HELPER;
-    protected static LocalDate TODAYS_DATE;
+    protected LocalDate todaysDate;
     public String ownerExternalId;
     protected DateTimeFormatter dateFormatter = new DateTimeFormatterBuilder().appendPattern("dd MMMM yyyy").toFormatter();
+    private final Gson gson = new JSON().getGson();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    @BeforeAll
-    public static void setupInvestorBusinessStep() {
-        Utils.initializeRESTAssured();
-        REQUEST_SPEC = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        REQUEST_SPEC.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        RESPONSE_SPEC = new ResponseSpecBuilder().expectStatusCode(200).build();
-        AccountHelper accountHelper = new AccountHelper(REQUEST_SPEC, RESPONSE_SPEC);
+    @BeforeEach
+    public void setupInvestorBusinessStep() {
         EXTERNAL_ASSET_OWNER_HELPER = new ExternalAssetOwnerHelper();
-        SCHEDULER_JOB_HELPER = new SchedulerJobHelper(REQUEST_SPEC);
-        FINANCIAL_ACTIVITY_ACCOUNT_HELPER = new FinancialActivityAccountHelper(REQUEST_SPEC);
-        LOAN_TRANSACTION_HELPER = new LoanTransactionHelper(REQUEST_SPEC, RESPONSE_SPEC);
+        FinancialActivityAccountHelper financialActivityAccountHelper = new FinancialActivityAccountHelper(requestSpec);
 
-        TODAYS_DATE = Utils.getLocalDateOfTenant();
+        todaysDate = Utils.getLocalDateOfTenant();
         new BusinessStepHelper().updateSteps("LOAN_CLOSE_OF_BUSINESS", "APPLY_CHARGE_TO_OVERDUE_LOANS", "LOAN_DELINQUENCY_CLASSIFICATION",
                 "CHECK_LOAN_REPAYMENT_DUE", "CHECK_LOAN_REPAYMENT_OVERDUE", "UPDATE_LOAN_ARREARS_AGING", "ADD_PERIODIC_ACCRUAL_ENTRIES",
                 "EXTERNAL_ASSET_OWNER_TRANSFER");
 
-        ASSET_ACCOUNT = accountHelper.createAssetAccount();
-        FEE_PENALTY_ACCOUNT = accountHelper.createAssetAccount();
-        TRANSFER_ACCOUNT = accountHelper.createAssetAccount();
-        EXPENSE_ACCOUNT = accountHelper.createExpenseAccount();
-        INCOME_ACCOUNT = accountHelper.createIncomeAccount();
-        OVERPAYMENT_ACCOUNT = accountHelper.createLiabilityAccount();
+        assetAccount = accountHelper.createAssetAccount();
+        feePenaltyAccount = accountHelper.createAssetAccount();
+        transferAccount = accountHelper.createAssetAccount();
+        expenseAccount = accountHelper.createExpenseAccount();
+        incomeAccount = accountHelper.createIncomeAccount();
+        overpaymentAccount = accountHelper.createLiabilityAccount();
 
-        EXTERNAL_ASSET_OWNER_HELPER.setProperFinancialActivity(FINANCIAL_ACTIVITY_ACCOUNT_HELPER, TRANSFER_ACCOUNT);
+        EXTERNAL_ASSET_OWNER_HELPER.setProperFinancialActivity(financialActivityAccountHelper, transferAccount);
     }
 
     protected void updateBusinessDateAndExecuteCOBJob(String date) {
-        BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BUSINESS_DATE, LocalDate.parse(date));
-        SCHEDULER_JOB_HELPER.executeAndAwaitJob("Loan COB");
+        setBusinessDate(LocalDate.parse(date));
+        schedulerJobHelper.executeAndAwaitJob("Loan COB");
+    }
+
+    protected void setBusinessDate(LocalDate date) {
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(dateFormatter.format(date)).dateFormat("dd MMMM yyyy").locale("en"));
     }
 
     protected PostInitiateTransferResponse createSaleTransfer(Integer loanID, String settlementDate) {
@@ -153,25 +149,18 @@ public class ExternalAssetOwnerTransferTest extends BaseLoanIntegrationTest {
 
     protected void addPenaltyForLoan(Integer loanID, String amount) {
         // Add Charge Penalty
-        Integer penalty = ChargesHelper.createCharges(REQUEST_SPEC, RESPONSE_SPEC,
-                ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, amount, true));
-        Integer penalty1LoanChargeId = LOAN_TRANSACTION_HELPER.addChargesForLoan(loanID,
-                LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "02 March 2020", amount));
+        Long penalty1LoanChargeId = addCharge(loanID.longValue(), true, Double.parseDouble(amount), "02 March 2020");
         assertNotNull(penalty1LoanChargeId);
     }
 
     protected void setInitialBusinessDate(LocalDate date) {
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(true));
-        BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BUSINESS_DATE, date);
+        setBusinessDate(date);
     }
 
     protected void cleanUpAndRestoreBusinessDate() {
-        REQUEST_SPEC = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        REQUEST_SPEC.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        REQUEST_SPEC.header("Fineract-Platform-TenantId", "default");
-        RESPONSE_SPEC = new ResponseSpecBuilder().expectStatusCode(200).build();
-        BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BUSINESS_DATE, TODAYS_DATE);
+        setBusinessDate(todaysDate);
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(false));
         globalConfigurationHelper.manageConfigurations(GlobalConfigurationConstants.ENABLE_AUTO_GENERATED_EXTERNAL_ID, false);
@@ -179,74 +168,96 @@ public class ExternalAssetOwnerTransferTest extends BaseLoanIntegrationTest {
 
     @NonNull
     protected Integer createClient() {
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Long clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
         Assertions.assertNotNull(clientID);
-        return clientID;
+        return clientID.intValue();
     }
 
     @NonNull
     protected Integer createLoanForClient(Integer clientID, String transactionDate) {
-        Integer overdueFeeChargeId = ChargesHelper.createCharges(REQUEST_SPEC, RESPONSE_SPEC,
-                ChargesHelper.getLoanOverdueFeeJSONWithCalculationTypePercentage("1"));
+        Long overdueFeeChargeId = createOverdueFeeCharge("1");
         Assertions.assertNotNull(overdueFeeChargeId);
 
         Integer loanProductID = createLoanProduct(overdueFeeChargeId.toString());
         Assertions.assertNotNull(loanProductID);
-        HashMap loanStatusHashMap;
 
         Integer loanID = applyForLoanApplication(clientID.toString(), loanProductID.toString(), transactionDate);
-
         Assertions.assertNotNull(loanID);
 
-        loanStatusHashMap = LoanStatusChecker.getStatusOfLoan(REQUEST_SPEC, RESPONSE_SPEC, loanID);
+        HashMap<String, Object> loanStatusHashMap = LoanStatusChecker.getStatusOfLoan(requestSpec, responseSpec, loanID);
         LoanStatusChecker.verifyLoanIsPending(loanStatusHashMap);
 
-        loanStatusHashMap = LOAN_TRANSACTION_HELPER.approveLoan(transactionDate, loanID);
+        loanTransactionHelper.approveLoan(loanID.longValue(),
+                new PostLoansLoanIdRequest().approvedOnDate(transactionDate).dateFormat("dd MMMM yyyy").locale("en").note("Approval NOTE"));
+        loanStatusHashMap = LoanStatusChecker.getStatusOfLoan(requestSpec, responseSpec, loanID);
         LoanStatusChecker.verifyLoanIsApproved(loanStatusHashMap);
 
-        String loanDetails = LOAN_TRANSACTION_HELPER.getLoanDetails(REQUEST_SPEC, RESPONSE_SPEC, loanID);
-        loanStatusHashMap = LOAN_TRANSACTION_HELPER.disburseLoanWithNetDisbursalAmount(transactionDate, loanID,
-                JsonPath.from(loanDetails).get("netDisbursalAmount").toString());
+        loanTransactionHelper.disburseLoan(loanID.longValue(), new PostLoansLoanIdRequest().actualDisbursementDate(transactionDate)
+                .dateFormat("dd MMMM yyyy").locale("en").note("DISBURSE NOTE"));
+        loanStatusHashMap = LoanStatusChecker.getStatusOfLoan(requestSpec, responseSpec, loanID);
         LoanStatusChecker.verifyLoanIsActive(loanStatusHashMap);
         return loanID;
     }
 
+    protected Long createOverdueFeeCharge(String penaltyPercentageAmount) {
+        // Loan overdue-installment penalty, percentage of amount and interest
+        ChargeRequest chargeRequest = new ChargeRequest().active(true).amount(Double.parseDouble(penaltyPercentageAmount))
+                .chargeAppliesTo(1).currencyCode("USD").locale("en").monthDayFormat("dd MMM")
+                .name(Utils.uniqueRandomStringGenerator("Charge_Loans_", 6)).penalty(true).chargePaymentMode(0).chargeTimeType(9)
+                .chargeCalculationType(3);
+        return chargesHelper.createCharges(chargeRequest).getResourceId();
+    }
+
     protected Integer createLoanProduct(final String chargeId) {
 
-        final String loanProductJSON = new LoanProductTestBuilder().withPrincipal("15,000.00").withNumberOfRepayments("4")
+        final String loanProductJSON = new LoanProductTestBuilder().withPrincipal("15000.00").withNumberOfRepayments("4")
                 .withRepaymentAfterEvery("1").withRepaymentTypeAsMonth().withinterestRatePerPeriod("1")
-                .withAccountingRulePeriodicAccrual(new Account[] { ASSET_ACCOUNT, EXPENSE_ACCOUNT, INCOME_ACCOUNT, OVERPAYMENT_ACCOUNT })
+                .withAccountingRulePeriodicAccrual(new Account[] { assetAccount, expenseAccount, incomeAccount, overpaymentAccount })
                 .withInterestRateFrequencyTypeAsMonths().withAmortizationTypeAsEqualInstallments().withInterestTypeAsDecliningBalance()
-                .withFeeAndPenaltyAssetAccount(FEE_PENALTY_ACCOUNT).build(chargeId);
-        return LOAN_TRANSACTION_HELPER.getLoanProductId(loanProductJSON);
+                .withFeeAndPenaltyAssetAccount(feePenaltyAccount).build(chargeId);
+        PostLoanProductsRequest request = gson.fromJson(loanProductJSON, PostLoanProductsRequest.class);
+        return loanTransactionHelper.createLoanProduct(request).getResourceId().intValue();
     }
 
     protected Integer applyForLoanApplication(final String clientID, final String loanProductID, final String date) {
-        List<HashMap> collaterals = new ArrayList<>();
-        Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
-        Assertions.assertNotNull(collateralId);
-        Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC, clientID, collateralId);
-        Assertions.assertNotNull(clientCollateralId);
-        addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
-
-        String loanApplicationJSON = new LoanApplicationTestBuilder().withPrincipal("15,000.00").withLoanTermFrequency("4")
+        String loanApplicationJSON = new LoanApplicationTestBuilder().withPrincipal("15000.00").withLoanTermFrequency("4")
                 .withLoanTermFrequencyAsMonths().withNumberOfRepayments("4").withRepaymentEveryAfter("1")
                 .withRepaymentFrequencyTypeAsMonths().withInterestRatePerPeriod("2").withAmortizationTypeAsEqualInstallments()
                 .withInterestTypeAsDecliningBalance().withInterestCalculationPeriodTypeSameAsRepaymentPeriod()
-                .withExpectedDisbursementDate(date).withSubmittedOnDate(date).withCollaterals(collaterals)
-                .build(clientID, loanProductID, null);
-        return LOAN_TRANSACTION_HELPER.getLoanId(loanApplicationJSON);
+                .withExpectedDisbursementDate(date).withSubmittedOnDate(date).build(clientID, loanProductID, null);
+        return submitLoanApplicationWithCollateral(clientID, loanApplicationJSON);
     }
 
-    protected void addCollaterals(List<HashMap> collaterals, Integer collateralId, BigDecimal quantity) {
-        collaterals.add(collaterals(collateralId, quantity));
+    /**
+     * Submits a loan application whose payload carries collateral. The generated PostLoansRequest model has no
+     * collateral field, so the collateral-bearing body is posted as a raw JSON tree through a minimal fixed Feign API.
+     */
+    protected static Integer submitLoanApplicationWithCollateral(final String clientID, final String loanApplicationJSON) {
+        final Long collateralId = CollateralManagementHelper.createCollateralProduct();
+        final Long clientCollateralId = CollateralManagementHelper.createClientCollateral(Long.valueOf(clientID), collateralId);
+        final ObjectNode body;
+        try {
+            body = (ObjectNode) OBJECT_MAPPER.readTree(loanApplicationJSON);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Unable to parse loan application payload", e);
+        }
+        final ObjectNode collateral = OBJECT_MAPPER.createObjectNode();
+        collateral.put("clientCollateralId", clientCollateralId.toString());
+        collateral.put("quantity", "1");
+        body.putArray("collateral").add(collateral);
+        return FineractFeignClientHelper.getFineractFeignClient().create(LoanApplicationSubmitApi.class).submitLoanApplication(body)
+                .getLoanId().intValue();
     }
 
-    protected HashMap<String, String> collaterals(Integer collateralId, BigDecimal quantity) {
-        HashMap<String, String> collateral = new HashMap<>(2);
-        collateral.put("clientCollateralId", collateralId.toString());
-        collateral.put("quantity", quantity.toString());
-        return collateral;
+    /**
+     * Minimal fixed Feign API for submitting a loan application whose JSON body includes collateral (unsupported by the
+     * generated PostLoansRequest model).
+     */
+    public interface LoanApplicationSubmitApi {
+
+        @RequestLine("POST /v1/loans")
+        @Headers({ "Content-Type: application/json", "Accept: application/json" })
+        PostLoansResponse submitLoanApplication(JsonNode body);
     }
 
     protected void getAndValidateExternalAssetOwnerTransferByLoan(Integer loanID, ExpectedExternalTransferData... expectedItems) {

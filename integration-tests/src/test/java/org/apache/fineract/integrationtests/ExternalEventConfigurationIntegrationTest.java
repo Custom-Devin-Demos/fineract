@@ -18,70 +18,63 @@
  */
 package org.apache.fineract.integrationtests;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import static org.apache.fineract.client.feign.util.FeignCalls.ok;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.apache.fineract.client.models.ExternalEventConfigurationItemResponse;
+import org.apache.fineract.client.models.ExternalEventConfigurationUpdateRequest;
+import org.apache.fineract.client.models.ExternalEventConfigurationUpdateResponse;
 import org.apache.fineract.integrationtests.common.ExternalEventConfigurationHelper;
-import org.apache.fineract.integrationtests.common.Utils;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class ExternalEventConfigurationIntegrationTest {
 
-    private ResponseSpecification responseSpec;
-    private RequestSpecification requestSpec;
-
-    @BeforeEach
-    public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-
-    }
-
     @Test
     public void getExternalEventConfigurations() {
-        final ArrayList<Map<String, Object>> externalEventConfigurations = ExternalEventConfigurationHelper
-                .getAllExternalEventConfigurations(requestSpec, responseSpec);
+        final List<ExternalEventConfigurationItemResponse> externalEventConfigurations = ok(
+                () -> FineractFeignClientHelper.getFineractFeignClient().externalEventConfiguration().getExternalEventConfigurations())
+                .getExternalEventConfiguration();
         Assertions.assertNotNull(externalEventConfigurations);
         final ArrayList<Map<String, Object>> defaultConfigurations = ExternalEventConfigurationHelper
                 .getDefaultExternalEventConfigurations();
         Assertions.assertEquals(defaultConfigurations.size(), externalEventConfigurations.size());
         verifyAllEventConfigurations(externalEventConfigurations, defaultConfigurations);
-
     }
 
-    private void verifyAllEventConfigurations(ArrayList<Map<String, Object>> actualEventConfigurations,
-            ArrayList<Map<String, Object>> defaultConfigurations) {
-
-        for (int index = 0; index < actualEventConfigurations.size(); index++) {
-            Assertions.assertTrue(defaultConfigurations.contains(actualEventConfigurations.get(index)));
+    private void verifyAllEventConfigurations(final List<ExternalEventConfigurationItemResponse> actualEventConfigurations,
+            final List<Map<String, Object>> defaultConfigurations) {
+        for (ExternalEventConfigurationItemResponse actualEventConfiguration : actualEventConfigurations) {
+            final Map<String, Object> actual = new HashMap<>();
+            actual.put("type", actualEventConfiguration.getType());
+            actual.put("enabled", actualEventConfiguration.getEnabled());
+            Assertions.assertTrue(defaultConfigurations.contains(actual),
+                    "Unexpected external event configuration: " + actualEventConfiguration.getType());
         }
     }
 
     @Test
     public void updateExternalEventConfigurations() {
-        String updateRequestJson = ExternalEventConfigurationHelper.getExternalEventConfigurationsForUpdateJSON();
-        final Map<String, Boolean> updatedConfigurations = ExternalEventConfigurationHelper.updateExternalEventConfigurations(requestSpec,
-                responseSpec, updateRequestJson);
-        Assertions.assertEquals(updatedConfigurations.size(), 2);
+        final ExternalEventConfigurationUpdateResponse response = ok(() -> FineractFeignClientHelper.getFineractFeignClient()
+                .externalEventConfiguration().updateExternalEventConfigurations(new ExternalEventConfigurationUpdateRequest()
+                        .externalEventConfigurations(Map.of("CentersCreateBusinessEvent", true, "ClientActivateBusinessEvent", true))));
+        final Map<?, ?> updatedConfigurations = (Map<?, ?>) response.getChanges().get("externalEventConfigurations");
+        Assertions.assertEquals(2, updatedConfigurations.size());
         Assertions.assertTrue(updatedConfigurations.containsKey("CentersCreateBusinessEvent"));
         Assertions.assertTrue(updatedConfigurations.containsKey("ClientActivateBusinessEvent"));
-        Assertions.assertTrue(updatedConfigurations.get("CentersCreateBusinessEvent"));
-        Assertions.assertTrue(updatedConfigurations.get("ClientActivateBusinessEvent"));
-
+        Assertions.assertEquals(Boolean.TRUE, updatedConfigurations.get("CentersCreateBusinessEvent"));
+        Assertions.assertEquals(Boolean.TRUE, updatedConfigurations.get("ClientActivateBusinessEvent"));
     }
 
     @AfterEach
     public void tearDown() {
-        ExternalEventConfigurationHelper.resetDefaultConfigurations(requestSpec, responseSpec);
+        ok(() -> FineractFeignClientHelper.getFineractFeignClient().externalEventConfiguration()
+                .updateExternalEventConfigurations(new ExternalEventConfigurationUpdateRequest()
+                        .externalEventConfigurations(Map.of("CentersCreateBusinessEvent", false, "ClientActivateBusinessEvent", false))));
     }
-
 }
