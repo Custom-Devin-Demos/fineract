@@ -244,7 +244,7 @@ public class LoanDelinquencyDetailsNextPaymentDateConfigurationTest extends Base
     }
 
     private void verifyLoanDelinquencyNextPaymentDate(Long loanId, String nextPaymentDate, boolean verifyNull) {
-        GetLoansLoanIdResponse loan = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanId.intValue());
+        GetLoansLoanIdResponse loan = loanTransactionHelper.getLoanDetails(loanId);
         Assertions.assertNotNull(loan.getDelinquent());
         if (!verifyNull) {
             Assertions.assertNotNull(loan.getDelinquent().getNextPaymentDueDate());

@@ -21,15 +21,11 @@ package org.apache.fineract.integrationtests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import com.google.gson.Gson;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -37,52 +33,34 @@ import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdTransactions;
+import org.apache.fineract.client.models.JournalEntryTransactionItem;
+import org.apache.fineract.client.models.PostCodeValuesDataRequest;
+import org.apache.fineract.client.models.PostLoanProductsRequest;
+import org.apache.fineract.client.models.PostLoansLoanIdRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsTransactionIdRequest;
+import org.apache.fineract.client.models.PostLoansRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
+import org.apache.fineract.client.util.Calls;
+import org.apache.fineract.client.util.JSON;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
+import org.apache.fineract.integrationtests.common.FineractClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.accounting.Account;
-import org.apache.fineract.integrationtests.common.accounting.AccountHelper;
 import org.apache.fineract.integrationtests.common.accounting.JournalEntryHelper;
-import org.apache.fineract.integrationtests.common.charges.ChargesHelper;
 import org.apache.fineract.integrationtests.common.loans.LoanApplicationTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
-import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
-import org.apache.fineract.integrationtests.common.system.CodeHelper;
-import org.apache.fineract.integrationtests.inlinecob.InlineLoanCOBHelper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
 
     private static final String DATE_PATTERN = "dd MMMM yyyy";
+    private static final Gson GSON = new JSON().getGson();
     private final BusinessDateHelper businessDateHelper = new BusinessDateHelper();
     private final DateTimeFormatter dateFormatter = new DateTimeFormatterBuilder().appendPattern(DATE_PATTERN).toFormatter();
-    private ResponseSpecification responseSpec;
-    private RequestSpecification requestSpec;
-    private ClientHelper clientHelper;
-    private LoanTransactionHelper loanTransactionHelper;
-    private InlineLoanCOBHelper inlineLoanCOBHelper;
-    private JournalEntryHelper journalEntryHelper;
-    private AccountHelper accountHelper;
-
-    @BeforeEach
-    public void setup() {
-        Utils.initializeRESTAssured();
-        requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.requestSpec.header("Fineract-Platform-TenantId", "default");
-        responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
-        clientHelper = new ClientHelper(requestSpec, responseSpec);
-        inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
-        journalEntryHelper = new JournalEntryHelper(requestSpec, responseSpec);
-        accountHelper = new AccountHelper(requestSpec, responseSpec);
-    }
 
     /**
      * 1. Loan created and disbursed. // 2. Loan repayment on expected maturity date. // 3. Merchant issues refund
@@ -104,13 +82,9 @@ public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
             // Client and Loan account creation
 
             final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-            final GetLoanProductsProductIdResponse loanProductsProductResponse = createLoanProduct(loanTransactionHelper);
+            final GetLoanProductsProductIdResponse loanProductsProductResponse = createLoanProduct();
 
-            final Integer loanId = createLoanAccount(clientId, loanProductsProductResponse.getId(), loanExternalIdStr);
-
-            // Add Charge
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", true));
+            final Long loanId = createLoanAccount(clientId, loanProductsProductResponse.getId(), loanExternalIdStr);
 
             final PostLoansLoanIdTransactionsResponse repaymentTransaction = loanTransactionHelper.makeLoanRepayment(loanExternalIdStr,
                     new PostLoansLoanIdTransactionsRequest().dateFormat(DATE_PATTERN).transactionDate("03 October 2022").locale("en")
@@ -119,7 +93,7 @@ public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
             loanTransactionHelper.makeMerchantIssuedRefund(loanExternalIdStr, new PostLoansLoanIdTransactionsRequest()
                     .dateFormat(DATE_PATTERN).transactionDate("04 October 2022").locale("en").transactionAmount(500.0));
 
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId);
 
             businessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
                     .date("05 October 2022").dateFormat(DATE_PATTERN).locale("en"));
@@ -136,9 +110,8 @@ public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
 
             LocalDate targetDate = LocalDate.of(2022, 10, 6);
             final String penaltyCharge1AddedDate = dateFormatter.format(targetDate);
-            loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), penaltyCharge1AddedDate, "10"));
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
+            addCharge(loanId, true, 10.0, penaltyCharge1AddedDate);
+            inlineLoanCOBHelper.executeInlineCOB(loanId);
         } finally {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(false));
@@ -165,13 +138,9 @@ public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
             // Client and Loan account creation
 
             final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-            final GetLoanProductsProductIdResponse loanProductsProductResponse = createLoanProduct(loanTransactionHelper);
+            final GetLoanProductsProductIdResponse loanProductsProductResponse = createLoanProduct();
 
-            final Integer loanId = createLoanAccount(clientId, loanProductsProductResponse.getId(), loanExternalIdStr);
-
-            // Add Charge
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", true));
+            final Long loanId = createLoanAccount(clientId, loanProductsProductResponse.getId(), loanExternalIdStr);
 
             // make repayment
             String loanTransactionExternalIdStr = UUID.randomUUID().toString();
@@ -180,9 +149,8 @@ public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
 
             LocalDate targetDate = LocalDate.of(2022, 10, 10);
             final String penaltyCharge1AddedDate = dateFormatter.format(targetDate);
-            loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), penaltyCharge1AddedDate, "10"));
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
+            addCharge(loanId, true, 10.0, penaltyCharge1AddedDate);
+            inlineLoanCOBHelper.executeInlineCOB(loanId);
 
             GetLoansLoanIdResponse loansLoanIdResponse = loanTransactionHelper.getLoanDetails(loanExternalIdStr);
             int lastPeriodIndex = loansLoanIdResponse.getRepaymentSchedule().getPeriods().size() - 1;
@@ -249,24 +217,27 @@ public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
                     .withAccountingRulePeriodicAccrual(new Account[] { assetAccount, incomeAccount, expenseAccount, overpaymentAccount })
                     .withDaysInMonth("30").withDaysInYear("365").withMoratorium("0", "0")
                     .withFeeAndPenaltyAssetAccount(assetFeeAndPenaltyAccount).build(null);
-            final Integer loanProductID = loanTransactionHelper.getLoanProductId(loanProductJSON);
+            final Long loanProductID = loanProductHelper.createLoanProduct(GSON.fromJson(loanProductJSON, PostLoanProductsRequest.class))
+                    .getResourceId();
 
-            final Integer loanId = createLoanAccount(clientId, loanProductID.longValue(), loanExternalIdStr);
+            final Long loanId = createLoanAccount(clientId, loanProductID, loanExternalIdStr);
 
             // set loan as chargeoff
             String randomText = Utils.randomStringGenerator("en", 5) + Utils.randomNumberGenerator(6)
                     + Utils.randomStringGenerator("is", 5);
-            Integer chargeOffReasonId = CodeHelper.createChargeOffCodeValue(requestSpec, responseSpec, randomText, 1);
+            Long chargeOffReasonId = Calls.ok(FineractClientHelper.getFineractClient().codeValues
+                    .createCodeValueByCodeName("ChargeOffReasons", new PostCodeValuesDataRequest().name(randomText).position(1)))
+                    .getSubResourceId();
             String transactionExternalId = UUID.randomUUID().toString();
             PostLoansLoanIdTransactionsResponse chargeOffResponse = loanTransactionHelper.chargeOffLoan(loanId.longValue(),
                     new PostLoansLoanIdTransactionsRequest().transactionDate("03 October 2022").locale("en").dateFormat("dd MMMM yyyy")
-                            .externalId(transactionExternalId).chargeOffReasonId((long) chargeOffReasonId));
+                            .externalId(transactionExternalId).chargeOffReasonId(chargeOffReasonId));
 
             final PostLoansLoanIdTransactionsResponse repaymentTransaction = loanTransactionHelper.makeLoanRepayment(loanExternalIdStr,
                     new PostLoansLoanIdTransactionsRequest().dateFormat(DATE_PATTERN).transactionDate("03 October 2022").locale("en")
                             .transactionAmount(1500.0));
 
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId);
 
             businessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
                     .date("05 October 2022").dateFormat(DATE_PATTERN).locale("en"));
@@ -279,15 +250,16 @@ public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
             int lastTransactionIndex = loansLoanIdResponse.getTransactions().size() - 1;
             assertEquals(500.0, Utils.getDoubleValue(loansLoanIdResponse.getTransactions().get(lastTransactionIndex).getAmount()));
 
-            ArrayList<HashMap> journalEntriesForCBR = journalEntryHelper
-                    .getJournalEntriesByTransactionId("L" + cbrTransactionResponse.getResourceId().toString());
+            List<JournalEntryTransactionItem> journalEntriesForCBR = JournalEntryHelper
+                    .retrieveJournalEntryByTransactionId("L" + cbrTransactionResponse.getResourceId().toString()).getPageItems();
             assertNotNull(journalEntriesForCBR);
-            List<HashMap> cbrExpenseJournalEntries = journalEntriesForCBR.stream() //
-                    .filter(journalEntry -> assetAccount.getAccountID().equals(journalEntry.get("glAccountId"))) //
+            List<JournalEntryTransactionItem> cbrExpenseJournalEntries = journalEntriesForCBR.stream() //
+                    .filter(journalEntry -> Long.valueOf(assetAccount.getAccountID().longValue()).equals(journalEntry.getGlAccountId())) //
                     .toList();
 
-            List<HashMap> cbrAssetJournalEntries = journalEntriesForCBR.stream() //
-                    .filter(journalEntry -> overpaymentAccount.getAccountID().equals(journalEntry.get("glAccountId"))) //
+            List<JournalEntryTransactionItem> cbrAssetJournalEntries = journalEntriesForCBR.stream() //
+                    .filter(journalEntry -> Long.valueOf(overpaymentAccount.getAccountID().longValue())
+                            .equals(journalEntry.getGlAccountId())) //
                     .toList();
 
             assertEquals(1, cbrExpenseJournalEntries.size());
@@ -301,21 +273,22 @@ public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
                             .dateFormat(DATE_PATTERN).transactionAmount(0.0));
 
             // check if the original CBR got reversed
-            journalEntriesForCBR = journalEntryHelper
-                    .getJournalEntriesByTransactionId("L" + cbrTransactionResponse.getResourceId().toString());
+            journalEntriesForCBR = JournalEntryHelper
+                    .retrieveJournalEntryByTransactionId("L" + cbrTransactionResponse.getResourceId().toString()).getPageItems();
             assertNotNull(journalEntriesForCBR);
             cbrExpenseJournalEntries = journalEntriesForCBR.stream() //
-                    .filter(journalEntry -> assetAccount.getAccountID().equals(journalEntry.get("glAccountId"))) //
+                    .filter(journalEntry -> Long.valueOf(assetAccount.getAccountID().longValue()).equals(journalEntry.getGlAccountId())) //
                     .toList();
 
             cbrAssetJournalEntries = journalEntriesForCBR.stream() //
-                    .filter(journalEntry -> overpaymentAccount.getAccountID().equals(journalEntry.get("glAccountId"))) //
+                    .filter(journalEntry -> Long.valueOf(overpaymentAccount.getAccountID().longValue())
+                            .equals(journalEntry.getGlAccountId())) //
                     .toList();
 
             assertEquals(2, cbrExpenseJournalEntries.size());
             assertEquals(2, cbrAssetJournalEntries.size());
 
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId);
             loansLoanIdResponse = loanTransactionHelper.getLoanDetails(loanExternalIdStr);
             lastTransactionIndex = loansLoanIdResponse.getTransactions().size() - 1;
             assertEquals(500.0, Utils.getDoubleValue(loansLoanIdResponse.getTransactions().get(lastTransactionIndex).getAmount()));
@@ -328,23 +301,23 @@ public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
 
             Long newCBRTransactionId = newCBRTransaction.getId();
 
-            journalEntriesForCBR = journalEntryHelper.getJournalEntriesByTransactionId("L" + newCBRTransactionId);
-            ArrayList<HashMap> journalEntriesForChargeOff = journalEntryHelper
-                    .getJournalEntriesByTransactionId("L" + chargeOffResponse.getResourceId().toString());
+            journalEntriesForCBR = JournalEntryHelper.retrieveJournalEntryByTransactionId("L" + newCBRTransactionId).getPageItems();
+            List<JournalEntryTransactionItem> journalEntriesForChargeOff = JournalEntryHelper
+                    .retrieveJournalEntryByTransactionId("L" + chargeOffResponse.getResourceId().toString()).getPageItems();
             assertNotNull(journalEntriesForCBR);
             assertNotNull(journalEntriesForChargeOff);
 
-            String expenseGlAccountCodeForChargeOff = (String) journalEntriesForChargeOff.get(0).get("glAccountCode");
-            String assetGlAccountCodeForChargeOff = (String) journalEntriesForChargeOff.get(1).get("glAccountCode");
+            String expenseGlAccountCodeForChargeOff = journalEntriesForChargeOff.get(0).getGlAccountCode();
+            String assetGlAccountCodeForChargeOff = journalEntriesForChargeOff.get(1).getGlAccountCode();
 
             cbrExpenseJournalEntries = journalEntriesForCBR.stream() //
-                    .filter(journalEntry -> expenseGlAccountCodeForChargeOff.equals(journalEntry.get("glAccountCode"))
-                            && expenseAccount.getAccountID().equals(journalEntry.get("glAccountId"))) //
+                    .filter(journalEntry -> expenseGlAccountCodeForChargeOff.equals(journalEntry.getGlAccountCode())
+                            && Long.valueOf(expenseAccount.getAccountID().longValue()).equals(journalEntry.getGlAccountId())) //
                     .toList();
 
             cbrAssetJournalEntries = journalEntriesForCBR.stream() //
-                    .filter(journalEntry -> assetGlAccountCodeForChargeOff.equals(journalEntry.get("glAccountCode"))
-                            && assetAccount.getAccountID().equals(journalEntry.get("glAccountId"))) //
+                    .filter(journalEntry -> assetGlAccountCodeForChargeOff.equals(journalEntry.getGlAccountCode())
+                            && Long.valueOf(assetAccount.getAccountID().longValue()).equals(journalEntry.getGlAccountId())) //
                     .toList();
 
             assertEquals(1, cbrExpenseJournalEntries.size());
@@ -355,13 +328,14 @@ public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
         }
     }
 
-    private GetLoanProductsProductIdResponse createLoanProduct(final LoanTransactionHelper loanTransactionHelper) {
+    private GetLoanProductsProductIdResponse createLoanProduct() {
         final HashMap<String, Object> loanProductMap = new LoanProductTestBuilder().build(null, null);
-        final Integer loanProductId = loanTransactionHelper.getLoanProductId(Utils.convertToJson(loanProductMap));
-        return loanTransactionHelper.getLoanProduct(loanProductId);
+        final Long loanProductId = loanProductHelper
+                .createLoanProduct(GSON.fromJson(Utils.convertToJson(loanProductMap), PostLoanProductsRequest.class)).getResourceId();
+        return loanProductHelper.retrieveLoanProductById(loanProductId);
     }
 
-    private Integer createLoanAccount(final Integer clientID, final Long loanProductID, final String externalId) {
+    private Long createLoanAccount(final Integer clientID, final Long loanProductID, final String externalId) {
 
         String loanApplicationJSON = new LoanApplicationTestBuilder().withPrincipal("1000").withLoanTermFrequency("1")
                 .withLoanTermFrequencyAsMonths().withNumberOfRepayments("1").withRepaymentEveryAfter("1")
@@ -370,9 +344,11 @@ public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
                 .withExpectedDisbursementDate("03 September 2022").withSubmittedOnDate("01 September 2022").withLoanType("individual")
                 .withExternalId(externalId).build(clientID.toString(), loanProductID.toString(), null);
 
-        final Integer loanId = loanTransactionHelper.getLoanId(loanApplicationJSON);
-        loanTransactionHelper.approveLoan("02 September 2022", "1000", loanId, null);
-        loanTransactionHelper.disburseLoanWithNetDisbursalAmount("03 September 2022", loanId, "1000");
+        final Long loanId = loanTransactionHelper.applyLoan(GSON.fromJson(loanApplicationJSON, PostLoansRequest.class)).getLoanId();
+        loanTransactionHelper.approveLoan(loanId, new PostLoansLoanIdRequest().approvedLoanAmount(new BigDecimal("1000"))
+                .approvedOnDate("02 September 2022").note("Approval NOTE").dateFormat(DATE_PATTERN).locale("en"));
+        loanTransactionHelper.disburseLoan(loanId, new PostLoansLoanIdRequest().actualDisbursementDate("03 September 2022")
+                .transactionAmount(new BigDecimal("1000")).note("DISBURSE NOTE").dateFormat(DATE_PATTERN).locale("en"));
         return loanId;
     }
 
