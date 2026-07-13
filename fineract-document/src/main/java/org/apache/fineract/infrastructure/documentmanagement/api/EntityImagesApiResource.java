@@ -81,13 +81,12 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.stereotype.Component;
 
-// NOTE: left for backward compatibility only, could be unified with documents
-@Deprecated
+// Handles image upload/retrieval for entities (e.g. clients, staff) under /v1/{entityType}/{entityId}/images
 @Slf4j
 @RequiredArgsConstructor
 @Component
 @Path("/v1/{entityType}/{entityId}/images")
-public class ImagesApiResource {
+public class EntityImagesApiResource {
 
     private final ImageReadPlatformService imageReadPlatformService;
     private final CommandDispatcher dispatcher;
