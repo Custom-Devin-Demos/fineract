@@ -1550,8 +1550,7 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
                 .withInterestTypeAsDecliningBalance().withInterestCalculationPeriodTypeSameAsRepaymentPeriod()
                 .withExpectedDisbursementDate(date).withSubmittedOnDate(date).withInArrearsTolerance("0").withPrincipalGrace("0")
                 .withInterestGrace("0").build(clientID, loanProductID, null);
-        PostLoansRequest request = gson.fromJson(loanApplicationJSON, PostLoansRequest.class);
-        return loanTransactionHelper.applyLoan(request).getLoanId().intValue();
+        return ExternalAssetOwnerTransferTest.submitLoanApplicationWithCollateral(clientID, loanApplicationJSON);
     }
 
     private void getAndValidateExternalAssetOwnerTransferByLoan(Integer loanID, ExpectedExternalTransferData... expectedItems) {

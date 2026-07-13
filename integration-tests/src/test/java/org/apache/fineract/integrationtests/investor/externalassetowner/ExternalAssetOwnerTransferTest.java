@@ -23,7 +23,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
+import feign.Headers;
+import feign.RequestLine;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -44,7 +50,7 @@ import org.apache.fineract.client.models.PageExternalTransferData;
 import org.apache.fineract.client.models.PostInitiateTransferResponse;
 import org.apache.fineract.client.models.PostLoanProductsRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdRequest;
-import org.apache.fineract.client.models.PostLoansRequest;
+import org.apache.fineract.client.models.PostLoansResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.util.JSON;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
@@ -52,7 +58,9 @@ import org.apache.fineract.integrationtests.BaseLoanIntegrationTest;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.BusinessStepHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
+import org.apache.fineract.integrationtests.common.CollateralManagementHelper;
 import org.apache.fineract.integrationtests.common.ExternalAssetOwnerHelper;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.accounting.Account;
 import org.apache.fineract.integrationtests.common.accounting.FinancialActivityAccountHelper;
@@ -77,6 +85,7 @@ public class ExternalAssetOwnerTransferTest extends BaseLoanIntegrationTest {
     public String ownerExternalId;
     protected DateTimeFormatter dateFormatter = new DateTimeFormatterBuilder().appendPattern("dd MMMM yyyy").toFormatter();
     private final Gson gson = new JSON().getGson();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @BeforeEach
     public void setupInvestorBusinessStep() {
@@ -216,8 +225,39 @@ public class ExternalAssetOwnerTransferTest extends BaseLoanIntegrationTest {
                 .withRepaymentFrequencyTypeAsMonths().withInterestRatePerPeriod("2").withAmortizationTypeAsEqualInstallments()
                 .withInterestTypeAsDecliningBalance().withInterestCalculationPeriodTypeSameAsRepaymentPeriod()
                 .withExpectedDisbursementDate(date).withSubmittedOnDate(date).build(clientID, loanProductID, null);
-        PostLoansRequest request = gson.fromJson(loanApplicationJSON, PostLoansRequest.class);
-        return loanTransactionHelper.applyLoan(request).getLoanId().intValue();
+        return submitLoanApplicationWithCollateral(clientID, loanApplicationJSON);
+    }
+
+    /**
+     * Submits a loan application whose payload carries collateral. The generated PostLoansRequest model has no
+     * collateral field, so the collateral-bearing body is posted as a raw JSON tree through a minimal fixed Feign API.
+     */
+    protected static Integer submitLoanApplicationWithCollateral(final String clientID, final String loanApplicationJSON) {
+        final Long collateralId = CollateralManagementHelper.createCollateralProduct();
+        final Long clientCollateralId = CollateralManagementHelper.createClientCollateral(Long.valueOf(clientID), collateralId);
+        final ObjectNode body;
+        try {
+            body = (ObjectNode) OBJECT_MAPPER.readTree(loanApplicationJSON);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Unable to parse loan application payload", e);
+        }
+        final ObjectNode collateral = OBJECT_MAPPER.createObjectNode();
+        collateral.put("clientCollateralId", clientCollateralId.toString());
+        collateral.put("quantity", "1");
+        body.putArray("collateral").add(collateral);
+        return FineractFeignClientHelper.getFineractFeignClient().create(LoanApplicationSubmitApi.class).submitLoanApplication(body)
+                .getLoanId().intValue();
+    }
+
+    /**
+     * Minimal fixed Feign API for submitting a loan application whose JSON body includes collateral (unsupported by the
+     * generated PostLoansRequest model).
+     */
+    public interface LoanApplicationSubmitApi {
+
+        @RequestLine("POST /v1/loans")
+        @Headers({ "Content-Type: application/json", "Accept: application/json" })
+        PostLoansResponse submitLoanApplication(JsonNode body);
     }
 
     protected void getAndValidateExternalAssetOwnerTransferByLoan(Integer loanID, ExpectedExternalTransferData... expectedItems) {

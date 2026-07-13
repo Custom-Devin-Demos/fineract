@@ -20,11 +20,14 @@ package org.apache.fineract.integrationtests;
 
 import static org.apache.fineract.client.feign.util.FeignCalls.ok;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.fineract.client.models.ExternalEventConfigurationItemResponse;
 import org.apache.fineract.client.models.ExternalEventConfigurationUpdateRequest;
 import org.apache.fineract.client.models.ExternalEventConfigurationUpdateResponse;
+import org.apache.fineract.integrationtests.common.ExternalEventConfigurationHelper;
 import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -38,9 +41,20 @@ public class ExternalEventConfigurationIntegrationTest {
                 () -> FineractFeignClientHelper.getFineractFeignClient().externalEventConfiguration().getExternalEventConfigurations())
                 .getExternalEventConfiguration();
         Assertions.assertNotNull(externalEventConfigurations);
-        Assertions.assertFalse(externalEventConfigurations.isEmpty());
-        for (ExternalEventConfigurationItemResponse configuration : externalEventConfigurations) {
-            Assertions.assertFalse(configuration.getEnabled(), "Expected " + configuration.getType() + " to be disabled by default");
+        final ArrayList<Map<String, Object>> defaultConfigurations = ExternalEventConfigurationHelper
+                .getDefaultExternalEventConfigurations();
+        Assertions.assertEquals(defaultConfigurations.size(), externalEventConfigurations.size());
+        verifyAllEventConfigurations(externalEventConfigurations, defaultConfigurations);
+    }
+
+    private void verifyAllEventConfigurations(final List<ExternalEventConfigurationItemResponse> actualEventConfigurations,
+            final List<Map<String, Object>> defaultConfigurations) {
+        for (ExternalEventConfigurationItemResponse actualEventConfiguration : actualEventConfigurations) {
+            final Map<String, Object> actual = new HashMap<>();
+            actual.put("type", actualEventConfiguration.getType());
+            actual.put("enabled", actualEventConfiguration.getEnabled());
+            Assertions.assertTrue(defaultConfigurations.contains(actual),
+                    "Unexpected external event configuration: " + actualEventConfiguration.getType());
         }
     }
 

@@ -47,11 +47,11 @@ public class ExternalEventConfigurationHelper {
         return response.get(EXTERNAL_EVENT_CONFIGURATION);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example:
-    // org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
+    /**
+     * Returns the expected default external event configuration data (every business event type with {@code enabled}
+     * set to {@code false}). This is pure reference data, not a server call, so it is safe for typed callers to compare
+     * against the configuration returned by the API.
+     */
     public static ArrayList<Map<String, Object>> getDefaultExternalEventConfigurations() {
         ArrayList<Map<String, Object>> defaults = new ArrayList<>();
 

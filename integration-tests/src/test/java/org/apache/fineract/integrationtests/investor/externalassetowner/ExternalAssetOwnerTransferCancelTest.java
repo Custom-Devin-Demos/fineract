@@ -49,7 +49,6 @@ import org.apache.fineract.client.models.PostFinancialActivityAccountsRequest;
 import org.apache.fineract.client.models.PostInitiateTransferResponse;
 import org.apache.fineract.client.models.PostLoanProductsRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdRequest;
-import org.apache.fineract.client.models.PostLoansRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.util.JSON;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
@@ -328,8 +327,7 @@ public class ExternalAssetOwnerTransferCancelTest extends BaseLoanIntegrationTes
                 .withRepaymentFrequencyTypeAsMonths().withInterestRatePerPeriod("2").withAmortizationTypeAsEqualInstallments()
                 .withInterestTypeAsDecliningBalance().withInterestCalculationPeriodTypeSameAsRepaymentPeriod()
                 .withExpectedDisbursementDate(date).withSubmittedOnDate(date).build(clientID, loanProductID, null);
-        PostLoansRequest request = gson.fromJson(loanApplicationJSON, PostLoansRequest.class);
-        return loanTransactionHelper.applyLoan(request).getLoanId().intValue();
+        return ExternalAssetOwnerTransferTest.submitLoanApplicationWithCollateral(clientID, loanApplicationJSON);
     }
 
     private void getAndValidateExternalAssetOwnerTransferByLoan(Integer loanID, ExpectedExternalTransferData... expectedItems) {
