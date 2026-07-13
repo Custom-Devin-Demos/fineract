@@ -18,17 +18,12 @@
  */
 package org.apache.fineract.portfolio.savings.domain;
 
-import static org.apache.fineract.infrastructure.core.service.DateUtils.getSystemZoneId;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.Optional;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.organisation.staff.domain.Staff;
@@ -50,14 +45,6 @@ public class SavingsOfficerAssignmentHistory extends AbstractAuditableWithUTCDat
 
     @Column(name = "end_date")
     private LocalDate endDate;
-
-    @Deprecated
-    @Column(name = "created_date")
-    private LocalDateTime createdDateToRemove;
-
-    @Deprecated
-    @Column(name = "lastmodified_date")
-    private LocalDateTime lastModifiedDateToRemove;
 
     protected SavingsOfficerAssignmentHistory() {
         //
@@ -120,19 +107,5 @@ public class SavingsOfficerAssignmentHistory extends AbstractAuditableWithUTCDat
 
     public boolean isCurrentRecord() {
         return this.endDate == null;
-    }
-
-    @Override
-    public Optional<OffsetDateTime> getCreatedDate() {
-        // #audit backward compatibility keep system datetime
-        return Optional.ofNullable(super.getCreatedDate()
-                .orElse(createdDateToRemove == null ? null : createdDateToRemove.atZone(getSystemZoneId()).toOffsetDateTime()));
-    }
-
-    @Override
-    public Optional<OffsetDateTime> getLastModifiedDate() {
-        // #audit backward compatibility keep system datetime
-        return Optional.ofNullable(super.getLastModifiedDate()
-                .orElse(lastModifiedDateToRemove == null ? null : lastModifiedDateToRemove.atZone(getSystemZoneId()).toOffsetDateTime()));
     }
 }
