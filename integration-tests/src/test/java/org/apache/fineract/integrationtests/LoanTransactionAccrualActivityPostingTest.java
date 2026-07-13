@@ -23,11 +23,6 @@ import static org.apache.fineract.integrationtests.common.loans.LoanProductTestB
 import static org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder.DEFAULT_STRATEGY;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,18 +47,14 @@ import org.apache.fineract.client.models.PostLoansRequest;
 import org.apache.fineract.client.models.PostLoansResponse;
 import org.apache.fineract.integrationtests.common.BusinessStepHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
-import org.apache.fineract.integrationtests.common.SchedulerJobHelper;
 import org.apache.fineract.integrationtests.common.Utils;
-import org.apache.fineract.integrationtests.common.charges.ChargesHelper;
-import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
 import org.apache.fineract.integrationtests.common.products.DelinquencyBucketsHelper;
-import org.apache.fineract.integrationtests.inlinecob.InlineLoanCOBHelper;
 import org.apache.fineract.portfolio.charge.domain.ChargeCalculationType;
 import org.apache.fineract.portfolio.charge.domain.ChargePaymentMode;
 import org.apache.fineract.portfolio.charge.domain.ChargeTimeType;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.domain.LoanScheduleType;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -74,29 +65,12 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
 
     private static final Logger LOG = LoggerFactory.getLogger(LoanTransactionAccrualActivityPostingTest.class);
     private static final String DATETIME_PATTERN = "dd MMMM yyyy";
-    private static ResponseSpecification responseSpec;
-    private static RequestSpecification requestSpec;
-    private static LoanTransactionHelper loanTransactionHelper;
-    private static PostClientsResponse client;
-    private static ChargesHelper chargesHelper;
-    private static InlineLoanCOBHelper inlineLoanCOBHelper;
-    private static BusinessStepHelper businessStepHelper;
-    private static SchedulerJobHelper schedulerJobHelper;
+    private final BusinessStepHelper businessStepHelper = new BusinessStepHelper();
+    private PostClientsResponse client;
 
-    @BeforeAll
-    public static void setup() {
-        Utils.initializeRESTAssured();
-        requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        requestSpec.header("Fineract-Platform-TenantId", "default");
-        responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
-        schedulerJobHelper = new SchedulerJobHelper(requestSpec);
-        ClientHelper clientHelper = new ClientHelper(requestSpec, responseSpec);
-        chargesHelper = new ChargesHelper();
+    @BeforeEach
+    public void setup() {
         client = clientHelper.createClient(ClientHelper.defaultClientCreationRequest());
-        inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
-        businessStepHelper = new BusinessStepHelper();
         // setup COB Business Steps to prevent test failing due other integration test configurations
         businessStepHelper.updateSteps("LOAN_CLOSE_OF_BUSINESS", "APPLY_CHARGE_TO_OVERDUE_LOANS", "LOAN_DELINQUENCY_CLASSIFICATION",
                 "CHECK_LOAN_REPAYMENT_DUE", "CHECK_LOAN_REPAYMENT_OVERDUE", "UPDATE_LOAN_ARREARS_AGING", "ADD_PERIODIC_ACCRUAL_ENTRIES",
@@ -131,7 +105,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
             verifyTransactions(loanId, //
                     transaction(450.0, "Disbursement", "17 August 2024") //
             );
-            Long repaymentId = loanTransactionHelper.makeLoanRepayment("17 January 2025", 600.0f, loanId.intValue()).getResourceId();
+            Long repaymentId = loanTransactionHelper.makeLoanRepayment(loanId, "repayment", "17 January 2025", 600.0).getResourceId();
             Assertions.assertNotNull(repaymentId);
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getOverpaid);
@@ -144,7 +118,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
                     transaction(6.48, "Accrual Activity", "17 November 2024"), //
                     transaction(4.75, "Accrual Activity", "17 December 2024"), //
                     transaction(4.99, "Accrual Activity", "17 January 2025")); //
-            loanTransactionHelper.reverseRepayment(loanId.intValue(), repaymentId.intValue(), "17 January 2025");
+            loanTransactionHelper.reverseLoanTransaction(loanId, repaymentId, "17 January 2025");
             loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getActive);
             verifyTransactions(loanId, transaction(450.0, "Disbursement", "17 August 2024"), //
@@ -185,7 +159,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
             verifyTransactions(loanId, //
                     transaction(450.0, "Disbursement", "17 August 2024") //
             );
-            Long repaymentId = loanTransactionHelper.makeLoanRepayment("17 January 2025", 600.0f, loanId.intValue()).getResourceId();
+            Long repaymentId = loanTransactionHelper.makeLoanRepayment(loanId, "repayment", "17 January 2025", 600.0).getResourceId();
             Assertions.assertNotNull(repaymentId);
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getOverpaid);
@@ -198,7 +172,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
                     transaction(6.48, "Accrual Activity", "17 November 2024"), //
                     transaction(4.75, "Accrual Activity", "17 December 2024"), //
                     transaction(4.99, "Accrual Activity", "17 January 2025")); //
-            loanTransactionHelper.reverseRepayment(loanId.intValue(), repaymentId.intValue(), "17 January 2025");
+            loanTransactionHelper.reverseLoanTransaction(loanId, repaymentId, "17 January 2025");
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getActive);
@@ -240,7 +214,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
             verifyTransactions(loanId, //
                     transaction(450.0, "Disbursement", "17 August 2024") //
             );
-            Long repaymentId = loanTransactionHelper.makeLoanRepayment("17 January 2025", 600.0f, loanId.intValue()).getResourceId();
+            Long repaymentId = loanTransactionHelper.makeLoanRepayment(loanId, "repayment", "17 January 2025", 600.0).getResourceId();
             Assertions.assertNotNull(repaymentId);
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getOverpaid);
@@ -253,7 +227,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
                     transaction(6.48, "Accrual Activity", "17 November 2024"), //
                     transaction(4.75, "Accrual Activity", "17 December 2024"), //
                     transaction(4.99, "Accrual Activity", "17 January 2025")); //
-            loanTransactionHelper.reverseRepayment(loanId.intValue(), repaymentId.intValue(), "17 January 2025");
+            loanTransactionHelper.reverseLoanTransaction(loanId, repaymentId, "17 January 2025");
             loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getActive);
             verifyTransactions(loanId, transaction(450.0, "Disbursement", "17 August 2024"), //
@@ -286,7 +260,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
             verifyTransactions(loanId, //
                     transaction(450.0, "Disbursement", "17 August 2024") //
             );
-            Long repaymentId = loanTransactionHelper.makeLoanRepayment("17 January 2025", 497.04f, loanId.intValue()).getResourceId();
+            Long repaymentId = loanTransactionHelper.makeLoanRepayment(loanId, "repayment", "17 January 2025", 497.04).getResourceId();
             Assertions.assertNotNull(repaymentId);
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getClosedObligationsMet);
@@ -299,7 +273,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
                     transaction(9.53, "Accrual Activity", "17 November 2024"), //
                     transaction(9.22, "Accrual Activity", "17 December 2024"), //
                     transaction(9.54, "Accrual Activity", "17 January 2025")); //
-            loanTransactionHelper.makeLoanRepayment("MerchantIssuedRefund", "17 August 2024", 450.0f, loanId.intValue()).getResourceId();
+            loanTransactionHelper.makeLoanRepayment(loanId, "MerchantIssuedRefund", "17 August 2024", 450.0).getResourceId();
             loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getOverpaid);
             verifyTransactions(loanId, transaction(450.0, "Disbursement", "17 August 2024"), //
@@ -338,7 +312,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
             verifyTransactions(loanId, //
                     transaction(450.0, "Disbursement", "17 August 2024") //
             );
-            Long repaymentId = loanTransactionHelper.makeLoanRepayment("17 January 2025", 483.52f, loanId.intValue()).getResourceId();
+            Long repaymentId = loanTransactionHelper.makeLoanRepayment(loanId, "repayment", "17 January 2025", 483.52).getResourceId();
             Assertions.assertNotNull(repaymentId);
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getClosedObligationsMet);
@@ -392,7 +366,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
             verifyTransactions(loanId, //
                     transaction(450.0, "Disbursement", "17 August 2024") //
             );
-            Long repaymentId = loanTransactionHelper.makeLoanRepayment("17 January 2025", 483.52f, loanId.intValue()).getResourceId();
+            Long repaymentId = loanTransactionHelper.makeLoanRepayment(loanId, "repayment", "17 January 2025", 483.52).getResourceId();
             Assertions.assertNotNull(repaymentId);
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getClosedObligationsMet);
@@ -460,13 +434,13 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
 
         });
         runAt(repaymentPeriod1OneDayBeforeCloseDate, () -> {
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
             verifyTransactions(loanId.get(), //
                     transaction(1000.0, "Disbursement", disbursementDay, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
                     transaction(19.35, "Accrual", "31 January 2023", 0, 0, 19.35, 0, 0, 0.0, 0.0));
         });
         runAt(repaymentPeriod1CloseDate, () -> {
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
             verifyTransactions(loanId.get(), //
                     transaction(1000.0, "Disbursement", disbursementDay, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
                     transaction(19.35, "Accrual", "31 January 2023", 0, 0, 19.35, 0, 0, 0.0, 0.0),
@@ -475,7 +449,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
 
         });
         runAt(repaymentPeriod1OneDayAfterCloseDate, () -> {
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
             verifyTransactions(loanId.get(), //
                     transaction(1000.0, "Disbursement", disbursementDay, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
                     transaction(19.35, "Accrual", "31 January 2023", 0, 0, 19.35, 0, 0, 0.0, 0.0),
@@ -649,7 +623,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
 
         });
         runAt(repaymentPeriod1CloseDate, () -> {
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
             verifyTransactions(loanId.get(), //
                     transaction(1000.0, "Disbursement", disbursementDay, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
                     transaction(20.0, "Accrual", "01 February 2023", 0, 0, 20, 0, 0, 0.0, 0.0),
@@ -733,7 +707,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
 
         });
         runAt(repaymentPeriod1CloseDate, () -> {
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
             verifyTransactions(loanId.get(), //
                     transaction(1000, "Disbursement", disbursementDay, 1000, 0, 0, 0, 0, 0, 0),
                     transaction(20, "Accrual", "01 February 2023", 0, 0, 0, 0, 20, 0, 0),
@@ -809,7 +783,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
 
         });
         runAt(repaymentPeriod1CloseDate, () -> {
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
             verifyTransactions(loanId.get(), //
                     transaction(1000.0, "Disbursement", disbursementDay, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
                     transaction(20.0, "Accrual", "01 February 2023", 0, 0, 0, 0, 20, 0.0, 0.0),
@@ -868,7 +842,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         });
         runAt(repaymentPeriod1CloseDate, () -> {
 
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
 
             verifyTransactions(loanId.get(),
                     transaction(1000.0, "Disbursement", disbursementDay, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false), //
@@ -876,7 +850,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
                     transaction(70.0, "Accrual", repaymentDate1, 0.0, 0.0, 0.0, 40.0, 30.0, 0.0, 0.0, false), //
                     transaction(70.0, "Accrual Activity", repaymentDate1, 0.0, 0.0, 0.0, 40.0, 30.0, 0.0, 0.0, false)); //
 
-            loanTransactionHelper.reverseRepayment(loanId.get().intValue(), repaymentId.get().intValue(), repaymentDate1);
+            loanTransactionHelper.reverseLoanTransaction(loanId.get(), repaymentId.get(), repaymentDate1);
 
             verifyTransactions(loanId.get(),
                     transaction(1000.0, "Disbursement", disbursementDay, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false), //
@@ -920,7 +894,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         });
         runAt(repaymentPeriod1CloseDate, () -> {
 
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
 
             verifyTransactions(loanId.get(),
                     transaction(1000.0, "Disbursement", disbursementDay, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false), //
@@ -928,7 +902,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
                     transaction(150.0, "Accrual", repaymentDate1, 0.0, 0.0, 80.0, 40.0, 30.0, 0.0, 0.0, false), //
                     transaction(150.0, "Accrual Activity", repaymentDate1, 0.0, 0.0, 80.0, 40.0, 30.0, 0.0, 0.0, false)); //
 
-            loanTransactionHelper.reverseRepayment(loanId.get().intValue(), repaymentId.get().intValue(), repaymentDate1);
+            loanTransactionHelper.reverseLoanTransaction(loanId.get(), repaymentId.get(), repaymentDate1);
 
             verifyTransactions(loanId.get(),
                     transaction(1000.0, "Disbursement", disbursementDay, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false), //
@@ -985,7 +959,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         });
         runAt(repaymentPeriod1CloseDate, () -> {
 
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
 
             verifyTransactions(loanId.get(),
                     transaction(500.0, "Disbursement", disbursementDay, 500.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false), //
@@ -1031,7 +1005,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         });
         runAt(repaymentPeriod1CloseDate, () -> {
 
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
 
             verifyTransactions(loanId.get(), transaction(650.0, "Repayment", repaymentDate1, 0.0, 500.0, 0.0, 40.0, 30.0, 0.0, 80.0, false), //
                     transaction(70.0, "Accrual", repaymentDate1, 0.0, 0.0, 0.0, 40.0, 30.0, 0.0, 0.0, false), //
@@ -1082,7 +1056,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         });
         runAt(repaymentPeriod1CloseDate, () -> {
 
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
 
             verifyTransactions(loanId.get(), transaction(94.9, "Accrual", repaymentDate1, 0.0, 0.0, 24.9, 40.0, 30.0, 0.0, 0.0, false), //
                     transaction(94.9, "Accrual Activity", repaymentDate1, 0.0, 0.0, 24.9, 40.0, 30.0, 0.0, 0.0, false), //
@@ -1133,7 +1107,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         });
         runAt(repaymentPeriod1CloseDate, () -> {
 
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
 
             verifyTransactions(loanId.get(), transaction(500.0, "Disbursement", disbursementDay, 500.0, 0, 0, 0, 0, 0, 0, false),
                     transaction(570, "Repayment", repaymentDate1, 0.0, 500.0, 0, 40.0, 30.0, 0, 0, true),
@@ -1151,7 +1125,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         });
         runAt(repaymentPeriod2CloseDate, () -> {
 
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
 
             verifyTransactions(loanId.get(), transaction(500.0, "Disbursement", disbursementDay, 500.0, 0, 0, 0, 0, 0, 0, false),
                     transaction(570.0, "Repayment", repaymentDate1, 0.0, 500.0, 0, 40.0, 30.0, 0, 0, false),
@@ -1191,7 +1165,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
                     transaction(500.0, "Disbursement", disbursementDay, 500.0, 0, 0, 0, 0, 0, 0, false));
         });
         runAt(repaymentPeriod1CloseDate, () -> {
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
             verifyTransactions(loanId.get(),
                     transaction(650.0, "Repayment", repaymentDate1, 0.0, 500.0, 24.9, 40.0, 30.0, 0.0, 55.1, false), //
                     transaction(94.90, "Accrual Activity", repaymentDate1, 0.0, 0.0, 24.9, 40.0, 30.0, 0.0, 0.0, false),
@@ -1208,7 +1182,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
             );
         });
         runAt(repaymentPeriod2CloseDate, () -> {
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
             verifyTransactions(loanId.get(),
                     transaction(500.0, "Disbursement", disbursementDay2, 453.79, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false), //
                     transaction(650.0, "Repayment", repaymentDate1, 0.0, 546.21, 33.79, 40.0, 30.0, 0.0, 0.0, false), //
@@ -1261,7 +1235,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         });
         runAt("2 January 2024", () -> {
             Long loanId = loanIdRef.get();
-            Long repaymentId = loanTransactionHelper.makeLoanRepayment("02 January 2024", 370.0f, loanId.intValue()).getResourceId();
+            Long repaymentId = loanTransactionHelper.makeLoanRepayment(loanId, "repayment", "02 January 2024", 370.0).getResourceId();
             Assertions.assertNotNull(repaymentId);
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getOverpaid);
@@ -1269,7 +1243,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
             verifyTransactions(loanId, transaction(400.0, "Disbursement", "01 January 2024"),
                     transaction(100.0, "Down Payment", "01 January 2024"), transaction(8.76, "Accrual", "02 January 2024"),
                     transaction(8.76, "Accrual Activity", "02 January 2024"), transaction(370.0, "Repayment", "02 January 2024"));
-            loanTransactionHelper.reverseRepayment(loanId.intValue(), repaymentId.intValue(), "02 January 2024");
+            loanTransactionHelper.reverseLoanTransaction(loanId, repaymentId, "02 January 2024");
         });
     }
 
@@ -1294,7 +1268,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
                     transaction(400.0, "Disbursement", "01 January 2024"), //
                     transaction(100.0, "Down Payment", "01 January 2024") //
             );
-            Long repaymentId = loanTransactionHelper.makeLoanRepayment("01 January 2024", 370.0f, loanId.intValue()).getResourceId();
+            Long repaymentId = loanTransactionHelper.makeLoanRepayment(loanId, "repayment", "01 January 2024", 370.0).getResourceId();
             Assertions.assertNotNull(repaymentId);
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getOverpaid);
@@ -1303,7 +1277,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
                     transaction(100.0, "Down Payment", "01 January 2024"), transaction(8.76, "Accrual", "01 January 2024"),
                     transaction(8.76, "Accrual Activity", "01 January 2024"), transaction(370.0, "Repayment", "01 January 2024"));
 
-            loanTransactionHelper.reverseRepayment(loanId.intValue(), repaymentId.intValue(), "01 January 2024");
+            loanTransactionHelper.reverseLoanTransaction(loanId, repaymentId, "01 January 2024");
             loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getActive);
             verifyTransactions(loanId, transaction(400.0, "Disbursement", "01 January 2024"),
@@ -1335,7 +1309,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
                     transaction(100.0, "Down Payment", "01 January 2024") //
             );
             addCharge(loanId, false, 30.0, "01 January 2024");
-            Long repaymentId = loanTransactionHelper.makeLoanRepayment("01 January 2024", 370.0f, loanId.intValue()).getResourceId();
+            Long repaymentId = loanTransactionHelper.makeLoanRepayment(loanId, "repayment", "01 January 2024", 370.0).getResourceId();
             Assertions.assertNotNull(repaymentId);
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getOverpaid);
@@ -1343,7 +1317,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
             verifyTransactions(loanId, transaction(400.0, "Disbursement", "01 January 2024"),
                     transaction(100.0, "Down Payment", "01 January 2024"), transaction(38.76, "Accrual", "01 January 2024"),
                     transaction(38.76, "Accrual Activity", "01 January 2024"), transaction(370.0, "Repayment", "01 January 2024"));
-            loanTransactionHelper.reverseRepayment(loanId.intValue(), repaymentId.intValue(), "01 January 2024");
+            loanTransactionHelper.reverseLoanTransaction(loanId, repaymentId, "01 January 2024");
             loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             verifyLoanStatus(loanDetails, GetLoansLoanIdStatus::getActive);
             verifyTransactions(loanId, transaction(400.0, "Disbursement", "01 January 2024"),
@@ -1372,12 +1346,12 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
                     .dateFormat(DATETIME_PATTERN).transactionAmount(BigDecimal.valueOf(1000.0)).locale("en"));
         });
         runAt(repaymentPeriod1CloseDate, () -> {
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
             verifyTransactions(loanId.get(),
                     transaction(1.64, "Accrual", repaymentPeriod1DueDate, 0.0, 0.0, 1.64, 0.0, 0.0, 0.0, 0.0, false), //
                     transaction(1.64, "Accrual Activity", repaymentPeriod1DueDate, 0.0, 0.0, 1.64, 0.0, 0.0, 0.0, 0.0, false), //
                     transaction(1000.0, "Disbursement", disbursementDay, 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false));
-            loanTransactionHelper.makeLoanRepayment(repaymentDate1, 150.0F, loanId.get().intValue());
+            loanTransactionHelper.makeLoanRepayment(loanId.get(), "repayment", repaymentDate1, 150.0);
 
             verifyTransactions(loanId.get(),
                     transaction(150.0, "Repayment", repaymentDate1, 851.52, 148.48, 1.52, 0.0, 0.0, 0.0, 0.0, false), //
@@ -1404,13 +1378,13 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         });
 
         runAt("02 February 2025", () -> {
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.get()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.get());
             verifyTransactions(loanId.get(),
                     transaction(10.60, "Accrual Activity", "01 February 2025", 0.0, 0.0, 10.60, 0.0, 0.0, 0.0, 0.0, false), //
                     transaction(10.60, "Accrual", "01 February 2025", 0.0, 0.0, 10.60, 0.0, 0.0, 0.0, 0.0, false), //
                     transaction(800.0, "Disbursement", disbursementDay, 800.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false));
 
-            loanTransactionHelper.makeLoanRepayment("31 January 2025", 900.0F, loanId.get().intValue());
+            loanTransactionHelper.makeLoanRepayment(loanId.get(), "repayment", "31 January 2025", 900.0);
 
             verifyTransactions(loanId.get(),
                     transaction(0.34, "Accrual Adjustment", "02 February 2025", 0.0, 0.0, 0.34, 0.0, 0.0, 0.0, 0.0, false), //
@@ -1617,7 +1591,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         return resourceId;
     }
 
-    private static Long applyForLoanApplication(final Long clientID, final Long loanProductID, BigDecimal principal,
+    private Long applyForLoanApplication(final Long clientID, final Long loanProductID, BigDecimal principal,
             String applicationDisbursementDate) {
         final PostLoansRequest loanRequest = new PostLoansRequest() //
                 .locale("en_GB").dateFormat("dd MMMM yyyy").expectedDisbursementDate(applicationDisbursementDate)
@@ -1630,7 +1604,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         return loanId;
     }
 
-    private static Long applyForLoanApplicationWithInterest(final Long clientID, final Long loanProductID, BigDecimal principal,
+    private Long applyForLoanApplicationWithInterest(final Long clientID, final Long loanProductID, BigDecimal principal,
             String applicationDisbursementDate) {
         final PostLoansRequest loanRequest = new PostLoansRequest() //
                 .loanTermFrequency(4).locale("en_GB").loanTermFrequencyType(2).numberOfRepayments(4).repaymentFrequencyType(2)
@@ -1644,7 +1618,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         return loanId;
     }
 
-    private static Long applyForLoanApplicationWithInterest(final Long clientID, final Long loanProductID, BigDecimal principal,
+    private Long applyForLoanApplicationWithInterest(final Long clientID, final Long loanProductID, BigDecimal principal,
             String applicationDisbursementDate, String applicationDisbursementDate2) {
         final PostLoansRequest loanRequest = new PostLoansRequest() //
                 .loanTermFrequency(4).locale("en_GB").loanTermFrequencyType(2).numberOfRepayments(4).repaymentFrequencyType(2)
@@ -1723,8 +1697,8 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         return resourceId;
     }
 
-    private static Long applyForLoanApplicationAdvancedPaymentAllocation(final Long clientID, final Long loanProductID,
-            BigDecimal principal, String applicationDisbursementDate, BigDecimal interestRatePerPeriod) {
+    private Long applyForLoanApplicationAdvancedPaymentAllocation(final Long clientID, final Long loanProductID, BigDecimal principal,
+            String applicationDisbursementDate, BigDecimal interestRatePerPeriod) {
         final PostLoansRequest loanRequest = new PostLoansRequest() //
                 .loanTermFrequency(4).locale("en_GB").loanTermFrequencyType(2).numberOfRepayments(4).repaymentFrequencyType(2)
                 .repaymentEvery(1).principal(principal).amortizationType(1).interestType(0).interestRatePerPeriod(interestRatePerPeriod)
@@ -1738,9 +1712,8 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         return loanId;
     }
 
-    private static Long applyForLoanApplicationAdvancedPaymentAllocation(final Long clientID, final Long loanProductID,
-            BigDecimal principal, String applicationDisbursementDate, String applicationDisbursementDate2,
-            BigDecimal interestRatePerPeriod) {
+    private Long applyForLoanApplicationAdvancedPaymentAllocation(final Long clientID, final Long loanProductID, BigDecimal principal,
+            String applicationDisbursementDate, String applicationDisbursementDate2, BigDecimal interestRatePerPeriod) {
         final PostLoansRequest loanRequest = new PostLoansRequest() //
                 .loanTermFrequency(4).locale("en_GB").loanTermFrequencyType(2).numberOfRepayments(4).repaymentFrequencyType(2)
                 .repaymentEvery(1).principal(principal).amortizationType(1).interestType(0).interestRatePerPeriod(interestRatePerPeriod)
