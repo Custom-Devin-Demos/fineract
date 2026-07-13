@@ -22,51 +22,38 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import com.google.gson.Gson;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.UUID;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.DelinquencyBucketResponse;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdSummary;
+import org.apache.fineract.client.models.JobBusinessStepConfigData;
+import org.apache.fineract.client.models.PostLoanProductsRequest;
+import org.apache.fineract.client.models.PostLoanProductsResponse;
+import org.apache.fineract.client.models.PostLoansLoanIdRequest;
+import org.apache.fineract.client.models.PostLoansRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.cob.data.JobBusinessStepConfigData;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
+import org.apache.fineract.client.util.JSON;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.BusinessStepConfigurationHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
-import org.apache.fineract.integrationtests.common.SchedulerJobHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.loans.LoanApplicationTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
 import org.apache.fineract.integrationtests.common.products.DelinquencyBucketsHelper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class LoanAccountArrearsAgeingCOBBusinessStepTest extends BaseLoanIntegrationTest {
 
-    private ResponseSpecification responseSpec;
-    private RequestSpecification requestSpec;
-    private ClientHelper clientHelper;
-    private LoanTransactionHelper loanTransactionHelper;
+    private static final Gson GSON = new JSON().getGson();
     public static final String UPDATE_LOAN_ARREARS_AGING = "UPDATE_LOAN_ARREARS_AGING";
-
-    @BeforeEach
-    public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
-        this.clientHelper = new ClientHelper(this.requestSpec, this.responseSpec);
-    }
 
     @Test
     public void loanArrearsAgeingCOBBusinessStepTest() {
@@ -76,13 +63,14 @@ public class LoanAccountArrearsAgeingCOBBusinessStepTest extends BaseLoanIntegra
                     new PutGlobalConfigurationsRequest().enabled(true));
 
             LocalDate businessDate = Utils.getLocalDateOfTenant();
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat("dd MMMM yyyy").locale("en"));
 
             LocalDate operationDate = businessDate.minusDays(40);
             String loanOperationDate = Utils.dateFormatter.format(operationDate);
 
             // create Client
-            final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
             // create Loan Product
 
@@ -104,12 +92,9 @@ public class LoanAccountArrearsAgeingCOBBusinessStepTest extends BaseLoanIntegra
             String loan2ExternalIdStr = UUID.randomUUID().toString();
             final Integer loanId_2 = createLoanAccount(loanOperationDate, clientId, loanProductId, loan2ExternalIdStr);
 
-            // Run Loan cob with verfying business step for Update Arrears ageing details
-            final SchedulerJobHelper schedulerJobHelper = new SchedulerJobHelper(requestSpec);
-
             // COB Step Validation
             final JobBusinessStepConfigData jobBusinessStepConfigData = BusinessStepConfigurationHelper
-                    .getConfiguredBusinessStepsByJobName(requestSpec, responseSpec, BusinessConfigurationApiTest.LOAN_JOB_NAME);
+                    .getConfiguredBusinessStepsByJobName(BusinessConfigurationApiTest.LOAN_JOB_NAME);
             assertNotNull(jobBusinessStepConfigData);
             assertEquals(BusinessConfigurationApiTest.LOAN_JOB_NAME, jobBusinessStepConfigData.getJobName());
             assertTrue(jobBusinessStepConfigData.getBusinessSteps().size() > 0);
@@ -147,8 +132,9 @@ public class LoanAccountArrearsAgeingCOBBusinessStepTest extends BaseLoanIntegra
     private GetLoanProductsProductIdResponse createLoanProduct(final LoanTransactionHelper loanTransactionHelper,
             final Long delinquencyBucketId) {
         final HashMap<String, Object> loanProductMap = new LoanProductTestBuilder().build(null, delinquencyBucketId);
-        final Integer loanProductId = loanTransactionHelper.getLoanProductId(Utils.convertToJson(loanProductMap));
-        return loanTransactionHelper.getLoanProduct(loanProductId);
+        final PostLoanProductsResponse loanProductResponse = loanTransactionHelper
+                .createLoanProduct(GSON.fromJson(Utils.convertToJson(loanProductMap), PostLoanProductsRequest.class));
+        return loanProductHelper.retrieveLoanProductById(loanProductResponse.getResourceId());
     }
 
     private Integer createLoanAccount(final String operationDate, final Integer clientID, final Long loanProductID,
@@ -161,9 +147,12 @@ public class LoanAccountArrearsAgeingCOBBusinessStepTest extends BaseLoanIntegra
                 .withExpectedDisbursementDate(operationDate).withSubmittedOnDate(operationDate).withLoanType("individual")
                 .withExternalId(externalId).build(clientID.toString(), loanProductID.toString(), null);
 
-        final Integer loanId = loanTransactionHelper.getLoanId(loanApplicationJSON);
-        loanTransactionHelper.approveLoan(operationDate, "1000", loanId, null);
-        loanTransactionHelper.disburseLoanWithNetDisbursalAmount(operationDate, loanId, "1000");
+        final Integer loanId = loanTransactionHelper.applyLoan(GSON.fromJson(loanApplicationJSON, PostLoansRequest.class)).getLoanId()
+                .intValue();
+        loanTransactionHelper.approveLoan(loanId.longValue(), new PostLoansLoanIdRequest().approvedOnDate(operationDate)
+                .approvedLoanAmount(new BigDecimal("1000")).dateFormat("dd MMMM yyyy").locale("en").note("Approval NOTE"));
+        loanTransactionHelper.disburseLoan(loanId.longValue(), new PostLoansLoanIdRequest().actualDisbursementDate(operationDate)
+                .dateFormat("dd MMMM yyyy").locale("en").note("DISBURSE NOTE"));
         return loanId;
     }
 }
