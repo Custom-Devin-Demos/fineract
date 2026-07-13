@@ -21,25 +21,32 @@ package org.apache.fineract.infrastructure.hooks.service;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.infrastructure.core.domain.JdbcSupport;
 import org.apache.fineract.infrastructure.hooks.data.HookData;
 import org.apache.fineract.infrastructure.hooks.data.HookDetailsData;
+import org.apache.fineract.infrastructure.hooks.data.HookEntityData;
 import org.apache.fineract.infrastructure.hooks.data.HookEventData;
 import org.apache.fineract.infrastructure.hooks.data.HookFieldData;
 import org.apache.fineract.infrastructure.hooks.data.HookGroupingData;
 import org.apache.fineract.infrastructure.hooks.data.HookTemplateData;
 import org.apache.fineract.infrastructure.hooks.domain.Hook;
-import org.apache.fineract.infrastructure.hooks.domain.HookEventResultSetExtractor;
 import org.apache.fineract.infrastructure.hooks.domain.HookRepository;
 import org.apache.fineract.infrastructure.hooks.exception.HookNotFoundException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 
@@ -222,6 +229,63 @@ public class HookReadPlatformServiceImpl implements HookReadPlatformService {
             final Boolean optional = rs.getBoolean("optional");
             final String placeholder = rs.getString("placeholder");
             return HookFieldData.fromSchema(fieldType, fieldName, optional, placeholder);
+        }
+    }
+
+    private static final class HookEventResultSetExtractor implements ResultSetExtractor<List<HookGroupingData>> {
+
+        @Override
+        public List<HookGroupingData> extractData(final ResultSet rs) throws SQLException, DataAccessException {
+            final List<HookGroupingData> groupings = new ArrayList<>();
+
+            final Map<String, Map<String, List<String>>> groupToEntityMapping = new HashMap<>();
+            Map<String, List<String>> entityToActionMapping = new HashMap<>();
+
+            while (rs.next()) {
+                final String groupingName = rs.getString("grouping");
+                final String entityName = rs.getString("entity_name");
+                final String actionName = rs.getString("action_name");
+                Map<String, List<String>> entities = groupToEntityMapping.get(groupingName);
+                List<String> actions = entityToActionMapping.get(entityName);
+
+                if (entities == null) {
+                    entityToActionMapping = new HashMap<>();
+                }
+
+                if (actions == null) {
+                    actions = new ArrayList<>();
+                }
+                actions.add(actionName);
+                entityToActionMapping.put(entityName, actions);
+
+                if (entities == null) {
+                    entities = new HashMap<>();
+                }
+                entities.putAll(entityToActionMapping);
+                groupToEntityMapping.put(groupingName, entities);
+            }
+
+            for (final Map.Entry<String, Map<String, List<String>>> groupingEntry : groupToEntityMapping.entrySet()) {
+                final List<HookEntityData> entities = new ArrayList<>();
+                final HookGroupingData group = new HookGroupingData();
+                group.setName(groupingEntry.getKey());
+                for (final Map.Entry<String, List<String>> entityEntry : groupingEntry.getValue().entrySet()) {
+                    final HookEntityData entity = new HookEntityData();
+                    entity.setName(entityEntry.getKey());
+                    final List<String> actions = new ArrayList<>(entityEntry.getValue());
+                    Collections.sort(actions);
+                    entity.setActions(actions);
+                    entities.add(entity);
+                }
+
+                entities.sort(Comparator.comparing(HookEntityData::getName));
+                group.setEntities(entities);
+                groupings.add(group);
+            }
+
+            groupings.sort(Comparator.comparing(HookGroupingData::getName));
+
+            return groupings;
         }
     }
 
