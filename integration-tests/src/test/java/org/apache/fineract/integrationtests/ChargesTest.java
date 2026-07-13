@@ -18,10 +18,15 @@
  */
 package org.apache.fineract.integrationtests;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import feign.Headers;
+import feign.Param;
+import feign.RequestLine;
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
+import org.apache.fineract.client.feign.FineractFeignClient;
 import org.apache.fineract.client.models.ChargeRequest;
 import org.apache.fineract.client.models.GetChargesResponse;
 import org.apache.fineract.client.models.PostChargesResponse;
@@ -31,6 +36,7 @@ import org.apache.fineract.client.models.PostTaxesGroupRequest;
 import org.apache.fineract.client.models.PostTaxesGroupResponse;
 import org.apache.fineract.client.models.PostTaxesGroupTaxComponents;
 import org.apache.fineract.client.models.PutChargesChargeIdRequest;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.TaxComponentHelper;
 import org.apache.fineract.integrationtests.common.TaxGroupHelper;
 import org.apache.fineract.integrationtests.common.Utils;
@@ -53,9 +59,14 @@ public class ChargesTest {
     private static final String FEE_ON_MONTH_DAY = "04 March";
 
     private final ChargesHelper chargesHelper = new ChargesHelper();
+    private final FineractFeignClient fineractFeignClient = FineractFeignClientHelper.getFineractFeignClient();
 
     @Test
     public void testChargesForLoans() {
+
+        // Retrieving all Charges
+        final JsonNode allChargesData = raw().retrieveAllCharges();
+        Assertions.assertNotNull(allChargesData);
 
         // Testing Creation, Updation and Deletion of Disbursement Charge
         final Long disbursementChargeId = chargesHelper.createCharges(loanDisbursementCharge()).getResourceId();
@@ -172,7 +183,8 @@ public class ChargesTest {
 
         changes = chargesHelper.updateCharges(overdueFeeChargeId, modifyChargeFeeFrequencyAsYears()).getChanges();
 
-        assertFeeFrequency(changes);
+        final JsonNode overdueChargeAfterChanges = raw().retrieveCharge(overdueFeeChargeId);
+        assertFeeFrequency(changes, overdueChargeAfterChanges);
 
         chargeIdAfterDeletion = chargesHelper.deleteCharge(overdueFeeChargeId).getResourceId();
         Assertions.assertEquals(overdueFeeChargeId, chargeIdAfterDeletion, "Verifying Charge ID after deletion");
@@ -329,8 +341,8 @@ public class ChargesTest {
                 chargeDataAfterChanges.getChargeCalculationType().getId().longValue(), "Verifying Charge after Modification");
     }
 
-    private void assertFeeFrequency(final PutChargesChargeIdRequest changes) {
-        Assertions.assertEquals(String.valueOf(ChargesHelper.CHARGE_FEE_FREQUENCY_YEARS), changes.getFeeFrequency(),
+    private void assertFeeFrequency(final PutChargesChargeIdRequest changes, final JsonNode chargeDataAfterChanges) {
+        Assertions.assertEquals(Long.parseLong(changes.getFeeFrequency()), chargeDataAfterChanges.get("feeFrequency").get("id").asLong(),
                 "Verifying Charge after Modification");
     }
 
@@ -416,5 +428,26 @@ public class ChargesTest {
 
     private ChargeRequest modifyChargeFeeFrequencyAsYears() {
         return new ChargeRequest().locale(LOCALE).feeFrequency(String.valueOf(ChargesHelper.CHARGE_FEE_FREQUENCY_YEARS)).feeInterval("2");
+    }
+
+    private ChargesRawApi raw() {
+        return this.fineractFeignClient.create(ChargesRawApi.class);
+    }
+
+    /**
+     * Raw JsonNode views of the charge endpoints, used through fineract-client-feign for assertions whose values are
+     * not exposed by the generated typed responses: the list endpoint's {@code ChargeData} model cannot deserialize
+     * {@code feeOnMonthDay} (spec declares an object, the server returns a string), and {@code GetChargesResponse} does
+     * not expose {@code feeFrequency}.
+     */
+    interface ChargesRawApi {
+
+        @RequestLine("GET /v1/charges")
+        @Headers("Accept: application/json")
+        JsonNode retrieveAllCharges();
+
+        @RequestLine("GET /v1/charges/{chargeId}")
+        @Headers("Accept: application/json")
+        JsonNode retrieveCharge(@Param("chargeId") Long chargeId);
     }
 }
