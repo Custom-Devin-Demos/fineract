@@ -23,38 +23,59 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.RequestLine;
+import feign.Response;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.PutLoanProductsProductIdRequest;
 import org.apache.fineract.client.models.PutLoanProductsProductIdResponse;
 import org.apache.fineract.client.util.CallFailedRuntimeException;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.loans.LoanProductHelper;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
-import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class LoanProductExternalIdTest {
 
-    private ResponseSpecification responseSpec;
-    private RequestSpecification requestSpec;
-    private LoanTransactionHelper loanTransactionHelper;
+    private static final ObjectMapper RAW_MAPPER = new ObjectMapper();
+    private static final LoanProductApi LOAN_PRODUCT_API = FineractFeignClientHelper.getFineractFeignClient().create(LoanProductApi.class);
+
     private LoanProductHelper loanProductHelper;
+
+    interface LoanProductApi {
+
+        @RequestLine("POST v1/loanproducts")
+        Response createLoanProduct(JsonNode body);
+    }
+
+    private static JsonNode body(Response response) {
+        try (Response r = response) {
+            return RAW_MAPPER.readTree(r.body().asInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static JsonNode json(String raw) {
+        try {
+            return RAW_MAPPER.readTree(raw);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Integer createLoanProduct(String loanProductJSON) {
+        return body(LOAN_PRODUCT_API.createLoanProduct(json(loanProductJSON))).get("resourceId").intValue();
+    }
 
     @BeforeEach
     public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
         this.loanProductHelper = new LoanProductHelper();
     }
 
@@ -62,7 +83,7 @@ public class LoanProductExternalIdTest {
     public void testLoanProductWithExternalId() {
         String externalId = UUID.randomUUID().toString();
         HashMap<String, Object> request = new LoanProductTestBuilder().withExternalId(externalId).build(null, null);
-        Integer loanProductId = loanTransactionHelper.getLoanProductId(Utils.convertToJson(request));
+        Integer loanProductId = createLoanProduct(Utils.convertToJson(request));
         assertNotNull(loanProductId);
 
         GetLoanProductsProductIdResponse getLoanProductsProductIdResponse = loanProductHelper.retrieveLoanProductByExternalId(externalId);
@@ -81,7 +102,7 @@ public class LoanProductExternalIdTest {
     public void testLoanProductWithInvalidExternalId() {
         String externalId = UUID.randomUUID().toString();
         HashMap<String, Object> request = new LoanProductTestBuilder().withExternalId(externalId).build(null, null);
-        Integer loanProductId = loanTransactionHelper.getLoanProductId(Utils.convertToJson(request));
+        Integer loanProductId = createLoanProduct(Utils.convertToJson(request));
         assertNotNull(loanProductId);
 
         GetLoanProductsProductIdResponse getLoanProductsProductIdResponse = loanProductHelper.retrieveLoanProductByExternalId(externalId);
