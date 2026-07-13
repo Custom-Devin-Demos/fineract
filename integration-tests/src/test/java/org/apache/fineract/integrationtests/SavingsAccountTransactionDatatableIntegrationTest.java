@@ -23,27 +23,32 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.google.gson.Gson;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.apache.fineract.client.models.GetDataTablesResponse;
+import org.apache.fineract.client.models.PostClientsRequest;
 import org.apache.fineract.client.models.PostColumnHeaderData;
 import org.apache.fineract.client.models.PostDataTablesRequest;
 import org.apache.fineract.client.models.PostDataTablesResponse;
+import org.apache.fineract.client.models.PostSavingsAccountTransactionsRequest;
+import org.apache.fineract.client.models.PostSavingsAccountsAccountIdRequest;
+import org.apache.fineract.client.models.PostSavingsAccountsAccountIdResponse;
+import org.apache.fineract.client.models.PostSavingsAccountsRequest;
+import org.apache.fineract.client.models.PostSavingsProductsRequest;
 import org.apache.fineract.client.models.PutDataTablesRequest;
 import org.apache.fineract.client.models.PutDataTablesRequestAddColumns;
 import org.apache.fineract.client.models.PutDataTablesResponse;
 import org.apache.fineract.client.models.ResultsetColumnHeaderData;
+import org.apache.fineract.client.util.Calls;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
 import org.apache.fineract.integrationtests.common.ClientHelper;
 import org.apache.fineract.integrationtests.common.CommonConstants;
+import org.apache.fineract.integrationtests.common.FineractClientHelper;
 import org.apache.fineract.integrationtests.common.GlobalConfigurationHelper;
 import org.apache.fineract.integrationtests.common.Utils;
-import org.apache.fineract.integrationtests.common.savings.SavingsAccountHelper;
 import org.apache.fineract.integrationtests.common.savings.SavingsProductHelper;
 import org.apache.fineract.integrationtests.common.savings.SavingsStatusChecker;
 import org.apache.fineract.integrationtests.common.savings.SavingsTestLifecycleExtension;
@@ -61,22 +66,12 @@ public class SavingsAccountTransactionDatatableIntegrationTest {
     public static final String ACCOUNT_TYPE_INDIVIDUAL = "INDIVIDUAL";
     final String startDate = "01 Jun 2023";
     final String firstDepositDate = "05 Jun 2023";
-    private RequestSpecification requestSpec;
-    private ResponseSpecification responseSpec;
     private DatatableHelper datatableHelper;
-    private SavingsProductHelper savingsProductHelper;
-    private SavingsAccountHelper savingsAccountHelper;
     private GlobalConfigurationHelper globalConfigurationHelper;
 
     @BeforeEach
     public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         this.datatableHelper = new DatatableHelper();
-        this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
-        this.savingsProductHelper = new SavingsProductHelper();
         this.globalConfigurationHelper = new GlobalConfigurationHelper();
     }
 
@@ -149,13 +144,12 @@ public class SavingsAccountTransactionDatatableIntegrationTest {
     @Test
     public void testDatatableCreateReadUpdateDeleteEntryForSavingsAccountTransaction() {
         // Create Client
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(clientRequest(startDate)).getClientId().intValue();
         Assertions.assertNotNull(clientID);
         // Create savings product and account
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
 
-        final Integer transactionId = (Integer) this.savingsAccountHelper.depositToSavingsAccount(savingsId, "100", firstDepositDate,
-                CommonConstants.RESPONSE_RESOURCE_ID);
+        final Integer transactionId = deposit(savingsId, "100", firstDepositDate);
 
         assertNotNull(transactionId);
 
@@ -230,20 +224,55 @@ public class SavingsAccountTransactionDatatableIntegrationTest {
     private Integer createSavingsAccountDailyPosting(final Integer clientID, final String startDate) {
         final Integer savingsProductID = createSavingsProductDailyPosting();
         Assertions.assertNotNull(savingsProductID);
-        final Integer savingsId = this.savingsAccountHelper.applyForSavingsApplicationOnDate(clientID, savingsProductID,
-                ACCOUNT_TYPE_INDIVIDUAL, startDate);
+        PostSavingsAccountsRequest applicationRequest = new PostSavingsAccountsRequest().clientId(clientID.longValue())
+                .productId(savingsProductID.longValue()).dateFormat(Utils.DATE_FORMAT).locale("en_GB").submittedOnDate(startDate);
+        final Integer savingsId = Calls
+                .ok(FineractClientHelper.getFineractClient().savingsAccounts.submitSavingsApplication(applicationRequest)).getSavingsId()
+                .intValue();
         Assertions.assertNotNull(savingsId);
-        HashMap savingsStatusHashMap = this.savingsAccountHelper.approveSavingsOnDate(savingsId, startDate);
-        SavingsStatusChecker.verifySavingsIsApproved(savingsStatusHashMap);
-        savingsStatusHashMap = this.savingsAccountHelper.activateSavingsAccount(savingsId, startDate);
-        SavingsStatusChecker.verifySavingsIsActive(savingsStatusHashMap);
+        PostSavingsAccountsAccountIdResponse approveResponse = Calls.ok(FineractClientHelper.getFineractClient().savingsAccounts
+                .handleCommandsSavingsAccount(savingsId.longValue(), new PostSavingsAccountsAccountIdRequest()
+                        .locale(CommonConstants.LOCALE).dateFormat(CommonConstants.DATE_FORMAT).approvedOnDate(startDate), "approve"));
+        SavingsStatusChecker.verifySavingsIsApproved(statusChanges(approveResponse));
+        PostSavingsAccountsAccountIdResponse activateResponse = Calls.ok(FineractClientHelper.getFineractClient().savingsAccounts
+                .handleCommandsSavingsAccount(savingsId.longValue(), new PostSavingsAccountsAccountIdRequest()
+                        .locale(CommonConstants.LOCALE).dateFormat(CommonConstants.DATE_FORMAT).activatedOnDate(startDate), "activate"));
+        SavingsStatusChecker.verifySavingsIsActive(statusChanges(activateResponse));
         return savingsId;
     }
 
     private Integer createSavingsProductDailyPosting() {
-        final String savingsProductJSON = this.savingsProductHelper.withInterestCompoundingPeriodTypeAsDaily()
-                .withInterestPostingPeriodTypeAsDaily().withInterestCalculationPeriodTypeAsDailyBalance().build();
-        return SavingsProductHelper.createSavingsProduct(savingsProductJSON, requestSpec, responseSpec);
+        return SavingsProductHelper.createSavingsProduct(dailyPostingSavingsProductRequest()).getResourceId().intValue();
+    }
+
+    private Integer deposit(final Integer savingsId, final String amount, final String date) {
+        PostSavingsAccountTransactionsRequest depositRequest = new PostSavingsAccountTransactionsRequest().locale(CommonConstants.LOCALE)
+                .dateFormat(CommonConstants.DATE_FORMAT).transactionDate(date).transactionAmount(new BigDecimal(amount)).paymentTypeId(1);
+        return Calls.ok(FineractClientHelper.getFineractClient().savingsTransactions.createSavingsAccountTransaction(savingsId.longValue(),
+                depositRequest, "deposit")).getResourceId().intValue();
+    }
+
+    private static HashMap<String, Object> statusChanges(final PostSavingsAccountsAccountIdResponse response) {
+        final Map<?, ?> changes = (Map<?, ?>) response.getChanges();
+        final Map<?, ?> status = (Map<?, ?>) changes.get("status");
+        final HashMap<String, Object> result = new HashMap<>();
+        status.forEach((key, value) -> result.put((String) key, value));
+        return result;
+    }
+
+    private static PostClientsRequest clientRequest(final String activationDate) {
+        return new PostClientsRequest().officeId(1L).legalFormId(ClientHelper.LEGALFORM_ID_PERSON)
+                .firstname(Utils.randomFirstNameGenerator()).lastname(Utils.randomLastNameGenerator())
+                .externalId(UUID.randomUUID().toString()).dateFormat(Utils.DATE_FORMAT).locale("en").active(true)
+                .activationDate(activationDate);
+    }
+
+    private static PostSavingsProductsRequest dailyPostingSavingsProductRequest() {
+        return new PostSavingsProductsRequest().name(Utils.uniqueRandomStringGenerator("SAVINGS_PRODUCT_", 6))
+                .shortName(Utils.uniqueRandomStringGenerator("", 4)).description(Utils.randomStringGenerator("", 20)).currencyCode("USD")
+                .interestCalculationDaysInYearType(365).locale("en_GB").digitsAfterDecimal(4).inMultiplesOf(0).interestCalculationType(1)
+                .nominalAnnualInterestRate(10.0).interestCompoundingPeriodType(1).interestPostingPeriodType(1).accountingRule(1)
+                .withdrawalFeeForTransfers(true).allowOverdraft(false).enforceMinRequiredBalance(false).withHoldTax(false);
     }
 
     // Reset configuration fields
