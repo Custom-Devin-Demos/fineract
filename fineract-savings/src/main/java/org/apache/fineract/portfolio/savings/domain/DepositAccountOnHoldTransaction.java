@@ -18,8 +18,6 @@
  */
 package org.apache.fineract.portfolio.savings.domain;
 
-import static org.apache.fineract.infrastructure.core.service.DateUtils.getSystemZoneId;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -27,9 +25,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.Optional;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.organisation.monetary.domain.MonetaryCurrency;
 import org.apache.fineract.organisation.monetary.domain.Money;
@@ -55,10 +50,6 @@ public class DepositAccountOnHoldTransaction extends AbstractAuditableWithUTCDat
     @Column(name = "is_reversed", nullable = false)
     private boolean reversed;
 
-    @Deprecated
-    @Column(name = "created_date", nullable = true)
-    private LocalDateTime createdDateToRemove;
-
     protected DepositAccountOnHoldTransaction() {}
 
     private DepositAccountOnHoldTransaction(final SavingsAccount savingsAccount, final BigDecimal amount,
@@ -67,7 +58,6 @@ public class DepositAccountOnHoldTransaction extends AbstractAuditableWithUTCDat
         this.amount = amount;
         this.transactionType = transactionType.getValue();
         this.transactionDate = transactionDate;
-        this.createdDateToRemove = null; // #audit backward compatibility deprecated
         this.reversed = reversed;
     }
 
@@ -116,12 +106,5 @@ public class DepositAccountOnHoldTransaction extends AbstractAuditableWithUTCDat
         } else {
             this.savingsAccount.holdFunds(this.amount);
         }
-    }
-
-    @Override
-    public Optional<OffsetDateTime> getCreatedDate() {
-        // #audit backward compatibility keep system datetime
-        return Optional.ofNullable(super.getCreatedDate()
-                .orElse(createdDateToRemove == null ? null : createdDateToRemove.atZone(getSystemZoneId()).toOffsetDateTime()));
     }
 }
