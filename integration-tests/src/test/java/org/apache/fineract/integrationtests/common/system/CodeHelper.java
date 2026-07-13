@@ -27,9 +27,18 @@ import io.restassured.specification.ResponseSpecification;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.fineract.client.models.DeleteCodeValueDataResponse;
+import org.apache.fineract.client.models.DeleteCodesResponse;
+import org.apache.fineract.client.models.GetCodeValuesDataResponse;
 import org.apache.fineract.client.models.GetCodesResponse;
 import org.apache.fineract.client.models.PostCodeValueDataResponse;
 import org.apache.fineract.client.models.PostCodeValuesDataRequest;
+import org.apache.fineract.client.models.PostCodesRequest;
+import org.apache.fineract.client.models.PostCodesResponse;
+import org.apache.fineract.client.models.PutCodeValueDataResponse;
+import org.apache.fineract.client.models.PutCodeValuesDataRequest;
+import org.apache.fineract.client.models.PutCodesRequest;
+import org.apache.fineract.client.models.PutCodesResponse;
 import org.apache.fineract.client.util.Calls;
 import org.apache.fineract.integrationtests.common.FineractClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
@@ -391,5 +400,55 @@ public final class CodeHelper {
 
     public GetCodesResponse retrieveCodeByName(final String codeName) {
         return Calls.ok(FineractClientHelper.getFineractClient().codes.retrieveCodeByName(codeName));
+    }
+
+    public PostCodesResponse createCode(final PostCodesRequest request) {
+        return Calls.ok(FineractClientHelper.getFineractClient().codes.createCode(request));
+    }
+
+    public PutCodesResponse updateCode(final Long codeId, final PutCodesRequest request) {
+        return Calls.ok(FineractClientHelper.getFineractClient().codes.updateCode(codeId, request));
+    }
+
+    public GetCodesResponse getCodeById(final Long codeId) {
+        return Calls.ok(FineractClientHelper.getFineractClient().codes.retrieveCode(codeId));
+    }
+
+    public DeleteCodesResponse deleteCodeById(final Long codeId) {
+        return Calls.ok(FineractClientHelper.getFineractClient().codes.deleteCode(codeId));
+    }
+
+    public GetCodesResponse getSystemDefinedCodes() {
+        return retrieveCodes().stream().filter(code -> Boolean.TRUE.equals(code.getSystemDefined())).findFirst().orElse(null);
+    }
+
+    public List<GetCodeValuesDataResponse> getCodeValuesForCode(final Long codeId) {
+        return Calls.ok(FineractClientHelper.getFineractClient().codeValues.retrieveAllCodeValues(codeId));
+    }
+
+    public List<GetCodeValuesDataResponse> getAllCodeValuesByCodeId(final Long codeId) {
+        return Calls.ok(FineractClientHelper.getFineractClient().codeValues.retrieveAllCodeValues(codeId));
+    }
+
+    public GetCodeValuesDataResponse getCodeValueById(final Long codeId, final Long codeValueId) {
+        return Calls.ok(FineractClientHelper.getFineractClient().codeValues.retrieveCodeValue(codeValueId, codeId));
+    }
+
+    public DeleteCodeValueDataResponse deleteCodeValueById(final Long codeId, final Long codeValueId) {
+        return Calls.ok(FineractClientHelper.getFineractClient().codeValues.deleteCodeValue(codeId, codeValueId));
+    }
+
+    public PutCodeValueDataResponse updateCodeValue(final Long codeId, final Long codeValueId, final PutCodeValuesDataRequest request) {
+        return Calls.ok(FineractClientHelper.getFineractClient().codeValues.updateCodeValue(codeId, codeValueId, request));
+    }
+
+    public GetCodeValuesDataResponse retrieveOrCreateCodeValue(final Long codeId) {
+        final List<GetCodeValuesDataResponse> codeValues = getCodeValuesForCode(codeId);
+        if (!codeValues.isEmpty()) {
+            return codeValues.get(0);
+        }
+        final PostCodeValueDataResponse created = createCodeValue(codeId,
+                new PostCodeValuesDataRequest().name(Utils.randomStringGenerator("", 3)).position(0));
+        return getCodeValueById(codeId, created.getSubResourceId());
     }
 }

@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import org.apache.fineract.batch.command.internal.CreateTransactionLoanCommandStrategy;
 import org.apache.fineract.batch.domain.BatchRequest;
 import org.apache.fineract.batch.domain.BatchResponse;
+import org.apache.fineract.client.util.Calls;
 import org.apache.fineract.client.util.JSON;
 import org.apache.fineract.integrationtests.common.error.ErrorResponse;
 import org.apache.fineract.integrationtests.common.savings.SavingsTransactionData;
@@ -158,6 +159,16 @@ public final class BatchHelper {
             final ResponseSpecification responseSpec, final String jsonifiedBatchRequests) {
         final String response = Utils.performServerPost(requestSpec, responseSpec, BATCH_API_URL_EXT, jsonifiedBatchRequests, null);
         return BatchHelper.fromJsonString(response);
+    }
+
+    public static List<org.apache.fineract.client.models.BatchResponse> postBatchRequestsWithoutEnclosingTransaction(
+            final List<org.apache.fineract.client.models.BatchRequest> batchRequests) {
+        return Calls.ok(FineractClientHelper.getFineractClient().batches.handleBatchRequests(batchRequests, false));
+    }
+
+    public static List<org.apache.fineract.client.models.BatchResponse> postBatchRequestsWithEnclosingTransaction(
+            final List<org.apache.fineract.client.models.BatchRequest> batchRequests) {
+        return Calls.ok(FineractClientHelper.getFineractClient().batches.handleBatchRequests(batchRequests, true));
     }
 
     /**

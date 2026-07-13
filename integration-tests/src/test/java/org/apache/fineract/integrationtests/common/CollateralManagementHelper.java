@@ -25,6 +25,13 @@ import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import java.math.BigDecimal;
 import java.util.HashMap;
+import org.apache.fineract.client.models.ClientCollateralCreateRequest;
+import org.apache.fineract.client.models.ClientCollateralManagementData;
+import org.apache.fineract.client.models.ClientCollateralUpdateRequest;
+import org.apache.fineract.client.models.ClientCollateralUpdateResponse;
+import org.apache.fineract.client.models.CollateralProductCreateRequest;
+import org.apache.fineract.client.models.CollateralProductUpdateRequest;
+import org.apache.fineract.client.util.Calls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -202,6 +209,41 @@ public class CollateralManagementHelper {
         map.put("locale", "en");
         LOG.info("map :  {}", map);
         return new Gson().toJson(map);
+    }
+
+    public static Long createClientCollateral(final Long clientId, final Long collateralId) {
+        LOG.info("---------------------------------CREATING A CLIENT_COLLATERAL---------------------------------------------");
+        return Calls
+                .ok(FineractClientHelper.getFineractClient().clientCollateralManagement.addClientCollateral(clientId,
+                        new ClientCollateralCreateRequest().collateralId(collateralId).quantity(BigDecimal.valueOf(100)).locale("en")))
+                .getResourceId();
+    }
+
+    public static ClientCollateralManagementData getClientCollateralData(final Long clientId, final Long clientCollateralId) {
+        return Calls.ok(
+                FineractClientHelper.getFineractClient().clientCollateralManagement.getClientCollateralData(clientId, clientCollateralId));
+    }
+
+    public static Long createCollateralProduct() {
+        LOG.info("---------------------------------CREATING A COLLATERAL_PRODUCT---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().collateralManagement.createCollateral1(new CollateralProductCreateRequest()
+                .name(Utils.randomStringGenerator("COLLATERAL_PRODUCT", 5)).currency("USD").unitType("acre").quality("agriculture")
+                .pctToBase(BigDecimal.valueOf(40)).basePrice(BigDecimal.valueOf(100000000)).locale("en"))).getResourceId();
+    }
+
+    public static Long updateCollateralProduct(final Long collateralId) {
+        LOG.info("---------------------------------UPDATING A COLLATERAL_PRODUCT---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().collateralManagement.updateCollateral1(collateralId,
+                new CollateralProductUpdateRequest().name(Utils.randomStringGenerator("COLLATERAL_PRODUCT", 5)).currency("USD")
+                        .unitType("acre").quality("agriculture").pctToBase(BigDecimal.valueOf(30)).basePrice(BigDecimal.valueOf(100000))
+                        .locale("en")))
+                .getResourceId();
+    }
+
+    public static ClientCollateralUpdateResponse updateClientCollateral(final Long clientId, final Long collateralId) {
+        LOG.info("---------------------------------UPDATING A CLIENT COLLATERAL---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().clientCollateralManagement.updateClientCollateral(clientId, collateralId,
+                new ClientCollateralUpdateRequest().quantity(BigDecimal.valueOf(1)).locale("en")));
     }
 
 }
