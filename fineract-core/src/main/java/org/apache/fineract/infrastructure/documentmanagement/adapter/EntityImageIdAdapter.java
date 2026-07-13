@@ -27,7 +27,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 // NOTE: this is a trick to decouple the entity image IDs from the image service
-@Deprecated
 public interface EntityImageIdAdapter {
 
     boolean accept(String entityType);

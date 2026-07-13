@@ -52,10 +52,8 @@ public class CurrencyUpdateResponse implements Serializable {
             """)
     private List<String> currencies;
 
-    @Deprecated(forRemoval = true)
     @JsonProperty("changes")
-    public Map<String, Object> getChanges() {
-        // TODO: remove this one day... we should never use hashmaps in such trivial cases!!!
+    public Map<String, Object> changes() {
         return Map.of("currencies", currencies);
     }
 }

@@ -36,7 +36,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ImageReadPlatformServiceImpl implements ImageReadPlatformService {
 
-    @Deprecated
     private final List<EntityImageIdAdapter> imageIdAdapters;
     private final ContentStoreService storeService;
     private final ImageRepository imageRepository;
