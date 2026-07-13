@@ -18,15 +18,8 @@
  */
 package org.apache.fineract.integrationtests;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.fineract.client.models.ChargeRequest;
@@ -37,6 +30,7 @@ import org.apache.fineract.client.models.PostTaxesComponentsResponse;
 import org.apache.fineract.client.models.PostTaxesGroupRequest;
 import org.apache.fineract.client.models.PostTaxesGroupResponse;
 import org.apache.fineract.client.models.PostTaxesGroupTaxComponents;
+import org.apache.fineract.client.models.PutChargesChargeIdRequest;
 import org.apache.fineract.integrationtests.common.TaxComponentHelper;
 import org.apache.fineract.integrationtests.common.TaxGroupHelper;
 import org.apache.fineract.integrationtests.common.Utils;
@@ -45,203 +39,142 @@ import org.apache.fineract.portfolio.charge.domain.ChargeCalculationType;
 import org.apache.fineract.portfolio.charge.domain.ChargePaymentMode;
 import org.apache.fineract.portfolio.charge.domain.ChargeTimeType;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings({ "rawtypes" })
 public class ChargesTest {
 
-    private ResponseSpecification responseSpec;
-    private RequestSpecification requestSpec;
+    private static final Integer CHARGE_APPLIES_TO_LOAN = 1;
+    private static final Integer CHARGE_APPLIES_TO_SAVINGS = 2;
+    private static final Double DEFAULT_AMOUNT = 100.0;
+    private static final Double MODIFIED_AMOUNT = 200.0;
+    private static final String CURRENCY_CODE = "USD";
+    private static final String LOCALE = "en";
+    private static final String MONTH_DAY_FORMAT = "dd MMM";
+    private static final String FEE_ON_MONTH_DAY = "04 March";
 
-    @BeforeEach
-    public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-    }
+    private final ChargesHelper chargesHelper = new ChargesHelper();
 
     @Test
     public void testChargesForLoans() {
 
-        // Retrieving all Charges
-        ArrayList<HashMap> allChargesData = ChargesHelper.getCharges(this.requestSpec, this.responseSpec);
-        Assertions.assertNotNull(allChargesData);
-
         // Testing Creation, Updation and Deletion of Disbursement Charge
-        final Integer disbursementChargeId = ChargesHelper.createCharges(this.requestSpec, this.responseSpec,
-                ChargesHelper.getLoanDisbursementJSON());
+        final Long disbursementChargeId = chargesHelper.createCharges(loanDisbursementCharge()).getResourceId();
         Assertions.assertNotNull(disbursementChargeId);
 
         // Updating Charge Amount
-        HashMap changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, disbursementChargeId,
-                ChargesHelper.getModifyChargeJSON());
+        PutChargesChargeIdRequest changes = chargesHelper.updateCharges(disbursementChargeId, modifyChargeAmount()).getChanges();
 
-        HashMap chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, disbursementChargeId);
-        Assertions.assertEquals(chargeDataAfterChanges.get("amount"), changes.get("amount"), "Verifying Charge after Modification");
+        GetChargesResponse chargeDataAfterChanges = chargesHelper.retrieveCharge(disbursementChargeId);
+        assertAmount(changes, chargeDataAfterChanges);
 
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, disbursementChargeId,
-                ChargesHelper.getModifyChargeAsPecentageAmountJSON());
+        changes = chargesHelper.updateCharges(disbursementChargeId, modifyChargeAsPercentageAmount()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, disbursementChargeId);
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(disbursementChargeId);
+        assertChargePaymentMode(changes, chargeDataAfterChanges);
+        assertChargeCalculationType(changes, chargeDataAfterChanges);
 
-        HashMap chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargePaymentMode");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargePaymentMode"), "Verifying Charge after Modification");
+        changes = chargesHelper.updateCharges(disbursementChargeId, modifyChargeAsPercentageLoanAmountWithInterest()).getChanges();
 
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargeCalculationType");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargeCalculationType"), "Verifying Charge after Modification");
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(disbursementChargeId);
+        assertChargeCalculationType(changes, chargeDataAfterChanges);
 
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, disbursementChargeId,
-                ChargesHelper.getModifyChargeAsPecentageLoanAmountWithInterestJSON());
+        changes = chargesHelper.updateCharges(disbursementChargeId, modifyChargeAsPercentageInterest()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, disbursementChargeId);
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(disbursementChargeId);
+        assertChargeCalculationType(changes, chargeDataAfterChanges);
 
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargeCalculationType");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargeCalculationType"), "Verifying Charge after Modification");
-
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, disbursementChargeId,
-                ChargesHelper.getModifyChargeAsPercentageInterestJSON());
-
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, disbursementChargeId);
-
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargeCalculationType");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargeCalculationType"), "Verifying Charge after Modification");
-
-        Integer chargeIdAfterDeletion = ChargesHelper.deleteCharge(this.responseSpec, this.requestSpec, disbursementChargeId);
+        Long chargeIdAfterDeletion = chargesHelper.deleteCharge(disbursementChargeId).getResourceId();
         Assertions.assertEquals(disbursementChargeId, chargeIdAfterDeletion, "Verifying Charge ID after deletion");
 
         // Testing Creation, Updation and Deletion of Specified due date Charge
-        final Integer specifiedDueDateChargeId = ChargesHelper.createCharges(this.requestSpec, this.responseSpec,
-                ChargesHelper.getLoanSpecifiedDueDateJSON());
+        final Long specifiedDueDateChargeId = chargesHelper.createCharges(loanSpecifiedDueDateCharge()).getResourceId();
         Assertions.assertNotNull(specifiedDueDateChargeId);
 
         // Updating Charge Amount
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, specifiedDueDateChargeId,
-                ChargesHelper.getModifyChargeJSON());
+        changes = chargesHelper.updateCharges(specifiedDueDateChargeId, modifyChargeAmount()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, specifiedDueDateChargeId);
-        Assertions.assertEquals(chargeDataAfterChanges.get("amount"), changes.get("amount"), "Verifying Charge after Modification");
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(specifiedDueDateChargeId);
+        assertAmount(changes, chargeDataAfterChanges);
 
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, specifiedDueDateChargeId,
-                ChargesHelper.getModifyChargeAsPecentageAmountJSON());
+        changes = chargesHelper.updateCharges(specifiedDueDateChargeId, modifyChargeAsPercentageAmount()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, specifiedDueDateChargeId);
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(specifiedDueDateChargeId);
+        assertChargePaymentMode(changes, chargeDataAfterChanges);
+        assertChargeCalculationType(changes, chargeDataAfterChanges);
 
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargePaymentMode");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargePaymentMode"), "Verifying Charge after Modification");
+        changes = chargesHelper.updateCharges(specifiedDueDateChargeId, modifyChargeAsPercentageLoanAmountWithInterest()).getChanges();
 
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargeCalculationType");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargeCalculationType"), "Verifying Charge after Modification");
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(specifiedDueDateChargeId);
+        assertChargeCalculationType(changes, chargeDataAfterChanges);
 
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, specifiedDueDateChargeId,
-                ChargesHelper.getModifyChargeAsPecentageLoanAmountWithInterestJSON());
+        changes = chargesHelper.updateCharges(specifiedDueDateChargeId, modifyChargeAsPercentageInterest()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, specifiedDueDateChargeId);
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(specifiedDueDateChargeId);
+        assertChargeCalculationType(changes, chargeDataAfterChanges);
 
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargeCalculationType");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargeCalculationType"), "Verifying Charge after Modification");
-
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, specifiedDueDateChargeId,
-                ChargesHelper.getModifyChargeAsPercentageInterestJSON());
-
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, specifiedDueDateChargeId);
-
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargeCalculationType");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargeCalculationType"), "Verifying Charge after Modification");
-
-        chargeIdAfterDeletion = ChargesHelper.deleteCharge(this.responseSpec, this.requestSpec, specifiedDueDateChargeId);
+        chargeIdAfterDeletion = chargesHelper.deleteCharge(specifiedDueDateChargeId).getResourceId();
         Assertions.assertEquals(specifiedDueDateChargeId, chargeIdAfterDeletion, "Verifying Charge ID after deletion");
 
         // Testing Creation, Updation and Deletion of Installment Fee Charge
-        final Integer installmentFeeChargeId = ChargesHelper.createCharges(this.requestSpec, this.responseSpec,
-                ChargesHelper.getLoanInstallmentFeeJSON());
+        final Long installmentFeeChargeId = chargesHelper.createCharges(loanInstallmentFeeCharge()).getResourceId();
 
         // Updating Charge Amount
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, installmentFeeChargeId,
-                ChargesHelper.getModifyChargeJSON());
+        changes = chargesHelper.updateCharges(installmentFeeChargeId, modifyChargeAmount()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, installmentFeeChargeId);
-        Assertions.assertEquals(chargeDataAfterChanges.get("amount"), changes.get("amount"), "Verifying Charge after Modification");
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(installmentFeeChargeId);
+        assertAmount(changes, chargeDataAfterChanges);
 
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, installmentFeeChargeId,
-                ChargesHelper.getModifyChargeAsPecentageAmountJSON());
+        changes = chargesHelper.updateCharges(installmentFeeChargeId, modifyChargeAsPercentageAmount()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, installmentFeeChargeId);
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(installmentFeeChargeId);
+        assertChargePaymentMode(changes, chargeDataAfterChanges);
+        assertChargeCalculationType(changes, chargeDataAfterChanges);
 
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargePaymentMode");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargePaymentMode"), "Verifying Charge after Modification");
+        changes = chargesHelper.updateCharges(installmentFeeChargeId, modifyChargeAsPercentageLoanAmountWithInterest()).getChanges();
 
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargeCalculationType");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargeCalculationType"), "Verifying Charge after Modification");
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(installmentFeeChargeId);
+        assertChargeCalculationType(changes, chargeDataAfterChanges);
 
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, installmentFeeChargeId,
-                ChargesHelper.getModifyChargeAsPecentageLoanAmountWithInterestJSON());
+        changes = chargesHelper.updateCharges(installmentFeeChargeId, modifyChargeAsPercentageInterest()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, installmentFeeChargeId);
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(installmentFeeChargeId);
+        assertChargeCalculationType(changes, chargeDataAfterChanges);
 
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargeCalculationType");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargeCalculationType"), "Verifying Charge after Modification");
-
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, installmentFeeChargeId,
-                ChargesHelper.getModifyChargeAsPercentageInterestJSON());
-
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, installmentFeeChargeId);
-
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargeCalculationType");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargeCalculationType"), "Verifying Charge after Modification");
-
-        chargeIdAfterDeletion = ChargesHelper.deleteCharge(this.responseSpec, this.requestSpec, installmentFeeChargeId);
+        chargeIdAfterDeletion = chargesHelper.deleteCharge(installmentFeeChargeId).getResourceId();
         Assertions.assertEquals(installmentFeeChargeId, chargeIdAfterDeletion, "Verifying Charge ID after deletion");
 
         // Testing Creation, Updation and Deletion of Overdue Installment Fee
         // Charge
-        final Integer overdueFeeChargeId = ChargesHelper.createCharges(this.requestSpec, this.responseSpec,
-                ChargesHelper.getLoanOverdueFeeJSON());
+        final Long overdueFeeChargeId = chargesHelper.createCharges(loanOverdueFeeCharge()).getResourceId();
         Assertions.assertNotNull(overdueFeeChargeId);
 
         // Updating Charge Amount
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, overdueFeeChargeId, ChargesHelper.getModifyChargeJSON());
+        changes = chargesHelper.updateCharges(overdueFeeChargeId, modifyChargeAmount()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, overdueFeeChargeId);
-        Assertions.assertEquals(chargeDataAfterChanges.get("amount"), changes.get("amount"), "Verifying Charge after Modification");
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(overdueFeeChargeId);
+        assertAmount(changes, chargeDataAfterChanges);
 
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, overdueFeeChargeId,
-                ChargesHelper.getModifyChargeAsPecentageAmountJSON());
+        changes = chargesHelper.updateCharges(overdueFeeChargeId, modifyChargeAsPercentageAmount()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, overdueFeeChargeId);
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(overdueFeeChargeId);
+        assertChargePaymentMode(changes, chargeDataAfterChanges);
+        assertChargeCalculationType(changes, chargeDataAfterChanges);
 
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargePaymentMode");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargePaymentMode"), "Verifying Charge after Modification");
+        changes = chargesHelper.updateCharges(overdueFeeChargeId, modifyChargeAsPercentageLoanAmountWithInterest()).getChanges();
 
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargeCalculationType");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargeCalculationType"), "Verifying Charge after Modification");
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(overdueFeeChargeId);
+        assertChargeCalculationType(changes, chargeDataAfterChanges);
 
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, overdueFeeChargeId,
-                ChargesHelper.getModifyChargeAsPecentageLoanAmountWithInterestJSON());
+        changes = chargesHelper.updateCharges(overdueFeeChargeId, modifyChargeAsPercentageInterest()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, overdueFeeChargeId);
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(overdueFeeChargeId);
+        assertChargeCalculationType(changes, chargeDataAfterChanges);
 
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargeCalculationType");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargeCalculationType"), "Verifying Charge after Modification");
+        changes = chargesHelper.updateCharges(overdueFeeChargeId, modifyChargeFeeFrequencyAsYears()).getChanges();
 
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, overdueFeeChargeId,
-                ChargesHelper.getModifyChargeAsPercentageInterestJSON());
+        assertFeeFrequency(changes);
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, overdueFeeChargeId);
-
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargeCalculationType");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargeCalculationType"), "Verifying Charge after Modification");
-
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, overdueFeeChargeId,
-                ChargesHelper.getModifyChargeFeeFrequencyAsYearsJSON());
-
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, overdueFeeChargeId);
-
-        chargeChangedData = (HashMap) chargeDataAfterChanges.get("feeFrequency");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("feeFrequency"), "Verifying Charge after Modification");
-
-        chargeIdAfterDeletion = ChargesHelper.deleteCharge(this.responseSpec, this.requestSpec, overdueFeeChargeId);
+        chargeIdAfterDeletion = chargesHelper.deleteCharge(overdueFeeChargeId).getResourceId();
         Assertions.assertEquals(overdueFeeChargeId, chargeIdAfterDeletion, "Verifying Charge ID after deletion");
     }
 
@@ -249,99 +182,86 @@ public class ChargesTest {
     public void testChargesForSavings() {
 
         // Testing Creation, Updation and Deletion of Specified due date Charge
-        final Integer specifiedDueDateChargeId = ChargesHelper.createCharges(this.requestSpec, this.responseSpec,
-                ChargesHelper.getSavingsSpecifiedDueDateJSON());
+        final Long specifiedDueDateChargeId = chargesHelper.createCharges(savingsSpecifiedDueDateCharge()).getResourceId();
         Assertions.assertNotNull(specifiedDueDateChargeId);
 
         // Updating Charge Amount
-        HashMap changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, specifiedDueDateChargeId,
-                ChargesHelper.getModifyChargeJSON());
+        PutChargesChargeIdRequest changes = chargesHelper.updateCharges(specifiedDueDateChargeId, modifyChargeAmount()).getChanges();
 
-        HashMap chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, specifiedDueDateChargeId);
-        Assertions.assertEquals(chargeDataAfterChanges.get("amount"), changes.get("amount"), "Verifying Charge after Modification");
+        GetChargesResponse chargeDataAfterChanges = chargesHelper.retrieveCharge(specifiedDueDateChargeId);
+        assertAmount(changes, chargeDataAfterChanges);
 
-        Integer chargeIdAfterDeletion = ChargesHelper.deleteCharge(this.responseSpec, this.requestSpec, specifiedDueDateChargeId);
+        Long chargeIdAfterDeletion = chargesHelper.deleteCharge(specifiedDueDateChargeId).getResourceId();
         Assertions.assertEquals(specifiedDueDateChargeId, chargeIdAfterDeletion, "Verifying Charge ID after deletion");
 
         // Testing Creation, Updation and Deletion of Savings Activation Charge
-        final Integer savingsActivationChargeId = ChargesHelper.createCharges(this.requestSpec, this.responseSpec,
-                ChargesHelper.getSavingsActivationFeeJSON());
+        final Long savingsActivationChargeId = chargesHelper.createCharges(savingsActivationFeeCharge()).getResourceId();
         Assertions.assertNotNull(savingsActivationChargeId);
 
         // Updating Charge Amount
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, savingsActivationChargeId,
-                ChargesHelper.getModifyChargeJSON());
+        changes = chargesHelper.updateCharges(savingsActivationChargeId, modifyChargeAmount()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, savingsActivationChargeId);
-        Assertions.assertEquals(chargeDataAfterChanges.get("amount"), changes.get("amount"), "Verifying Charge after Modification");
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(savingsActivationChargeId);
+        assertAmount(changes, chargeDataAfterChanges);
 
-        chargeIdAfterDeletion = ChargesHelper.deleteCharge(this.responseSpec, this.requestSpec, savingsActivationChargeId);
+        chargeIdAfterDeletion = chargesHelper.deleteCharge(savingsActivationChargeId).getResourceId();
         Assertions.assertEquals(savingsActivationChargeId, chargeIdAfterDeletion, "Verifying Charge ID after deletion");
 
         // Testing Creation, Updation and Deletion of Charge for Withdrawal Fee
-        final Integer withdrawalFeeChargeId = ChargesHelper.createCharges(this.requestSpec, this.responseSpec,
-                ChargesHelper.getSavingsWithdrawalFeeJSON());
+        final Long withdrawalFeeChargeId = chargesHelper.createCharges(savingsWithdrawalFeeCharge()).getResourceId();
         Assertions.assertNotNull(withdrawalFeeChargeId);
 
         // Updating Charge-Calculation-Type to Withdrawal-Fee
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, withdrawalFeeChargeId,
-                ChargesHelper.getModifyWithdrawalFeeSavingsChargeJSON());
+        changes = chargesHelper.updateCharges(withdrawalFeeChargeId, modifyWithdrawalFeeSavingsCharge()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, withdrawalFeeChargeId);
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(withdrawalFeeChargeId);
+        assertChargeCalculationType(changes, chargeDataAfterChanges);
 
-        HashMap chargeChangedData = (HashMap) chargeDataAfterChanges.get("chargeCalculationType");
-        Assertions.assertEquals(chargeChangedData.get("id"), changes.get("chargeCalculationType"), "Verifying Charge after Modification");
-
-        chargeIdAfterDeletion = ChargesHelper.deleteCharge(this.responseSpec, this.requestSpec, withdrawalFeeChargeId);
+        chargeIdAfterDeletion = chargesHelper.deleteCharge(withdrawalFeeChargeId).getResourceId();
         Assertions.assertEquals(withdrawalFeeChargeId, chargeIdAfterDeletion, "Verifying Charge ID after deletion");
 
         // Testing Creation, Updation and Deletion of Charge for Annual Fee
-        final Integer annualFeeChargeId = ChargesHelper.createCharges(this.requestSpec, this.responseSpec,
-                ChargesHelper.getSavingsAnnualFeeJSON());
+        final Long annualFeeChargeId = chargesHelper.createCharges(savingsAnnualFeeCharge()).getResourceId();
         Assertions.assertNotNull(annualFeeChargeId);
 
         // Updating Charge Amount
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, annualFeeChargeId, ChargesHelper.getModifyChargeJSON());
+        changes = chargesHelper.updateCharges(annualFeeChargeId, modifyChargeAmount()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, annualFeeChargeId);
-        Assertions.assertEquals(chargeDataAfterChanges.get("amount"), changes.get("amount"), "Verifying Charge after Modification");
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(annualFeeChargeId);
+        assertAmount(changes, chargeDataAfterChanges);
 
-        chargeIdAfterDeletion = ChargesHelper.deleteCharge(this.responseSpec, this.requestSpec, annualFeeChargeId);
+        chargeIdAfterDeletion = chargesHelper.deleteCharge(annualFeeChargeId).getResourceId();
         Assertions.assertEquals(annualFeeChargeId, chargeIdAfterDeletion, "Verifying Charge ID after deletion");
 
         // Testing Creation, Updation and Deletion of Charge for Monthly Fee
-        final Integer monthlyFeeChargeId = ChargesHelper.createCharges(this.requestSpec, this.responseSpec,
-                ChargesHelper.getSavingsMonthlyFeeJSON());
+        final Long monthlyFeeChargeId = chargesHelper.createCharges(savingsMonthlyFeeCharge()).getResourceId();
         Assertions.assertNotNull(monthlyFeeChargeId);
 
         // Updating Charge Amount
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, monthlyFeeChargeId, ChargesHelper.getModifyChargeJSON());
+        changes = chargesHelper.updateCharges(monthlyFeeChargeId, modifyChargeAmount()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, monthlyFeeChargeId);
-        Assertions.assertEquals(chargeDataAfterChanges.get("amount"), changes.get("amount"), "Verifying Charge after Modification");
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(monthlyFeeChargeId);
+        assertAmount(changes, chargeDataAfterChanges);
 
-        chargeIdAfterDeletion = ChargesHelper.deleteCharge(this.responseSpec, this.requestSpec, monthlyFeeChargeId);
+        chargeIdAfterDeletion = chargesHelper.deleteCharge(monthlyFeeChargeId).getResourceId();
         Assertions.assertEquals(monthlyFeeChargeId, chargeIdAfterDeletion, "Verifying Charge ID after deletion");
 
         // Testing Creation, Updation and Deletion of Charge for Overdraft Fee
-        final Integer overdraftFeeChargeId = ChargesHelper.createCharges(this.requestSpec, this.responseSpec,
-                ChargesHelper.getSavingsOverdraftFeeJSON());
+        final Long overdraftFeeChargeId = chargesHelper.createCharges(savingsOverdraftFeeCharge()).getResourceId();
         Assertions.assertNotNull(overdraftFeeChargeId);
 
         // Updating Charge Amount
-        changes = ChargesHelper.updateCharges(this.requestSpec, this.responseSpec, overdraftFeeChargeId,
-                ChargesHelper.getModifyChargeJSON());
+        changes = chargesHelper.updateCharges(overdraftFeeChargeId, modifyChargeAmount()).getChanges();
 
-        chargeDataAfterChanges = ChargesHelper.getChargeById(this.requestSpec, this.responseSpec, overdraftFeeChargeId);
-        Assertions.assertEquals(chargeDataAfterChanges.get("amount"), changes.get("amount"), "Verifying Charge after Modification");
+        chargeDataAfterChanges = chargesHelper.retrieveCharge(overdraftFeeChargeId);
+        assertAmount(changes, chargeDataAfterChanges);
 
-        chargeIdAfterDeletion = ChargesHelper.deleteCharge(this.responseSpec, this.requestSpec, overdraftFeeChargeId);
+        chargeIdAfterDeletion = chargesHelper.deleteCharge(overdraftFeeChargeId).getResourceId();
         Assertions.assertEquals(overdraftFeeChargeId, chargeIdAfterDeletion, "Verifying Charge ID after deletion");
     }
 
     @Test
     public void testChargeUsingPercentageCalculationWithMinAndMaxGapValues() {
-        final ChargesHelper chargesHelper = new ChargesHelper();
         final BigDecimal minCapVal = BigDecimal.valueOf(23);
         final BigDecimal maxCapVal = BigDecimal.valueOf(45);
 
@@ -363,8 +283,6 @@ public class ChargesTest {
 
     @Test
     public void testChargeCreationWithTaxGroup() {
-        final ChargesHelper chargesHelper = new ChargesHelper();
-
         final PostTaxesComponentsRequest taxComponentRequest = new PostTaxesComponentsRequest()
                 .name(Utils.randomStringGenerator("TAX_COM_", 4)).percentage(12.0f).startDate("01 January 2023").dateFormat("dd MMMM yyyy")
                 .locale("en");
@@ -396,4 +314,107 @@ public class ChargesTest {
         Assertions.assertEquals(chargeResponseData.getTaxGroup().getId(), taxGroupResponse.getResourceId());
     }
 
+    private void assertAmount(final PutChargesChargeIdRequest changes, final GetChargesResponse chargeDataAfterChanges) {
+        Assertions.assertEquals(changes.getAmount().doubleValue(), chargeDataAfterChanges.getAmount().doubleValue(),
+                "Verifying Charge after Modification");
+    }
+
+    private void assertChargePaymentMode(final PutChargesChargeIdRequest changes, final GetChargesResponse chargeDataAfterChanges) {
+        Assertions.assertEquals(changes.getChargePaymentMode().longValue(),
+                chargeDataAfterChanges.getChargePaymentMode().getId().longValue(), "Verifying Charge after Modification");
+    }
+
+    private void assertChargeCalculationType(final PutChargesChargeIdRequest changes, final GetChargesResponse chargeDataAfterChanges) {
+        Assertions.assertEquals(changes.getChargeCalculationType().longValue(),
+                chargeDataAfterChanges.getChargeCalculationType().getId().longValue(), "Verifying Charge after Modification");
+    }
+
+    private void assertFeeFrequency(final PutChargesChargeIdRequest changes) {
+        Assertions.assertEquals(String.valueOf(ChargesHelper.CHARGE_FEE_FREQUENCY_YEARS), changes.getFeeFrequency(),
+                "Verifying Charge after Modification");
+    }
+
+    private ChargeRequest loanDefaults() {
+        return new ChargeRequest().active(true).amount(DEFAULT_AMOUNT).chargeAppliesTo(CHARGE_APPLIES_TO_LOAN)
+                .chargeCalculationType(ChargeCalculationType.FLAT.getValue()).currencyCode(CURRENCY_CODE).locale(LOCALE)
+                .monthDayFormat(MONTH_DAY_FORMAT).name(Utils.uniqueRandomStringGenerator("Charge_Loans_", 6));
+    }
+
+    private ChargeRequest savingsDefaults() {
+        return new ChargeRequest().active(true).amount(DEFAULT_AMOUNT).chargeAppliesTo(CHARGE_APPLIES_TO_SAVINGS)
+                .chargeCalculationType(ChargeCalculationType.FLAT.getValue()).currencyCode(CURRENCY_CODE).locale(LOCALE)
+                .monthDayFormat(MONTH_DAY_FORMAT).name(Utils.uniqueRandomStringGenerator("Charge_Savings_", 6));
+    }
+
+    private ChargeRequest loanDisbursementCharge() {
+        return loanDefaults().chargeTimeType(ChargeTimeType.DISBURSEMENT.getValue())
+                .chargePaymentMode(ChargePaymentMode.REGULAR.getValue());
+    }
+
+    private ChargeRequest loanSpecifiedDueDateCharge() {
+        return loanDefaults().chargeTimeType(ChargeTimeType.SPECIFIED_DUE_DATE.getValue())
+                .chargePaymentMode(ChargePaymentMode.REGULAR.getValue()).penalty(true);
+    }
+
+    private ChargeRequest loanInstallmentFeeCharge() {
+        return loanDefaults().chargeTimeType(ChargeTimeType.INSTALMENT_FEE.getValue())
+                .chargePaymentMode(ChargePaymentMode.REGULAR.getValue()).penalty(true);
+    }
+
+    private ChargeRequest loanOverdueFeeCharge() {
+        return loanDefaults().penalty(true).chargePaymentMode(ChargePaymentMode.REGULAR.getValue())
+                .chargeTimeType(ChargeTimeType.OVERDUE_INSTALLMENT.getValue())
+                .feeFrequency(String.valueOf(ChargesHelper.CHARGE_FEE_FREQUENCY_MONTHS)).feeOnMonthDay(FEE_ON_MONTH_DAY).feeInterval("2");
+    }
+
+    private ChargeRequest savingsSpecifiedDueDateCharge() {
+        return savingsDefaults().chargeTimeType(ChargeTimeType.SPECIFIED_DUE_DATE.getValue()).feeInterval("2");
+    }
+
+    private ChargeRequest savingsActivationFeeCharge() {
+        return savingsDefaults().chargeTimeType(ChargeTimeType.SAVINGS_ACTIVATION.getValue());
+    }
+
+    private ChargeRequest savingsWithdrawalFeeCharge() {
+        return savingsDefaults().chargeTimeType(ChargeTimeType.WITHDRAWAL_FEE.getValue());
+    }
+
+    private ChargeRequest savingsAnnualFeeCharge() {
+        return savingsDefaults().feeOnMonthDay(FEE_ON_MONTH_DAY).chargeTimeType(ChargeTimeType.ANNUAL_FEE.getValue());
+    }
+
+    private ChargeRequest savingsMonthlyFeeCharge() {
+        return savingsDefaults().feeOnMonthDay(FEE_ON_MONTH_DAY).chargeTimeType(ChargeTimeType.MONTHLY_FEE.getValue()).feeInterval("2");
+    }
+
+    private ChargeRequest savingsOverdraftFeeCharge() {
+        return savingsDefaults().chargeTimeType(ChargeTimeType.OVERDRAFT_FEE.getValue());
+    }
+
+    private ChargeRequest modifyChargeAmount() {
+        return new ChargeRequest().locale(LOCALE).amount(MODIFIED_AMOUNT);
+    }
+
+    private ChargeRequest modifyChargeAsPercentageAmount() {
+        return new ChargeRequest().locale(LOCALE).chargeCalculationType(ChargeCalculationType.PERCENT_OF_AMOUNT.getValue())
+                .chargePaymentMode(ChargePaymentMode.ACCOUNT_TRANSFER.getValue());
+    }
+
+    private ChargeRequest modifyChargeAsPercentageLoanAmountWithInterest() {
+        return new ChargeRequest().locale(LOCALE).chargeCalculationType(ChargeCalculationType.PERCENT_OF_AMOUNT_AND_INTEREST.getValue())
+                .chargePaymentMode(ChargePaymentMode.ACCOUNT_TRANSFER.getValue());
+    }
+
+    private ChargeRequest modifyChargeAsPercentageInterest() {
+        return new ChargeRequest().locale(LOCALE).chargeCalculationType(ChargeCalculationType.PERCENT_OF_INTEREST.getValue())
+                .chargePaymentMode(ChargePaymentMode.ACCOUNT_TRANSFER.getValue());
+    }
+
+    private ChargeRequest modifyWithdrawalFeeSavingsCharge() {
+        return new ChargeRequest().locale(LOCALE).chargeCalculationType(ChargeCalculationType.PERCENT_OF_AMOUNT.getValue());
+    }
+
+    private ChargeRequest modifyChargeFeeFrequencyAsYears() {
+        return new ChargeRequest().locale(LOCALE).feeFrequency(String.valueOf(ChargesHelper.CHARGE_FEE_FREQUENCY_YEARS)).feeInterval("2");
+    }
 }
