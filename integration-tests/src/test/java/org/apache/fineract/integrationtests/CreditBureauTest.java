@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 import org.apache.fineract.infrastructure.creditbureau.data.CreditBureauReportData;
 import org.apache.fineract.integrationtests.common.CreditBureauConfigurationHelper;
 import org.apache.fineract.integrationtests.common.CreditBureauIntegrationHelper;
-import org.apache.fineract.integrationtests.common.Utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +55,6 @@ public class CreditBureauTest {
 
     @BeforeEach
     public void setup() {
-        Utils.initializeRESTAssured();
         configureCreditBureauService();
     }
 

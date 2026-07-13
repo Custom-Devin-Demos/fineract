@@ -18,16 +18,14 @@
  */
 package org.apache.fineract.integrationtests.organization.teller;
 
+import static org.apache.fineract.client.feign.util.FeignCalls.ok;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import org.apache.fineract.client.feign.FineractFeignClient;
 import org.apache.fineract.client.models.GetTellersTellerIdCashiersCashiersIdTransactionsResponse;
+import org.apache.fineract.client.models.StaffCreateRequest;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
-import org.apache.fineract.integrationtests.common.organisation.StaffHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,21 +33,25 @@ public class CashierSummaryAndTransactionsTest {
 
     private CashierTransactionsHelper cashierTransactionsHelper;
 
-    private ResponseSpecification responseSpecification;
-    private RequestSpecification requestSpecification;
-
     @BeforeEach
     public void setup() {
-        Utils.initializeRESTAssured();
+        final FineractFeignClient fineractClient = FineractFeignClientHelper.getFineractFeignClient();
+        cashierTransactionsHelper = new CashierTransactionsHelper(fineractClient);
+        createStaff(fineractClient);
+        cashierTransactionsHelper.createTeller();
+        cashierTransactionsHelper.createCashier(1L);
+    }
 
-        requestSpecification = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        requestSpecification.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        responseSpecification = new ResponseSpecBuilder().expectStatusCode(200).build();
-        cashierTransactionsHelper = new CashierTransactionsHelper(requestSpecification, responseSpecification);
-        StaffHelper.createStaff(requestSpecification, responseSpecification);
-        cashierTransactionsHelper.createTeller(requestSpecification, responseSpecification);
-        cashierTransactionsHelper.createCashier(requestSpecification, responseSpecification);
-
+    private void createStaff(final FineractFeignClient fineractClient) {
+        final StaffCreateRequest request = new StaffCreateRequest()//
+                .officeId(1L)//
+                .firstname(Utils.uniqueRandomStringGenerator("michael_", 5))//
+                .lastname(Utils.uniqueRandomStringGenerator("Doe_", 4))//
+                .isLoanOfficer(true)//
+                .joiningDate("20 September 2011")//
+                .dateFormat("dd MMMM yyyy")//
+                .locale("en");
+        ok(() -> fineractClient.staff().createStaff(request));
     }
 
     @Test
