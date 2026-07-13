@@ -27,7 +27,13 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.fineract.client.models.GetSavingsProductsProductIdResponse;
+import org.apache.fineract.client.models.PostSavingsProductsRequest;
+import org.apache.fineract.client.models.PostSavingsProductsResponse;
+import org.apache.fineract.client.models.PutSavingsProductsProductIdRequest;
+import org.apache.fineract.client.models.PutSavingsProductsProductIdResponse;
+import org.apache.fineract.client.util.Calls;
 import org.apache.fineract.client.util.JSON;
+import org.apache.fineract.integrationtests.common.FineractClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.accounting.Account;
 import org.slf4j.Logger;
@@ -501,6 +507,26 @@ public class SavingsProductHelper {
         final String GET_PRODUCT_BY_ID_URL = SAVINGS_PRODUCT_URL + "/" + productId + "?" + Utils.TENANT_IDENTIFIER;
         final String response = Utils.performServerGet(requestSpec, responseSpec, GET_PRODUCT_BY_ID_URL);
         return GSON.fromJson(response, GetSavingsProductsProductIdResponse.class);
+    }
+
+    public static PostSavingsProductsResponse createSavingsProduct(final PostSavingsProductsRequest request) {
+        return Calls.ok(FineractClientHelper.getFineractClient().savingsProducts.createSavingsProduct(request));
+    }
+
+    public static PutSavingsProductsProductIdResponse updateSavingsProduct(final Long productId,
+            final PutSavingsProductsProductIdRequest request) {
+        return Calls.ok(FineractClientHelper.getFineractClient().savingsProducts.updateSavingsProduct(productId, request));
+    }
+
+    public static GetSavingsProductsProductIdResponse getSavingsProductById(final Long productId) {
+        LOG.info("-------------------- RETRIEVING SAVINGS DEPOSIT PRODUCT BY ID --------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().savingsProducts.retrieveOneSavingsProduct(productId));
+    }
+
+    public static void verifySavingsProductCreatedOnServer(final Long generatedProductID) {
+        LOG.info("------------------------------CHECK CLIENT DETAILS------------------------------------\n");
+        final GetSavingsProductsProductIdResponse product = getSavingsProductById(generatedProductID);
+        assertEquals(generatedProductID, product.getId(), "ERROR IN CREATING THE Savings Product");
     }
 
 }

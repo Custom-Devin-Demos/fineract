@@ -108,6 +108,22 @@ public final class ExternalEventHelper {
         Utils.performServerDelete(requestSpec, responseSpec, url, null);
     }
 
+    public static List<org.apache.fineract.client.models.ExternalEventResponse> getAllExternalEvents() {
+        log.info("---------------------------------GETTING ALL EXTERNAL EVENTS---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().legacy.getAllExternalEvents(null, null, null, null));
+    }
+
+    public static List<org.apache.fineract.client.models.ExternalEventResponse> getAllExternalEvents(final Filter filter) {
+        log.info("---------------------------------GETTING ALL EXTERNAL EVENTS---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().legacy.getAllExternalEvents(filter.idempotencyKey, filter.type,
+                filter.category, filter.aggregateRootId));
+    }
+
+    public static void deleteAllExternalEvents() {
+        log.info("-----------------------------DELETE ALL EXTERNAL EVENTS PARTITIONS----------------------------------------");
+        Calls.ok(FineractClientHelper.getFineractClient().legacy.deleteAllExternalEvents());
+    }
+
     // TODO: Rewrite to use fineract-client instead!
     // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
     // org.apache.fineract.client.models.PostLoansLoanIdRequest)

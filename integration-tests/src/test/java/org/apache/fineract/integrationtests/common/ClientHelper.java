@@ -47,6 +47,7 @@ import org.apache.fineract.client.models.ClientAddressRequest;
 import org.apache.fineract.client.models.ClientTextSearch;
 import org.apache.fineract.client.models.DeleteClientsClientIdResponse;
 import org.apache.fineract.client.models.GetClientTransferProposalDateResponse;
+import org.apache.fineract.client.models.GetClientsChargesPageItems;
 import org.apache.fineract.client.models.GetClientsClientIdAccountsResponse;
 import org.apache.fineract.client.models.GetClientsClientIdResponse;
 import org.apache.fineract.client.models.GetClientsClientIdTransactionsResponse;
@@ -56,6 +57,10 @@ import org.apache.fineract.client.models.LoanAccountLockResponseDTO;
 import org.apache.fineract.client.models.PageClientSearchData;
 import org.apache.fineract.client.models.PagedRequestClientTextSearch;
 import org.apache.fineract.client.models.PostClientClientIdAddressesResponse;
+import org.apache.fineract.client.models.PostClientsClientIdChargesChargeIdRequest;
+import org.apache.fineract.client.models.PostClientsClientIdChargesChargeIdResponse;
+import org.apache.fineract.client.models.PostClientsClientIdChargesRequest;
+import org.apache.fineract.client.models.PostClientsClientIdChargesResponse;
 import org.apache.fineract.client.models.PostClientsClientIdIdentifiersRequest;
 import org.apache.fineract.client.models.PostClientsClientIdIdentifiersResponse;
 import org.apache.fineract.client.models.PostClientsClientIdRequest;
@@ -1201,6 +1206,62 @@ public class ClientHelper {
     public static PostClientsClientIdIdentifiersRequest createClientIdentifer(final Long documentType) {
         return new PostClientsClientIdIdentifiersRequest().documentTypeId(documentType).documentKey(Utils.randomStringGenerator("ID_", 10))
                 .description(Utils.randomStringGenerator("Desc_", 50)).status("Active");
+    }
+
+    public static GetClientsClientIdResponse getClient(final Long clientId) {
+        return Calls.ok(FineractClientHelper.getFineractClient().clients.retrieveOneClient(clientId, null));
+    }
+
+    public static void verifyClientCreatedOnServer(final Long clientId) {
+        log.info("------------------------------CHECK CLIENT DETAILS------------------------------------\n");
+        assertEquals(clientId, getClient(clientId).getId(), "ERROR IN CREATING THE CLIENT");
+    }
+
+    public static PostClientClientIdAddressesResponse createClientAddress(final Long clientId, final Long addressTypeId,
+            final ClientAddressRequest request) {
+        log.info("---------------------------------CREATING A CLIENT ADDRESS ---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().clientAddresses.createClientAddress(clientId, request, addressTypeId));
+    }
+
+    public static List<AddressData> getClientAddresses(final Long clientId) {
+        log.info("---------------------------------GET A CLIENT'S ADDRESSES ---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().clientAddresses.retrieveAllClientAddresses(clientId, null, null));
+    }
+
+    public static PostClientsClientIdChargesResponse addChargesForClient(final Long clientId,
+            final PostClientsClientIdChargesRequest request) {
+        log.info("--------------------------------- ADD CHARGES FOR Client --------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().clientCharges.createClientCharge(clientId, request));
+    }
+
+    public static PostClientsClientIdChargesChargeIdResponse payChargesForClients(final Long clientId, final Long clientChargeId,
+            final PostClientsClientIdChargesChargeIdRequest request) {
+        log.info("--------------------------------- PAY CHARGES FOR CLIENT --------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().clientCharges.payOrWaiveClientCharge(clientId, clientChargeId, request,
+                "paycharge"));
+    }
+
+    public static PostClientsClientIdChargesChargeIdResponse waiveChargesForClients(final Long clientId, final Long clientChargeId,
+            final PostClientsClientIdChargesChargeIdRequest request) {
+        log.info("--------------------------------- WAIVE CHARGES FOR CLIENT --------------------------------");
+        return Calls.ok(
+                FineractClientHelper.getFineractClient().clientCharges.payOrWaiveClientCharge(clientId, clientChargeId, request, "waive"));
+    }
+
+    public static GetClientsChargesPageItems getClientCharge(final Long clientId, final Long clientChargeId) {
+        log.info("---------------------------------GET CLIENT CHARGE---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().clientCharges.retrieveOneClientCharge(clientId, clientChargeId));
+    }
+
+    public static GetClientsClientIdTransactionsTransactionIdResponse getClientTransaction(final Long clientId, final Long transactionId) {
+        log.info("---------------------------------GET CLIENT CHARGE TRANSACTIONS---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().clientTransactions.retrieveClientTransaction(clientId, transactionId));
+    }
+
+    public static PostClientsClientIdTransactionsTransactionIdResponse revertClientChargeTransaction(final Long clientId,
+            final Long transactionId) {
+        log.info("---------------------------------UNDO TRANSACTION---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().clientTransactions.undoClientTransaction(clientId, transactionId, "undo"));
     }
 
 }

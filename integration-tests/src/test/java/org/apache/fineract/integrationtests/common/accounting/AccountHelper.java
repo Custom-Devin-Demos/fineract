@@ -165,6 +165,10 @@ public class AccountHelper {
         return Calls.ok(FineractClientHelper.getFineractClient().glAccounts.retreiveAccount(glAccountId, false));
     }
 
+    public static GetGLAccountsResponse getAccountingWithRunningBalanceById(final Long accountId) {
+        return Calls.ok(FineractClientHelper.getFineractClient().glAccounts.retreiveAccount(accountId, true));
+    }
+
     public static Account createAssetGlAccount(final String glAccountName) {
         PostGLAccountsResponse postGLAccountsResponse = createGLAccount(
                 createGlAccount(GLAccountType.ASSET, Utils.uniqueRandomStringGenerator(glAccountName, 6), null));
