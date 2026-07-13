@@ -18,14 +18,23 @@
  */
 package org.apache.fineract.integrationtests.common.fixeddeposit;
 
+import static org.apache.fineract.client.feign.util.FeignCalls.fail;
+import static org.apache.fineract.client.feign.util.FeignCalls.ok;
+
 import com.google.gson.Gson;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.fineract.client.feign.services.FixedDepositProductApiFixed;
+import org.apache.fineract.client.models.GetFixedDepositProductsProductIdChartSlabs;
+import org.apache.fineract.client.models.GetFixedDepositProductsProductIdResponse;
+import org.apache.fineract.client.models.GetFixedDepositProductsResponse;
 import org.apache.fineract.integrationtests.common.CommonConstants;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.accounting.Account;
 import org.slf4j.Logger;
@@ -45,6 +54,15 @@ public class FixedDepositProductHelper {
     public FixedDepositProductHelper(final RequestSpecification requestSpec, final ResponseSpecification responseSpec) {
         this.requestSpec = requestSpec;
         this.responseSpec = responseSpec;
+    }
+
+    public FixedDepositProductHelper() {
+        this.requestSpec = null;
+        this.responseSpec = null;
+    }
+
+    private static FixedDepositProductApiFixed api() {
+        return FineractFeignClientHelper.getFineractFeignClient().create(FixedDepositProductApiFixed.class);
     }
 
     private static final String FIXED_DEPOSIT_PRODUCT_URL = "/fineract-provider/api/v1/fixeddepositproducts";
@@ -115,6 +133,10 @@ public class FixedDepositProductHelper {
     // org.apache.fineract.client.models.PostLoansLoanIdRequest)
     @Deprecated(forRemoval = true)
     public String build(final String validFrom, final String validTo, final boolean withCharts) {
+        return new Gson().toJson(buildRequestBody(validFrom, validTo, withCharts));
+    }
+
+    Map<String, Object> buildRequestBody(final String validFrom, final String validTo, final boolean withCharts) {
         final HashMap<String, Object> map = new HashMap<>();
 
         List<HashMap<String, Object>> charts = new ArrayList<HashMap<String, Object>>();
@@ -167,9 +189,32 @@ public class FixedDepositProductHelper {
             map.putAll(getAccountMappingForAccrualBased());
         }
 
-        String FixedDepositProductCreateJson = new Gson().toJson(map);
-        LOG.info("{}", FixedDepositProductCreateJson);
-        return FixedDepositProductCreateJson;
+        return map;
+    }
+
+    public Integer createProduct(final String validFrom, final String validTo) {
+        return createProduct(validFrom, validTo, true);
+    }
+
+    public Integer createProduct(final String validFrom, final String validTo, final boolean withCharts) {
+        return ok(() -> api().createFixedDepositProduct(buildRequestBody(validFrom, validTo, withCharts))).getResourceId().intValue();
+    }
+
+    public void createProductExpectingError(final String validFrom, final String validTo, final boolean withCharts) {
+        fail(() -> api().createFixedDepositProduct(buildRequestBody(validFrom, validTo, withCharts)));
+    }
+
+    public List<GetFixedDepositProductsResponse> retrieveAllProducts() {
+        return ok(() -> FineractFeignClientHelper.getFineractFeignClient().fixedDepositProduct().retrieveAllFixedDepositProducts());
+    }
+
+    public GetFixedDepositProductsProductIdResponse retrieveProductById(final Integer productId) {
+        return ok(() -> FineractFeignClientHelper.getFineractFeignClient().fixedDepositProduct()
+                .retrieveOneFixedDepositProduct(productId.longValue()));
+    }
+
+    public Collection<GetFixedDepositProductsProductIdChartSlabs> getActiveChartSlabs(final Integer productId) {
+        return retrieveProductById(productId).getActiveChart().getChartSlabs();
     }
 
     // TODO: Rewrite to use fineract-client instead!
@@ -509,42 +554,6 @@ public class FixedDepositProductHelper {
         LOG.info("--------------------- CREATING FIXED DEPOSIT PRODUCT ------------------------");
         return Utils.performServerPost(requestSpec, responseSpec, CREATE_FIXED_DEPOSIT_PRODUCT_URL, fixedDepositProductCreateJson,
                 CommonConstants.RESPONSE_RESOURCE_ID);
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static ArrayList retrieveAllFixedDepositProducts(final RequestSpecification requestSpec,
-            final ResponseSpecification responseSpec) {
-        LOG.info("-------------------- RETRIEVING ALL FIXED DEPOSIT PRODUCTS ---------------------");
-        final ArrayList response = Utils.performServerGet(requestSpec, responseSpec,
-                FIXED_DEPOSIT_PRODUCT_URL + "?" + Utils.TENANT_IDENTIFIER, "");
-        return response;
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static HashMap retrieveFixedDepositProductById(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            final String productId) {
-        LOG.info("------------------------ RETRIEVING FIXED DEPOSIT PRODUCT BY ID ------------------------");
-        final String GET_FD_PRODUCT_BY_ID_URL = FIXED_DEPOSIT_PRODUCT_URL + "/" + productId + "?" + Utils.TENANT_IDENTIFIER;
-        final HashMap response = Utils.performServerGet(requestSpec, responseSpec, GET_FD_PRODUCT_BY_ID_URL, "");
-        return response;
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static ArrayList getInterestRateChartSlabsByProductId(final RequestSpecification requestSpec,
-            final ResponseSpecification responseSpec, final Integer productId) {
-        LOG.info("-------------------- RETRIEVE INTEREST CHART BY PRODUCT ID ---------------------");
-        final ArrayList response = Utils.performServerGet(requestSpec, responseSpec, INTEREST_CHART_URL + "?productId=" + productId,
-                "chartSlabs");
-        return response;
     }
 
 }
