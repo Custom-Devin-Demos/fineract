@@ -21,19 +21,25 @@ package org.apache.fineract.integrationtests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import feign.Param;
+import feign.RequestLine;
+import feign.Response;
+import feign.Util;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
 import java.util.UUID;
 import org.apache.fineract.client.models.AllowAttributeOverrides;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
+import org.apache.fineract.client.models.ChargeRequest;
 import org.apache.fineract.client.models.GetCodesResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.PostChargeOffReasonToExpenseAccountMappings;
@@ -43,26 +49,25 @@ import org.apache.fineract.client.models.PostLoanProductsRequest;
 import org.apache.fineract.client.models.PostLoanProductsResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdChargesChargeIdRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdChargesChargeIdResponse;
+import org.apache.fineract.client.models.PostLoansLoanIdChargesRequest;
+import org.apache.fineract.client.models.PostLoansLoanIdRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
+import org.apache.fineract.client.models.PostRunaccrualsRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.client.models.PutLoansLoanIdResponse;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
+import org.apache.fineract.client.models.PutLoansLoanIdRequest;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.accounting.Account;
 import org.apache.fineract.integrationtests.common.accounting.AccountHelper;
 import org.apache.fineract.integrationtests.common.accounting.JournalEntry;
-import org.apache.fineract.integrationtests.common.accounting.JournalEntryHelper;
 import org.apache.fineract.integrationtests.common.accounting.PeriodicAccrualAccountingHelper;
 import org.apache.fineract.integrationtests.common.charges.ChargesHelper;
 import org.apache.fineract.integrationtests.common.loans.LoanApplicationTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
-import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
-import org.apache.fineract.integrationtests.common.system.CodeHelper;
-import org.apache.fineract.integrationtests.inlinecob.InlineLoanCOBHelper;
 import org.apache.fineract.portfolio.loanaccount.loanschedule.domain.LoanScheduleType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,37 +75,22 @@ import org.junit.jupiter.api.Test;
 
 public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
 
-    private ResponseSpecification responseSpec;
-    private RequestSpecification requestSpec;
-    private ClientHelper clientHelper;
-    private LoanTransactionHelper loanTransactionHelper;
-    private JournalEntryHelper journalEntryHelper;
-    private AccountHelper accountHelper;
+    private static final ObjectMapper RAW_MAPPER = new ObjectMapper();
+    private static final RawApi RAW = FineractFeignClientHelper.getFineractFeignClient().create(RawApi.class);
+
     private Account assetAccount;
     private Account incomeAccount;
     private Account expenseAccount;
     private Account overpaymentAccount;
-    private DateTimeFormatter dateFormatter = new DateTimeFormatterBuilder().appendPattern("dd MMMM yyyy").toFormatter();
-    private InlineLoanCOBHelper inlineLoanCOBHelper;
-    private PeriodicAccrualAccountingHelper periodicAccrualAccountingHelper;
+    private final DateTimeFormatter dateFormatter = new DateTimeFormatterBuilder().appendPattern("dd MMMM yyyy").toFormatter();
+    private final PeriodicAccrualAccountingHelper periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper();
 
     @BeforeEach
     public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.requestSpec.header("Fineract-Platform-TenantId", "default");
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
-        this.assetAccount = this.accountHelper.createAssetAccount();
-        this.incomeAccount = this.accountHelper.createIncomeAccount();
-        this.expenseAccount = this.accountHelper.createExpenseAccount();
-        this.overpaymentAccount = this.accountHelper.createLiabilityAccount();
-        this.journalEntryHelper = new JournalEntryHelper(this.requestSpec, this.responseSpec);
-        this.clientHelper = new ClientHelper(this.requestSpec, this.responseSpec);
-        this.inlineLoanCOBHelper = new InlineLoanCOBHelper(this.requestSpec, this.responseSpec);
-        this.periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(this.requestSpec, this.responseSpec);
+        this.assetAccount = AccountHelper.createAssetGlAccount("assetAccount");
+        this.incomeAccount = AccountHelper.createIncomeGlAccount("incomeAccount");
+        this.expenseAccount = AccountHelper.createExpenseGlAccount("expenseAccount");
+        this.overpaymentAccount = AccountHelper.createLiabilityGlAccount("overpaymentAccount");
     }
 
     @Test
@@ -119,31 +109,28 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
 
             final Integer loanProductID = createLoanProductWithPeriodicAccrualAccounting(assetAccount, incomeAccount, expenseAccount,
                     overpaymentAccount);
-            final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             final Integer loanId = createLoanAccount(clientId, loanProductID, loanExternalIdStr);
 
             // apply charges
-            Integer feeCharge = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", false));
+            Long feeCharge = createLoanCharge(10.0, false);
 
             LocalDate targetDate = LocalDate.of(2022, 9, 5);
             final String feeCharge1AddedDate = dateFormatter.format(targetDate);
-            Integer feeLoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(feeCharge), feeCharge1AddedDate, "10"));
+            Long feeLoanChargeId = addLoanCharge(loanId, feeCharge, feeCharge1AddedDate);
 
             // apply penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", true));
+            Long penalty = createLoanCharge(10.0, true);
 
             final String penaltyCharge1AddedDate = dateFormatter.format(targetDate);
 
-            Integer penalty1LoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), penaltyCharge1AddedDate, "10"));
+            Long penalty1LoanChargeId = addLoanCharge(loanId, penalty, penaltyCharge1AddedDate);
 
             // set loan as chargeoff
             String randomText = Utils.randomStringGenerator("en", 5) + Utils.randomNumberGenerator(6)
                     + Utils.randomStringGenerator("is", 5);
-            Integer chargeOffReasonId = CodeHelper.createChargeOffCodeValue(requestSpec, responseSpec, randomText, 1);
+            Long chargeOffReasonId = codeHelper.createCodeValue(codeHelper.retrieveCodeByName("ChargeOffReasons").getId(),
+                    new PostCodeValuesDataRequest().name(randomText).position(1)).getSubResourceId();
             String transactionExternalId = UUID.randomUUID().toString();
             this.loanTransactionHelper.chargeOffLoan((long) loanId,
                     new PostLoansLoanIdTransactionsRequest().transactionDate("6 September 2022").locale("en").dateFormat("dd MMMM yyyy")
@@ -276,32 +263,25 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
 
             final Integer loanProductID = createLoanProductWithCashBasedAccounting(assetAccount, incomeAccount, expenseAccount,
                     overpaymentAccount);
-            final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             final Integer loanId = createLoanAccount(clientId, loanProductID, loanExternalIdStr);
 
             // apply charges
-            Integer feeCharge = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", false));
+            Long feeCharge = createLoanCharge(10.0, false);
 
             LocalDate targetDate = LocalDate.of(2022, 9, 5);
             final String feeCharge1AddedDate = dateFormatter.format(targetDate);
-            Integer feeLoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(feeCharge), feeCharge1AddedDate, "10"));
+            Long feeLoanChargeId = addLoanCharge(loanId, feeCharge, feeCharge1AddedDate);
 
             // apply penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", true));
+            Long penalty = createLoanCharge(10.0, true);
 
             final String penaltyCharge1AddedDate = dateFormatter.format(targetDate);
 
-            Integer penalty1LoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), penaltyCharge1AddedDate, "10"));
+            Long penalty1LoanChargeId = addLoanCharge(loanId, penalty, penaltyCharge1AddedDate);
 
             // set loan as fraud
-            final String command = "markAsFraud";
-            String payload = loanTransactionHelper.getLoanFraudPayloadAsJSON("fraud", "true");
-            PutLoansLoanIdResponse putLoansLoanIdResponse = loanTransactionHelper.modifyLoanCommand(loanId, command, payload,
-                    this.responseSpec);
+            ok(fineractClient().loans.modifyLoanApplication((long) loanId, new PutLoansLoanIdRequest().fraud(true), "markAsFraud"));
 
             GetLoansLoanIdResponse loanDetails = this.loanTransactionHelper.getLoanDetails((long) loanId);
             assertTrue(loanDetails.getStatus().getActive());
@@ -310,7 +290,8 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
             // set loan as chargeoff
             String randomText = Utils.randomStringGenerator("en", 5) + Utils.randomNumberGenerator(6)
                     + Utils.randomStringGenerator("is", 5);
-            Integer chargeOffReasonId = CodeHelper.createChargeOffCodeValue(requestSpec, responseSpec, randomText, 1);
+            Long chargeOffReasonId = codeHelper.createCodeValue(codeHelper.retrieveCodeByName("ChargeOffReasons").getId(),
+                    new PostCodeValuesDataRequest().name(randomText).position(1)).getSubResourceId();
             String transactionExternalId = UUID.randomUUID().toString();
             this.loanTransactionHelper.chargeOffLoan((long) loanId,
                     new PostLoansLoanIdTransactionsRequest().transactionDate("6 September 2022").locale("en").dateFormat("dd MMMM yyyy")
@@ -452,26 +433,22 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
 
             final Integer loanProductID = createLoanProductWithPeriodicAccrualAccounting(assetAccount, incomeAccount, expenseAccount,
                     overpaymentAccount);
-            final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             final Integer loanId = createLoanAccount(clientId, loanProductID, loanExternalIdStr);
 
             // apply charges
-            Integer feeCharge = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", false));
+            Long feeCharge = createLoanCharge(10.0, false);
 
             LocalDate targetDate = LocalDate.of(2022, 9, 5);
             final String feeCharge1AddedDate = dateFormatter.format(targetDate);
-            Integer feeLoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(feeCharge), feeCharge1AddedDate, "10"));
+            Long feeLoanChargeId = addLoanCharge(loanId, feeCharge, feeCharge1AddedDate);
 
             // apply penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "110", true));
+            Long penalty = createLoanCharge(110.0, true);
 
             final String penaltyCharge1AddedDate = dateFormatter.format(targetDate);
 
-            Integer penalty1LoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), penaltyCharge1AddedDate, "10"));
+            Long penalty1LoanChargeId = addLoanCharge(loanId, penalty, penaltyCharge1AddedDate);
 
             GetLoansLoanIdResponse loanDetails = this.loanTransactionHelper.getLoanDetails((long) loanId);
             assertTrue(loanDetails.getStatus().getActive());
@@ -511,31 +488,28 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
 
             final Integer loanProductID = createLoanProductWithPeriodicAccrualAccounting(assetAccount, incomeAccount, expenseAccount,
                     overpaymentAccount);
-            final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             final Integer loanId = createLoanAccount(clientId, loanProductID, loanExternalIdStr);
 
             // apply charges
-            Integer feeCharge = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", false));
+            Long feeCharge = createLoanCharge(10.0, false);
 
             LocalDate targetDate = LocalDate.of(2022, 9, 5);
             final String feeCharge1AddedDate = dateFormatter.format(targetDate);
-            Integer feeLoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(feeCharge), feeCharge1AddedDate, "10"));
+            Long feeLoanChargeId = addLoanCharge(loanId, feeCharge, feeCharge1AddedDate);
 
             // apply penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", true));
+            Long penalty = createLoanCharge(10.0, true);
 
             final String penaltyCharge1AddedDate = dateFormatter.format(targetDate);
 
-            Integer penalty1LoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), penaltyCharge1AddedDate, "10"));
+            Long penalty1LoanChargeId = addLoanCharge(loanId, penalty, penaltyCharge1AddedDate);
 
             // set loan as chargeoff
             String randomText = Utils.randomStringGenerator("en", 5) + Utils.randomNumberGenerator(6)
                     + Utils.randomStringGenerator("is", 5);
-            Integer chargeOffReasonId = CodeHelper.createChargeOffCodeValue(requestSpec, responseSpec, randomText, 1);
+            Long chargeOffReasonId = codeHelper.createCodeValue(codeHelper.retrieveCodeByName("ChargeOffReasons").getId(),
+                    new PostCodeValuesDataRequest().name(randomText).position(1)).getSubResourceId();
             String transactionExternalId = UUID.randomUUID().toString();
             this.loanTransactionHelper.chargeOffLoan((long) loanId,
                     new PostLoansLoanIdTransactionsRequest().transactionDate("6 September 2022").locale("en").dateFormat("dd MMMM yyyy")
@@ -590,26 +564,22 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
 
             final Integer loanProductID = createLoanProductWithCashBasedAccounting(assetAccount, incomeAccount, expenseAccount,
                     overpaymentAccount);
-            final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             final Integer loanId = createLoanAccount(clientId, loanProductID, loanExternalIdStr);
 
             // apply charges
-            Integer feeCharge = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", false));
+            Long feeCharge = createLoanCharge(10.0, false);
 
             LocalDate targetDate = LocalDate.of(2022, 9, 5);
             final String feeCharge1AddedDate = dateFormatter.format(targetDate);
-            Integer feeLoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(feeCharge), feeCharge1AddedDate, "10"));
+            Long feeLoanChargeId = addLoanCharge(loanId, feeCharge, feeCharge1AddedDate);
 
             // apply penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", true));
+            Long penalty = createLoanCharge(10.0, true);
 
             final String penaltyCharge1AddedDate = dateFormatter.format(targetDate);
 
-            Integer penalty1LoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), penaltyCharge1AddedDate, "10"));
+            Long penalty1LoanChargeId = addLoanCharge(loanId, penalty, penaltyCharge1AddedDate);
 
             GetLoansLoanIdResponse loanDetails = this.loanTransactionHelper.getLoanDetails((long) loanId);
             assertTrue(loanDetails.getStatus().getActive());
@@ -652,26 +622,22 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
 
             final Integer loanProductID = createLoanProductWithCashBasedAccounting(assetAccount, incomeAccount, expenseAccount,
                     overpaymentAccount);
-            final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             final Integer loanId = createLoanAccount(clientId, loanProductID, loanExternalIdStr);
 
             // apply charges
-            Integer feeCharge = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", false));
+            Long feeCharge = createLoanCharge(10.0, false);
 
             LocalDate targetDate = LocalDate.of(2022, 9, 5);
             final String feeCharge1AddedDate = dateFormatter.format(targetDate);
-            Integer feeLoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(feeCharge), feeCharge1AddedDate, "10"));
+            Long feeLoanChargeId = addLoanCharge(loanId, feeCharge, feeCharge1AddedDate);
 
             // apply penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", true));
+            Long penalty = createLoanCharge(10.0, true);
 
             final String penaltyCharge1AddedDate = dateFormatter.format(targetDate);
 
-            Integer penalty1LoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), penaltyCharge1AddedDate, "10"));
+            Long penalty1LoanChargeId = addLoanCharge(loanId, penalty, penaltyCharge1AddedDate);
 
             GetLoansLoanIdResponse loanDetails = this.loanTransactionHelper.getLoanDetails((long) loanId);
             assertTrue(loanDetails.getStatus().getActive());
@@ -679,7 +645,8 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
             // set loan as chargeoff
             String randomText = Utils.randomStringGenerator("en", 5) + Utils.randomNumberGenerator(6)
                     + Utils.randomStringGenerator("is", 5);
-            Integer chargeOffReasonId = CodeHelper.createChargeOffCodeValue(requestSpec, responseSpec, randomText, 1);
+            Long chargeOffReasonId = codeHelper.createCodeValue(codeHelper.retrieveCodeByName("ChargeOffReasons").getId(),
+                    new PostCodeValuesDataRequest().name(randomText).position(1)).getSubResourceId();
             String transactionExternalId = UUID.randomUUID().toString();
             this.loanTransactionHelper.chargeOffLoan((long) loanId,
                     new PostLoansLoanIdTransactionsRequest().transactionDate("6 September 2022").locale("en").dateFormat("dd MMMM yyyy")
@@ -727,36 +694,32 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 9, 5));
+            updateBusinessDate(LocalDate.of(2020, 9, 5));
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
 
             final Integer loanProductId = this.createLoanProductWithInterestRecalculation(assetAccount, incomeAccount, expenseAccount,
                     overpaymentAccount);
-            final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
             final Integer loanId = this.createLoanEntityWithEntitiesForTestResceduleWithLatePayment(clientId, loanProductId);
 
             // apply charges
-            Integer feeCharge = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", false));
+            Long feeCharge = createLoanCharge(10.0, false);
 
             LocalDate targetDate = LocalDate.of(2022, 9, 5);
             final String feeCharge1AddedDate = dateFormatter.format(targetDate);
-            Integer feeLoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(feeCharge), feeCharge1AddedDate, "10"));
+            Long feeLoanChargeId = addLoanCharge(loanId, feeCharge, feeCharge1AddedDate);
 
             // apply penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", true));
+            Long penalty = createLoanCharge(10.0, true);
 
             final String penaltyCharge1AddedDate = dateFormatter.format(targetDate);
 
-            Integer penalty1LoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), penaltyCharge1AddedDate, "10"));
+            Long penalty1LoanChargeId = addLoanCharge(loanId, penalty, penaltyCharge1AddedDate);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 9, 6));
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
+            updateBusinessDate(LocalDate.of(2020, 9, 6));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.longValue());
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId.longValue());
             assertTrue(loanDetails.getTransactions().get(0).getType().getDisbursement());
             assertTrue(loanDetails.getTransactions().get(1).getType().getAccrual());
@@ -765,7 +728,8 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
             // set loan as chargeoff
             String randomText = Utils.randomStringGenerator("en", 5) + Utils.randomNumberGenerator(6)
                     + Utils.randomStringGenerator("is", 5);
-            Integer chargeOffReasonId = CodeHelper.createChargeOffCodeValue(requestSpec, responseSpec, randomText, 1);
+            Long chargeOffReasonId = codeHelper.createCodeValue(codeHelper.retrieveCodeByName("ChargeOffReasons").getId(),
+                    new PostCodeValuesDataRequest().name(randomText).position(1)).getSubResourceId();
             String transactionExternalId = UUID.randomUUID().toString();
             this.loanTransactionHelper.chargeOffLoan((long) loanId,
                     new PostLoansLoanIdTransactionsRequest().transactionDate("6 September 2020").locale("en").dateFormat("dd MMMM yyyy")
@@ -775,8 +739,8 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
             assertTrue(loanDetails.getChargedOff());
 
             // no accrual
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 9, 7));
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
+            updateBusinessDate(LocalDate.of(2020, 9, 7));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.longValue());
             loanDetails = loanTransactionHelper.getLoanDetails(loanId.longValue());
             assertTrue(loanDetails.getTransactions().get(0).getType().getDisbursement());
             assertTrue(loanDetails.getTransactions().get(1).getType().getAccrual());
@@ -784,9 +748,10 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
             assertTrue(loanDetails.getTransactions().get(3).getType().getChargeoff());
             assertEquals(4, loanDetails.getTransactions().size());
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 9, 8));
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
-            this.periodicAccrualAccountingHelper.runPeriodicAccrualAccounting(dateFormatter.format(LocalDate.of(2020, 9, 8)));
+            updateBusinessDate(LocalDate.of(2020, 9, 8));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.longValue());
+            this.periodicAccrualAccountingHelper.runPeriodicAccrualAccounting(new PostRunaccrualsRequest().dateFormat("dd MMMM yyyy")
+                    .locale("en_GB").tillDate(dateFormatter.format(LocalDate.of(2020, 9, 8))));
             loanDetails = loanTransactionHelper.getLoanDetails(loanId.longValue());
             assertTrue(loanDetails.getTransactions().get(0).getType().getDisbursement());
             assertTrue(loanDetails.getTransactions().get(1).getType().getAccrual());
@@ -796,8 +761,8 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
 
             loanTransactionHelper.undoChargeOffLoan((long) loanId, new PostLoansLoanIdTransactionsRequest());
             // generate accrual again
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 9, 9));
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
+            updateBusinessDate(LocalDate.of(2020, 9, 9));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.longValue());
             loanDetails = loanTransactionHelper.getLoanDetails(loanId.longValue());
             assertTrue(loanDetails.getTransactions().get(0).getType().getDisbursement());
             assertTrue(loanDetails.getTransactions().get(1).getType().getAccrual());
@@ -806,7 +771,7 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
             assertTrue(loanDetails.getTransactions().get(4).getType().getAccrual());
             assertEquals(5, loanDetails.getTransactions().size());
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 9, 10));
+            updateBusinessDate(LocalDate.of(2020, 9, 10));
 
             this.loanTransactionHelper.chargeOffLoan((long) loanId,
                     new PostLoansLoanIdTransactionsRequest().transactionDate("10 September 2020").locale("en").dateFormat("dd MMMM yyyy")
@@ -814,7 +779,7 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
 
             loanTransactionHelper.makeLoanRepayment(loanId.longValue(), new PostLoansLoanIdTransactionsRequest().dateFormat("dd MMMM yyyy")
                     .transactionDate("10 September 2020").locale("en").transactionAmount(15825.23));
-            inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
+            inlineLoanCOBHelper.executeInlineCOB(loanId.longValue());
             loanDetails = loanTransactionHelper.getLoanDetails(loanId.longValue());
             assertTrue(loanDetails.getTransactions().get(0).getType().getDisbursement());
             assertTrue(loanDetails.getTransactions().get(1).getType().getAccrual());
@@ -834,12 +799,12 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
     @Test
     public void advancedAccountingForChargeOff() {
         runAt("02 January 2023", () -> {
-            final Account chargeOffDelinquentExpenseAccount = accountHelper
-                    .createExpenseAccount("delinquent_expense_for_charge_off_reason");
+            final Account chargeOffDelinquentExpenseAccount = AccountHelper
+                    .createExpenseGlAccount("delinquent_expense_for_charge_off_reason");
             GetCodesResponse chargeOffReasonCode = fetchChargeOffReasonCode();
             PostCodeValueDataResponse chargeOffReason = codeHelper.createCodeValue(chargeOffReasonCode.getId(),
                     new PostCodeValuesDataRequest().name(Utils.uniqueRandomStringGenerator("DELINQUENT_", 6)).isActive(true).position(10));
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsResponse productsResponse = createLoanProductWithAdvancedChargeOffAccounting(chargeOffReason,
                     chargeOffDelinquentExpenseAccount);
             // We are creating a 2nd product to test, the mapping is correct!
@@ -863,15 +828,15 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
     @Test
     public void advancedAccountingForChargeOffFallbackToRegular() {
         runAt("02 January 2023", () -> {
-            final Account chargeOffDelinquentExpenseAccount = accountHelper
-                    .createExpenseAccount("delinquent_expense_for_charge_off_reason");
+            final Account chargeOffDelinquentExpenseAccount = AccountHelper
+                    .createExpenseGlAccount("delinquent_expense_for_charge_off_reason");
             GetCodesResponse chargeOffReasonCode = fetchChargeOffReasonCode();
             PostCodeValueDataResponse chargeOffReason = codeHelper.createCodeValue(chargeOffReasonCode.getId(),
                     new PostCodeValuesDataRequest().name(Utils.uniqueRandomStringGenerator("DELINQUENT_", 6)).isActive(true).position(10));
             GetCodesResponse secondChargeOffReason = fetchChargeOffReasonCode();
             PostCodeValueDataResponse secondChargeOffReasonResponse = codeHelper.createCodeValue(secondChargeOffReason.getId(),
                     new PostCodeValuesDataRequest().name(Utils.uniqueRandomStringGenerator("FRAUD_", 6)).isActive(true).position(10));
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsResponse productsResponse = createLoanProductWithAdvancedChargeOffAccounting(chargeOffReason,
                     chargeOffDelinquentExpenseAccount);
             // We are creating a 2nd product to test, the mapping is correct!
@@ -995,9 +960,10 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
                 .withExpectedDisbursementDate("03 September 2022").withSubmittedOnDate("01 September 2022").withLoanType("individual")
                 .withExternalId(externalId).build(clientID.toString(), loanProductID.toString(), null);
 
-        final Integer loanId = loanTransactionHelper.getLoanId(loanApplicationJSON);
-        loanTransactionHelper.approveLoan("02 September 2022", "1000", loanId, null);
-        loanTransactionHelper.disburseLoanWithNetDisbursalAmount("03 September 2022", loanId, "1000");
+        final Integer loanId = postLoanApplication(loanApplicationJSON);
+        loanTransactionHelper.approveLoan(loanId.longValue(), new PostLoansLoanIdRequest().dateFormat("dd MMMM yyyy").locale("en")
+                .approvedLoanAmount(new BigDecimal("1000")).approvedOnDate("02 September 2022").note("Approval NOTE"));
+        disburseLoanWithNetDisbursalAmount(loanId, "03 September 2022", "1000");
         return loanId;
     }
 
@@ -1009,7 +975,7 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
                 .withAccountingRulePeriodicAccrual(accounts).withDaysInMonth("30").withDaysInYear("365").withMoratorium("0", "0")
                 .build(null);
 
-        return this.loanTransactionHelper.getLoanProductId(loanProductJSON);
+        return postLoanProduct(loanProductJSON);
     }
 
     private Integer createLoanProductWithInterestRecalculation(final Account... accounts) {
@@ -1037,7 +1003,7 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
                         recalculationCompoundingFrequencyDayOfWeekType)
                 .withAccountingRulePeriodicAccrual(accounts).build(null);
 
-        return this.loanTransactionHelper.getLoanProductId(loanProductJSON);
+        return postLoanProduct(loanProductJSON);
     }
 
     private Integer createLoanProductWithCashBasedAccounting(final Account... accounts) {
@@ -1047,7 +1013,7 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
                 .withInterestRateFrequencyTypeAsMonths().withAmortizationTypeAsEqualPrincipalPayment().withInterestTypeAsFlat()
                 .withAccountingRuleAsCashBased(accounts).withDaysInMonth("30").withDaysInYear("365").withMoratorium("0", "0").build(null);
 
-        return this.loanTransactionHelper.getLoanProductId(loanProductJSON);
+        return postLoanProduct(loanProductJSON);
     }
 
     private Integer createLoanEntityWithEntitiesForTestResceduleWithLatePayment(Integer clientId, Integer loanProductId) {
@@ -1063,11 +1029,75 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
                         LoanApplicationTestBuilder.DUE_PENALTY_INTEREST_PRINCIPAL_FEE_IN_ADVANCE_PENALTY_INTEREST_PRINCIPAL_FEE_STRATEGY)
                 .withinterestChargedFromDate(submittedDate).build(clientId.toString(), loanProductId.toString(), null);
 
-        Integer loanId = this.loanTransactionHelper.getLoanId(loanApplicationJSON);
+        Integer loanId = postLoanApplication(loanApplicationJSON);
 
-        this.loanTransactionHelper.approveLoan(submittedDate, loanId);
-        this.loanTransactionHelper.disburseLoanWithNetDisbursalAmount(submittedDate, loanId, "10000.00");
+        loanTransactionHelper.approveLoan(loanId.longValue(),
+                new PostLoansLoanIdRequest().dateFormat("dd MMMM yyyy").locale("en").approvedOnDate(submittedDate).note("Approval NOTE"));
+        disburseLoanWithNetDisbursalAmount(loanId, submittedDate, "10000.00");
         return loanId;
+    }
+
+    private Long createLoanCharge(final double amount, final boolean penalty) {
+        return chargesHelper.createCharges(new ChargeRequest().active(true).amount(amount).chargeAppliesTo(1)
+                .chargeCalculationType(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT).currencyCode("USD").locale("en").monthDayFormat("dd MMM")
+                .name(Utils.uniqueRandomStringGenerator("Charge_Loans_", 6)).chargeTimeType(ChargesHelper.CHARGE_SPECIFIED_DUE_DATE)
+                .chargePaymentMode(0).penalty(penalty)).getResourceId();
+    }
+
+    private Long addLoanCharge(final Integer loanId, final Long chargeId, final String dueDate) {
+        return loanTransactionHelper.addChargesForLoan(loanId.longValue(), new PostLoansLoanIdChargesRequest().chargeId(chargeId)
+                .amount(10.0).dueDate(dueDate).dateFormat("dd MMMM yyyy").locale("en_GB")).getResourceId();
+    }
+
+    private void updateBusinessDate(final LocalDate date) {
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(date)).dateFormat(Utils.DATE_FORMAT).locale("en"));
+    }
+
+    private Integer postLoanProduct(final String loanProductJSON) {
+        return rawJson(rawBody(RAW.createLoanProduct(rawJson(loanProductJSON)))).get("resourceId").asInt();
+    }
+
+    private Integer postLoanApplication(final String loanApplicationJSON) {
+        return rawJson(rawBody(RAW.createLoan(rawJson(loanApplicationJSON)))).get("loanId").asInt();
+    }
+
+    private void disburseLoanWithNetDisbursalAmount(final Integer loanId, final String date, final String netDisbursalAmount) {
+        final HashMap<String, String> map = new HashMap<>();
+        map.put("locale", "en");
+        map.put("dateFormat", "dd MMMM yyyy");
+        map.put("actualDisbursementDate", date);
+        map.put("netDisbursalAmount", netDisbursalAmount);
+        map.put("note", "DISBURSE NOTE");
+        rawBody(RAW.loanCommand(loanId, "disburse", rawJson(new Gson().toJson(map))));
+    }
+
+    private static String rawBody(final Response response) {
+        try (Response r = response) {
+            return Util.toString(r.body().asReader(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static JsonNode rawJson(final String json) {
+        try {
+            return RAW_MAPPER.readTree(json);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    interface RawApi {
+
+        @RequestLine("POST v1/loanproducts")
+        Response createLoanProduct(JsonNode body);
+
+        @RequestLine("POST v1/loans")
+        Response createLoan(JsonNode body);
+
+        @RequestLine("POST v1/loans/{loanId}?command={command}")
+        Response loanCommand(@Param("loanId") Integer loanId, @Param("command") String command, JsonNode body);
     }
 
 }
