@@ -18,204 +18,112 @@
  */
 package org.apache.fineract.integrationtests.common.system;
 
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
-import java.util.ArrayList;
-import java.util.HashMap;
-import org.apache.fineract.integrationtests.common.Utils;
+import static org.apache.fineract.client.feign.util.FeignCalls.fail;
+import static org.apache.fineract.client.feign.util.FeignCalls.ok;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.List;
+import org.apache.fineract.client.feign.FineractFeignClient;
+import org.apache.fineract.client.feign.util.CallFailedRuntimeException;
+import org.apache.fineract.client.models.GetAccountNumberFormatsIdResponse;
+import org.apache.fineract.client.models.PostAccountNumberFormatsRequest;
+import org.apache.fineract.client.models.PutAccountNumberFormatsRequest;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AccountNumberPreferencesHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(AccountNumberPreferencesHelper.class);
-    private final RequestSpecification requestSpec;
 
-    private final ResponseSpecification responseSpec;
+    private static final Long CLIENT_ACCOUNT_TYPE = 1L;
+    private static final Long LOAN_ACCOUNT_TYPE = 2L;
+    private static final Long SAVINGS_ACCOUNT_TYPE = 3L;
+    private static final Long CENTER_ACCOUNT_TYPE = 4L;
+    private static final Long GROUPS_ACCOUNT_TYPE = 5L;
 
-    private static final String ACCOUNT_NUMBER_FORMATS_REQUEST_URL = "/fineract-provider/api/v1/accountnumberformats";
+    private static final Long OFFICE_NAME_PREFIX = 1L;
+    private static final Long CLIENT_TYPE_PREFIX = 101L;
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public AccountNumberPreferencesHelper(final RequestSpecification requestSpec, final ResponseSpecification responseSpec) {
-        this.requestSpec = requestSpec;
-        this.responseSpec = responseSpec;
+    private final FineractFeignClient fineractClient;
+
+    public AccountNumberPreferencesHelper() {
+        this.fineractClient = FineractFeignClientHelper.getFineractFeignClient();
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public Object createClientAccountNumberPreference(ResponseSpecification responseSpec, String jsonAttributeToGetBack) {
-        LOG.info("---------------------------------CREATING CLIENT ACCOUNT NUMBER PREFERENCE------------------------------------------");
-
-        final String requestJSON = new AccountNumberPreferencesTestBuilder().clientBuild();
-
-        final String URL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "?" + Utils.TENANT_IDENTIFIER;
-
-        return Utils.performServerPost(this.requestSpec, responseSpec, URL, requestJSON, jsonAttributeToGetBack);
+    public Long createClientAccountNumberPreference() {
+        return create(CLIENT_ACCOUNT_TYPE, CLIENT_TYPE_PREFIX);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public Object createLoanAccountNumberPreference(ResponseSpecification responseSpec, String jsonAttributeToGetBack) {
-        LOG.info("---------------------------------CREATING LOAN ACCOUNT NUMBER PREFERENCE------------------------------------------");
-
-        final String requestJSON = new AccountNumberPreferencesTestBuilder().loanBuild();
-
-        final String URL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "?" + Utils.TENANT_IDENTIFIER;
-        return Utils.performServerPost(this.requestSpec, responseSpec, URL, requestJSON, jsonAttributeToGetBack);
+    public Long createLoanAccountNumberPreference() {
+        return create(LOAN_ACCOUNT_TYPE, OFFICE_NAME_PREFIX);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public Object createSavingsAccountNumberPreference(ResponseSpecification responseSpec, String jsonAttributeToGetBack) {
-        LOG.info("---------------------------------CREATING SAVINGS ACCOUNT NUMBER PREFERENCE------------------------------------------");
-
-        final String requestJSON = new AccountNumberPreferencesTestBuilder().savingsBuild();
-
-        final String URL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "?" + Utils.TENANT_IDENTIFIER;
-        return Utils.performServerPost(this.requestSpec, responseSpec, URL, requestJSON, jsonAttributeToGetBack);
-
+    public Long createSavingsAccountNumberPreference() {
+        return create(SAVINGS_ACCOUNT_TYPE, OFFICE_NAME_PREFIX);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public Object createGroupsAccountNumberPreference(ResponseSpecification responseSpec, String jsonAttributeToGetBack) {
-        LOG.info("---------------------------------CREATING GROUPS ACCOUNT NUMBER PREFERENCE------------------------------------------");
-
-        final String requestJSON = new AccountNumberPreferencesTestBuilder().groupsBuild();
-
-        final String URL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "?" + Utils.TENANT_IDENTIFIER;
-        return Utils.performServerPost(this.requestSpec, responseSpec, URL, requestJSON, jsonAttributeToGetBack);
-
+    public Long createGroupsAccountNumberPreference() {
+        return create(GROUPS_ACCOUNT_TYPE, OFFICE_NAME_PREFIX);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public Object createCenterAccountNumberPreference(ResponseSpecification responseSpec, String jsonAttributeToGetBack) {
-        LOG.info("---------------------------------CREATING CENTER ACCOUNT NUMBER PREFERENCE------------------------------------------");
-
-        final String requestJSON = new AccountNumberPreferencesTestBuilder().centerBuild();
-
-        final String URL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "?" + Utils.TENANT_IDENTIFIER;
-        return Utils.performServerPost(this.requestSpec, responseSpec, URL, requestJSON, jsonAttributeToGetBack);
-
+    public Long createCenterAccountNumberPreference() {
+        return create(CENTER_ACCOUNT_TYPE, OFFICE_NAME_PREFIX);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public HashMap<String, Object> createAccountNumberPreferenceWithInvalidData(ResponseSpecification responseSpec, String accountType,
-            String prefixType, String jsonAttributeToGetBack) {
-
-        final String requestJSON = new AccountNumberPreferencesTestBuilder().invalidDataBuild(accountType, prefixType);
-
-        final String URL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "?" + Utils.TENANT_IDENTIFIER;
-        return Utils.performServerPost(this.requestSpec, responseSpec, URL, requestJSON, jsonAttributeToGetBack);
-
+    private Long create(final Long accountType, final Long prefixType) {
+        return ok(() -> fineractClient.accountNumberFormat()
+                .create(new PostAccountNumberFormatsRequest().accountType(accountType).prefixType(prefixType))).getResourceId();
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public HashMap<String, Object> updateAccountNumberPreference(final Integer accountNumberFormatId, final String prefixType,
-            ResponseSpecification responseSpec, String jsonAttributeToGetBack) {
-
-        final String requestJSON = new AccountNumberPreferencesTestBuilder().updatePrefixType(prefixType);
-
-        final String URL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "/" + accountNumberFormatId + "?" + Utils.TENANT_IDENTIFIER;
-
-        return Utils.performServerPut(this.requestSpec, responseSpec, URL, requestJSON, jsonAttributeToGetBack);
-
+    public CallFailedRuntimeException createAccountNumberPreferenceExpectingFailure(final Long accountType, final Long prefixType) {
+        return fail(() -> fineractClient.accountNumberFormat()
+                .create(new PostAccountNumberFormatsRequest().accountType(accountType).prefixType(prefixType)));
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public HashMap<String, Object> deleteAccountNumberPreference(final Integer accountNumberFormatId, ResponseSpecification responseSpec,
-            String jsonAttributeToGetBack) {
-
-        LOG.info("---------------------------------DELETING ACCOUNT NUMBER PREFERENCE------------------------------------------");
-
-        final String URL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "/" + accountNumberFormatId + "?" + Utils.TENANT_IDENTIFIER;
-
-        return Utils.performServerDelete(this.requestSpec, responseSpec, URL, jsonAttributeToGetBack);
+    public Long updateAccountNumberPreference(final Long accountNumberFormatId, final Long prefixType) {
+        return ok(() -> fineractClient.accountNumberFormat().update1(accountNumberFormatId,
+                new PutAccountNumberFormatsRequest().prefixType(prefixType))).getResourceId();
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public Object getAccountNumberPreference(final Integer accountNumberFormatId, final String jsonAttributeToGetBack) {
-        final String URL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "/" + accountNumberFormatId + "?" + Utils.TENANT_IDENTIFIER;
-
-        return Utils.performServerGet(requestSpec, responseSpec, URL, jsonAttributeToGetBack);
+    public CallFailedRuntimeException updateAccountNumberPreferenceExpectingFailure(final Long accountNumberFormatId,
+            final Long prefixType) {
+        return fail(() -> fineractClient.accountNumberFormat().update1(accountNumberFormatId,
+                new PutAccountNumberFormatsRequest().prefixType(prefixType)));
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public ArrayList<HashMap<String, Object>> getAllAccountNumberPreferences() {
-        final String URL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "?" + Utils.TENANT_IDENTIFIER;
-        final ArrayList<HashMap<String, Object>> response = Utils.performServerGet(requestSpec, responseSpec, URL, "");
-        return response;
+    public Long deleteAccountNumberPreference(final Long accountNumberFormatId) {
+        return ok(() -> fineractClient.accountNumberFormat().delete(accountNumberFormatId)).getResourceId();
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public void verifyCreationOfAccountNumberPreferences(final Integer clientAccountNumberPreferenceId,
-            final Integer loanAccountNumberPreferenceId, final Integer savingsAccountNumberPreferenceId,
-            final Integer groupsAccountNumberPreferenceId, final Integer centerAccountNumberPreferenceId,
-            ResponseSpecification responseSpec, RequestSpecification requestSpec) {
-
-        final String clientURL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "/" + clientAccountNumberPreferenceId + "?" + Utils.TENANT_IDENTIFIER;
-
-        Utils.performServerGet(requestSpec, responseSpec, clientURL, "id");
-
-        final String loanURL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "/" + loanAccountNumberPreferenceId + "?" + Utils.TENANT_IDENTIFIER;
-
-        Utils.performServerGet(requestSpec, responseSpec, loanURL, "id");
-
-        final String savingsURL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "/" + savingsAccountNumberPreferenceId + "?"
-                + Utils.TENANT_IDENTIFIER;
-
-        Utils.performServerGet(requestSpec, responseSpec, savingsURL, "id");
-
-        final String groupsURL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "/" + groupsAccountNumberPreferenceId + "?" + Utils.TENANT_IDENTIFIER;
-
-        Utils.performServerGet(requestSpec, responseSpec, groupsURL, "id");
-
-        final String centerURL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "/" + centerAccountNumberPreferenceId + "?" + Utils.TENANT_IDENTIFIER;
-
-        Utils.performServerGet(requestSpec, responseSpec, centerURL, "id");
+    public CallFailedRuntimeException deleteAccountNumberPreferenceExpectingFailure(final Long accountNumberFormatId) {
+        return fail(() -> fineractClient.accountNumberFormat().delete(accountNumberFormatId));
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public void verifyUpdationOfAccountNumberPreferences(final Integer accountNumberPreferenceId, ResponseSpecification responseSpec,
-            RequestSpecification requestSpec) {
+    public GetAccountNumberFormatsIdResponse getAccountNumberPreference(final Long accountNumberFormatId) {
+        return ok(() -> fineractClient.accountNumberFormat().retrieveOne(accountNumberFormatId));
+    }
 
-        final String URL = ACCOUNT_NUMBER_FORMATS_REQUEST_URL + "/" + accountNumberPreferenceId + "?" + Utils.TENANT_IDENTIFIER;
-        Utils.performServerGet(requestSpec, responseSpec, URL, "id");
+    public String getAccountNumberPreferencePrefixValue(final Long accountNumberFormatId) {
+        return getAccountNumberPreference(accountNumberFormatId).getPrefixType().getValue();
+    }
 
+    public List<GetAccountNumberFormatsIdResponse> getAllAccountNumberPreferences() {
+        return ok(() -> fineractClient.accountNumberFormat().retrieveAll2());
+    }
+
+    public void verifyCreationOfAccountNumberPreferences(final Long clientAccountNumberPreferenceId,
+            final Long loanAccountNumberPreferenceId, final Long savingsAccountNumberPreferenceId,
+            final Long groupsAccountNumberPreferenceId, final Long centerAccountNumberPreferenceId) {
+        assertEquals(clientAccountNumberPreferenceId, getAccountNumberPreference(clientAccountNumberPreferenceId).getId());
+        assertEquals(loanAccountNumberPreferenceId, getAccountNumberPreference(loanAccountNumberPreferenceId).getId());
+        assertEquals(savingsAccountNumberPreferenceId, getAccountNumberPreference(savingsAccountNumberPreferenceId).getId());
+        assertEquals(groupsAccountNumberPreferenceId, getAccountNumberPreference(groupsAccountNumberPreferenceId).getId());
+        assertEquals(centerAccountNumberPreferenceId, getAccountNumberPreference(centerAccountNumberPreferenceId).getId());
+    }
+
+    public void verifyUpdationOfAccountNumberPreferences(final Long accountNumberPreferenceId) {
+        assertEquals(accountNumberPreferenceId, getAccountNumberPreference(accountNumberPreferenceId).getId());
+        LOG.info("Verified account number preference (ID: {})", accountNumberPreferenceId);
     }
 }
