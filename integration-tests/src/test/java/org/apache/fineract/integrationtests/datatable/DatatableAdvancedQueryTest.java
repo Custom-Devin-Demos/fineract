@@ -116,7 +116,7 @@ public class DatatableAdvancedQueryTest {
         requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
         requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        datatableHelper = new DatatableHelper(requestSpec, responseSpec);
+        datatableHelper = new DatatableHelper();
         savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
         savingsProductHelper = new SavingsProductHelper();
         globalConfigurationHelper = new GlobalConfigurationHelper();
@@ -323,17 +323,17 @@ public class DatatableAdvancedQueryTest {
         final List<HashMap<String, Object>> datatableColumns = new ArrayList<>();
         DatatableHelper.addDatatableColumnWithUniqueAndIndex(datatableColumns, COLUMN_STRING, API_FIELD_TYPE_STRING, true, 50, null,
                 !multiRow, true);
-        DatatableHelper.addDatatableColumn(datatableColumns, COLUMN_TEXT, API_FIELD_TYPE_TEXT, false, null, null);
-        DatatableHelper.addDatatableColumn(datatableColumns, COLUMN_DATE, API_FIELD_TYPE_DATE, true, null, null);
-        DatatableHelper.addDatatableColumn(datatableColumns, COLUMN_BOOLEAN, API_FIELD_TYPE_BOOLEAN, false, null, null);
-        DatatableHelper.addDatatableColumn(datatableColumns, COLUMN_INTEGER, API_FIELD_TYPE_NUMBER, false, null, null);
-        DatatableHelper.addDatatableColumn(datatableColumns, COLUMN_DECIMAL, API_FIELD_TYPE_DECIMAL, false, null, null);
+        DatatableHelper.addColumn(datatableColumns, COLUMN_TEXT, API_FIELD_TYPE_TEXT, false, null, null);
+        DatatableHelper.addColumn(datatableColumns, COLUMN_DATE, API_FIELD_TYPE_DATE, true, null, null);
+        DatatableHelper.addColumn(datatableColumns, COLUMN_BOOLEAN, API_FIELD_TYPE_BOOLEAN, false, null, null);
+        DatatableHelper.addColumn(datatableColumns, COLUMN_INTEGER, API_FIELD_TYPE_NUMBER, false, null, null);
+        DatatableHelper.addColumn(datatableColumns, COLUMN_DECIMAL, API_FIELD_TYPE_DECIMAL, false, null, null);
         request.put(API_PARAM_COLUMNS, datatableColumns);
 
         String requestJson = new Gson().toJson(request);
         LOG.info("map : {}", requestJson);
 
-        PostDataTablesResponse response = datatableHelper.createDatatable(requestJson);
+        PostDataTablesResponse response = datatableHelper.createDatatableFromJson(requestJson);
         String datatable = response.getResourceIdentifier();
         assertNotNull(datatable);
         GetDataTablesResponse dataTable = datatableHelper.getDataTableDetails(datatable);
@@ -358,17 +358,17 @@ public class DatatableAdvancedQueryTest {
         request.put("dateFormat", SAVINGS_DATE_FORMAT);
 
         String requestJson = new Gson().toJson(request);
-        HashMap<String, Object> response = datatableHelper.createDatatableEntry(datatable, apptableId, true, requestJson);
+        HashMap<String, Object> response = datatableHelper.createEntry(datatable, apptableId, requestJson);
         assertNotNull(response.get("resourceId"));
         return response;
     }
 
     private void deleteDatatable(String datatable, Integer... apptableIds) {
         for (Integer apptableId : apptableIds) {
-            String deletedId = (String) this.datatableHelper.deleteDatatableEntries(datatable, apptableId, "transactionId");
+            String deletedId = (String) this.datatableHelper.deleteEntries(datatable, apptableId, "transactionId");
             assertEquals(apptableId, Integer.valueOf(deletedId), "ERROR IN DELETING THE DATATABLE ENTRY");
         }
-        String deletedDatatable = this.datatableHelper.deleteDatatable(datatable);
+        String deletedDatatable = this.datatableHelper.deleteDatatableByName(datatable);
         assertEquals(datatable, deletedDatatable, "ERROR IN DELETING THE DATATABLE");
     }
 
