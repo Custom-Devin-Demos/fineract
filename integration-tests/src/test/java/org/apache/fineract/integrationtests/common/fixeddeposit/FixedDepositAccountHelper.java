@@ -18,18 +18,29 @@
  */
 package org.apache.fineract.integrationtests.common.fixeddeposit;
 
+import static org.apache.fineract.client.feign.util.FeignCalls.fail;
+import static org.apache.fineract.client.feign.util.FeignCalls.ok;
+
 import com.google.gson.Gson;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.apache.fineract.client.feign.FeignException;
+import org.apache.fineract.client.feign.fixeddeposit.FixedDepositAccountDataFixed;
+import org.apache.fineract.client.feign.services.FixedDepositAccountApiFixed;
+import org.apache.fineract.client.feign.util.CallFailedRuntimeException;
 import org.apache.fineract.client.models.GetFixedDepositAccountsAccountIdTransactionsResponse;
+import org.apache.fineract.client.models.GetFixedDepositProductsProductIdChartSlabs;
 import org.apache.fineract.client.models.PostFixedDepositAccountsFixedDepositAccountIdTransactionsRequest;
 import org.apache.fineract.client.util.Calls;
 import org.apache.fineract.integrationtests.common.CommonConstants;
 import org.apache.fineract.integrationtests.common.FineractClientHelper;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +59,15 @@ public class FixedDepositAccountHelper {
     public FixedDepositAccountHelper(final RequestSpecification requestSpec, final ResponseSpecification responseSpec) {
         this.requestSpec = requestSpec;
         this.responseSpec = responseSpec;
+    }
+
+    public FixedDepositAccountHelper() {
+        this.requestSpec = null;
+        this.responseSpec = null;
+    }
+
+    private static FixedDepositAccountApiFixed api() {
+        return FineractFeignClientHelper.getFineractFeignClient().create(FixedDepositAccountApiFixed.class);
     }
 
     private static final String FIXED_DEPOSIT_ACCOUNT_URL = "/fineract-provider/api/v1/fixeddepositaccounts";
@@ -113,7 +133,11 @@ public class FixedDepositAccountHelper {
     // org.apache.fineract.client.models.PostLoansLoanIdRequest)
     @Deprecated(forRemoval = true)
     public String build(final String clientId, final String productId, final String penalInterestType) {
-        final HashMap<String, Object> map = new HashMap<>();
+        return new Gson().toJson(buildRequestBody(clientId, productId, penalInterestType));
+    }
+
+    Map<String, Object> buildRequestBody(final String clientId, final String productId, final String penalInterestType) {
+        final Map<String, Object> map = new HashMap<>();
 
         map.put("productId", productId);
         map.put("clientId", clientId);
@@ -145,9 +169,7 @@ public class FixedDepositAccountHelper {
         map.put("maturityInstructionId", maturityInstructionId);
         map.put("charges", charges);
 
-        String fixedDepositAccountJson = new Gson().toJson(map);
-        LOG.info("{}", fixedDepositAccountJson);
-        return fixedDepositAccountJson;
+        return map;
     }
 
     // TODO: Rewrite to use fineract-client instead!
@@ -175,27 +197,17 @@ public class FixedDepositAccountHelper {
     // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
     // org.apache.fineract.client.models.PostLoansLoanIdRequest)
     @Deprecated(forRemoval = true)
-    public static HashMap getFixedDepositAccountById(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            final Integer accountID) {
-        final String GET_FIXED_DEPOSIT_BY_ID_URL = FIXED_DEPOSIT_ACCOUNT_URL + "/" + accountID + "?" + Utils.TENANT_IDENTIFIER;
-        LOG.info("------------------------ RETRIEVING FIXED DEPOSIT ACCOUNT BY ID -------------------------");
-        return Utils.performServerGet(requestSpec, responseSpec, GET_FIXED_DEPOSIT_BY_ID_URL, "");
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
     public HashMap getFixedDepositSummary(final Integer accountID) {
         return getFixedDepositDetails(accountID, "summary");
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public HashMap getFixedDepositDetails(final Integer accountID) {
-        return getFixedDepositDetails(accountID, "");
+    public FixedDepositAccountDataFixed getFixedDepositDetails(final Integer accountID) {
+        return ok(() -> api().retrieveOne(accountID.longValue()));
+    }
+
+    public HashMap getStatus(final Integer accountID) {
+        final Map<String, Object> status = ok(() -> api().retrieveOne(accountID.longValue())).getStatus();
+        return status == null ? new HashMap<>() : new HashMap<>(status);
     }
 
     // TODO: Rewrite to use fineract-client instead!
@@ -208,29 +220,6 @@ public class FixedDepositAccountHelper {
         return response;
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static Float getInterestRate(ArrayList<ArrayList<HashMap>> interestSlabData, Integer depositPeriod) {
-
-        Float annualInterestRate = 0.0f;
-        for (Integer slabIndex = 0; slabIndex < interestSlabData.get(0).size(); slabIndex++) {
-            Integer fromPeriod = (Integer) interestSlabData.get(0).get(slabIndex).get("fromPeriod");
-            Integer toPeriod = (Integer) interestSlabData.get(0).get(slabIndex).get("toPeriod");
-            if (depositPeriod >= fromPeriod && depositPeriod <= toPeriod) {
-                annualInterestRate = (Float) interestSlabData.get(0).get(slabIndex).get("annualInterestRate");
-                break;
-            }
-        }
-
-        return annualInterestRate;
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
     public static Float getPrincipalAfterCompoundingInterest(Calendar currentDate, Float principal, Integer depositPeriod,
             double interestPerDay, Integer compoundingInterval, Integer postingInterval) {
 
@@ -261,42 +250,24 @@ public class FixedDepositAccountHelper {
         return principal;
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
     public HashMap updateFixedDepositAccount(final String clientID, final String productID, final String accountID, final String validFrom,
             final String validTo, final String penalInterestType, final String submittedOnDate) {
-
-        final String fixedDepositApplicationJSON = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec) //
-                .withSubmittedOnDate(submittedOnDate) //
-                .build(clientID, productID, penalInterestType);
-
-        return Utils.performServerPut(this.requestSpec, this.responseSpec,
-                FIXED_DEPOSIT_ACCOUNT_URL + "/" + accountID + "?" + Utils.TENANT_IDENTIFIER, fixedDepositApplicationJSON,
-                CommonConstants.RESPONSE_CHANGES);
+        final Map<String, Object> body = new FixedDepositAccountHelper().withSubmittedOnDate(submittedOnDate).buildRequestBody(clientID,
+                productID, penalInterestType);
+        final Map<String, Object> changes = ok(() -> api().update(Long.valueOf(accountID), body)).getChanges();
+        return changes == null ? new HashMap<>() : new HashMap<>(changes);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
     public HashMap updateInterestCalculationConfigForFixedDeposit(final String clientID, final String productID, final String accountID,
             final String submittedOnDate, final String validFrom, final String validTo, final String numberOfDaysPerYear,
             final String penalInterestType, final String interestCalculationType, final String interestCompoundingPeriodType,
             final String interestPostingPeriodType) {
-
-        final String fixedDepositApplicationJSON = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec) //
-                .withSubmittedOnDate(submittedOnDate) //
-                .withNumberOfDaysPerYear(numberOfDaysPerYear) //
-                .withInterestCalculationPeriodType(interestCalculationType) //
-                .withInterestCompoundingPeriodType(interestCompoundingPeriodType) //
-                .withInterestPostingPeriodType(interestPostingPeriodType) //
-                .build(clientID, productID, penalInterestType);
-
-        return Utils.performServerPut(this.requestSpec, this.responseSpec,
-                FIXED_DEPOSIT_ACCOUNT_URL + "/" + accountID + "?" + Utils.TENANT_IDENTIFIER, fixedDepositApplicationJSON,
-                CommonConstants.RESPONSE_CHANGES);
+        final Map<String, Object> body = new FixedDepositAccountHelper().withSubmittedOnDate(submittedOnDate)
+                .withNumberOfDaysPerYear(numberOfDaysPerYear).withInterestCalculationPeriodType(interestCalculationType)
+                .withInterestCompoundingPeriodType(interestCompoundingPeriodType).withInterestPostingPeriodType(interestPostingPeriodType)
+                .buildRequestBody(clientID, productID, penalInterestType);
+        final Map<String, Object> changes = ok(() -> api().update(Long.valueOf(accountID), body)).getChanges();
+        return changes == null ? new HashMap<>() : new HashMap<>(changes);
     }
 
     // TODO: Rewrite to use fineract-client instead!
@@ -309,36 +280,28 @@ public class FixedDepositAccountHelper {
                 getApproveFixedDepositAccountAsJSON(approvedOnDate));
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
     public HashMap undoApproval(final Integer fixedDepositAccountID) {
-        LOG.info("--------------------------------- UNDO APPROVING FIXED DEPOSIT APPLICATION -------------------------------");
-        final String undoBodyJson = "{'note':'UNDO APPROVAL'}";
-        return performFixedDepositApplicationActions(
-                createFixedDepositOperationURL(UNDO_APPROVAL_FIXED_DEPOSIT_COMMAND, fixedDepositAccountID), undoBodyJson);
+        final Map<String, Object> body = new HashMap<>();
+        body.put("note", "UNDO APPROVAL");
+        return commandStatus(fixedDepositAccountID.longValue(), UNDO_APPROVAL_FIXED_DEPOSIT_COMMAND, body);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
     public HashMap rejectApplication(final Integer fixedDepositAccountID, final String rejectedOnDate) {
-        LOG.info("--------------------------------- REJECT FIXED DEPOSIT APPLICATION -------------------------------");
-        return performFixedDepositApplicationActions(createFixedDepositOperationURL(REJECT_FIXED_DEPOSIT_COMMAND, fixedDepositAccountID),
-                getRejectedFixedDepositAsJSON(rejectedOnDate));
+        final Map<String, Object> body = new HashMap<>();
+        body.put("locale", CommonConstants.LOCALE);
+        body.put("dateFormat", CommonConstants.DATE_FORMAT);
+        body.put("rejectedOnDate", rejectedOnDate);
+        body.put("note", "Rejected NOTE");
+        return commandStatus(fixedDepositAccountID.longValue(), REJECT_FIXED_DEPOSIT_COMMAND, body);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
     public HashMap withdrawApplication(final Integer fixedDepositAccountID, final String withdrawApplicationOnDate) {
-        LOG.info("--------------------------------- Withdraw FIXED DEPOSIT APPLICATION -------------------------------");
-        return performFixedDepositApplicationActions(
-                createFixedDepositOperationURL(WITHDRAWN_BY_CLIENT_FIXED_DEPOSIT_COMMAND, fixedDepositAccountID),
-                getWithdrawnFixedDepositAccountAsJSON(withdrawApplicationOnDate));
+        final Map<String, Object> body = new HashMap<>();
+        body.put("locale", CommonConstants.LOCALE);
+        body.put("dateFormat", CommonConstants.DATE_FORMAT);
+        body.put("withdrawnOnDate", withdrawApplicationOnDate);
+        body.put("note", "Withdraw NOTE");
+        return commandStatus(fixedDepositAccountID.longValue(), WITHDRAWN_BY_CLIENT_FIXED_DEPOSIT_COMMAND, body);
     }
 
     // TODO: Rewrite to use fineract-client instead!
@@ -351,26 +314,14 @@ public class FixedDepositAccountHelper {
                 getActivatedFixedDepositAccountAsJSON(activationDate));
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
     public Object deleteFixedDepositApplication(final Integer fixedDepositAccountID, final String jsonAttributeToGetBack) {
-        LOG.info("---------------------------------- DELETE FIXED DEPOSIT APPLICATION ----------------------------------");
-        return Utils.performServerDelete(this.requestSpec, this.responseSpec,
-                FIXED_DEPOSIT_ACCOUNT_URL + "/" + fixedDepositAccountID + "?" + Utils.TENANT_IDENTIFIER, jsonAttributeToGetBack);
-
+        return ok(() -> FineractFeignClientHelper.getFineractFeignClient().fixedDepositAccount()
+                .deleteFixedDepositAccount(fixedDepositAccountID.longValue())).getResourceId().intValue();
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
     public Integer calculateInterestForFixedDeposit(final Integer fixedDepositAccountId) {
-        LOG.info("--------------------------------- CALCULATING INTEREST FOR FIXED DEPOSIT --------------------------------");
-        return (Integer) performFixedDepositActions(
-                createFixedDepositCalculateInterestURL(CALCULATE_INTEREST_FIXED_DEPOSIT_COMMAND, fixedDepositAccountId),
-                getCalculatedInterestForFixedDepositApplicationAsJSON(), CommonConstants.RESPONSE_RESOURCE_ID);
+        return ok(() -> api().handleCommand(fixedDepositAccountId.longValue(), CALCULATE_INTEREST_FIXED_DEPOSIT_COMMAND, new HashMap<>()))
+                .getResourceId().intValue();
     }
 
     // TODO: Rewrite to use fineract-client instead!
@@ -384,37 +335,24 @@ public class FixedDepositAccountHelper {
                 getCalculatedInterestForFixedDepositApplicationAsJSON(), CommonConstants.RESPONSE_RESOURCE_ID);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public HashMap calculatePrematureAmountForFixedDeposit(final Integer fixedDepositAccountId, final String closedOnDate) {
-        LOG.info("--------------------- CALCULATING PREMATURE AMOUNT FOR FIXED DEPOSIT ----------------------------");
-        return (HashMap) performFixedDepositActions(
-                createFixedDepositCalculateInterestURL(CALCULATE_PREMATURE_AMOUNT_COMMAND, fixedDepositAccountId),
-                getCalculatedPrematureAmountForFixedDepositAccountAsJSON(closedOnDate), "");
+    public void calculatePrematureAmountForFixedDeposit(final Integer fixedDepositAccountId, final String closedOnDate) {
+        final Map<String, Object> body = new HashMap<>();
+        body.put("locale", CommonConstants.LOCALE);
+        body.put("dateFormat", CommonConstants.DATE_FORMAT);
+        body.put("closedOnDate", closedOnDate);
+        ok(() -> api().handleCommand(fixedDepositAccountId.longValue(), CALCULATE_PREMATURE_AMOUNT_COMMAND, body));
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
     public Object prematureCloseForFixedDeposit(final Integer fixedDepositAccountId, final String closedOnDate, final String closureType,
             final Integer toSavingsId, final String jsonAttributeToGetBack) {
-        LOG.info("--------------------- PREMATURE CLOSE FOR FIXED DEPOSIT ----------------------------");
-        return performFixedDepositActions(createFixedDepositCalculateInterestURL(PREMATURE_CLOSE_COMMAND, fixedDepositAccountId),
-                getPrematureCloseForFixedDepositAccountAsJSON(closedOnDate, closureType, toSavingsId), jsonAttributeToGetBack);
+        return ok(() -> api().handleCommand(fixedDepositAccountId.longValue(), PREMATURE_CLOSE_COMMAND,
+                prematureCloseBody(closedOnDate, closureType, toSavingsId))).getResourceId().intValue();
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
     public Object closeForFixedDeposit(final Integer fixedDepositAccountId, final String closedOnDate, final String closureType,
             final Integer toSavingsId, final String jsonAttributeToGetBack) {
-        LOG.info("--------------------- CLOSE FOR FIXED DEPOSIT ----------------------------");
-        return performFixedDepositActions(createFixedDepositCalculateInterestURL(CLOSE_FIXED_DEPOSIT_COMMAND, fixedDepositAccountId),
-                getPrematureCloseForFixedDepositAccountAsJSON(closedOnDate, closureType, toSavingsId), jsonAttributeToGetBack);
+        return ok(() -> api().handleCommand(fixedDepositAccountId.longValue(), CLOSE_FIXED_DEPOSIT_COMMAND,
+                prematureCloseBody(closedOnDate, closureType, toSavingsId))).getResourceId().intValue();
     }
 
     // TODO: Rewrite to use fineract-client instead!
@@ -560,16 +498,89 @@ public class FixedDepositAccountHelper {
         return FIXED_DEPOSIT_ACCOUNT_URL + "/" + fixedDepositAccountID + "?command=" + command + "&" + Utils.TENANT_IDENTIFIER;
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static ArrayList retrieveAllFixedDepositAccounts(final RequestSpecification requestSpec,
-            final ResponseSpecification responseSpec) {
-        LOG.info("-------------------- RETRIEVING ALL FIXED DEPOSIT ACCOUNTS ---------------------");
-        final ArrayList response = Utils.performServerGet(requestSpec, responseSpec,
-                FIXED_DEPOSIT_ACCOUNT_URL + "?" + Utils.TENANT_IDENTIFIER, "");
-        return response;
+    public static FixedDepositAccountDataFixed getFixedDepositAccountById(final Integer accountID) {
+        return ok(() -> api().retrieveOne(accountID.longValue()));
+    }
+
+    public static Float getInterestRate(final Collection<GetFixedDepositProductsProductIdChartSlabs> chartSlabs,
+            final Integer depositPeriod) {
+        Float annualInterestRate = 0.0f;
+        for (final GetFixedDepositProductsProductIdChartSlabs slab : chartSlabs) {
+            final Integer fromPeriod = slab.getFromPeriod();
+            final Integer toPeriod = slab.getToPeriod();
+            if (fromPeriod != null && toPeriod != null && depositPeriod >= fromPeriod && depositPeriod <= toPeriod) {
+                final Double rate = slab.getAnnualInterestRate();
+                annualInterestRate = rate == null ? 0.0f : rate.floatValue();
+                break;
+            }
+        }
+        return annualInterestRate;
+    }
+
+    public Integer submitApplication(final String clientId, final String productId, final String penalInterestType) {
+        return ok(() -> api().submitApplication(buildRequestBody(clientId, productId, penalInterestType))).getResourceId().intValue();
+    }
+
+    public FixedDepositAccountDataFixed.Summary getFixedDepositSummary(final Long accountId) {
+        return ok(() -> api().retrieveOne(accountId)).getSummary();
+    }
+
+    public HashMap approveFixedDeposit(final Long fixedDepositAccountId, final String approvedOnDate) {
+        final Map<String, Object> body = new HashMap<>();
+        body.put("locale", CommonConstants.LOCALE);
+        body.put("dateFormat", CommonConstants.DATE_FORMAT);
+        body.put("approvedOnDate", approvedOnDate);
+        body.put("note", "Approval NOTE");
+        return commandStatus(fixedDepositAccountId, APPROVE_FIXED_DEPOSIT_COMMAND, body);
+    }
+
+    public HashMap activateFixedDeposit(final Long fixedDepositAccountId, final String activationDate) {
+        final Map<String, Object> body = new HashMap<>();
+        body.put("locale", CommonConstants.LOCALE);
+        body.put("dateFormat", CommonConstants.DATE_FORMAT);
+        body.put("activatedOnDate", activationDate);
+        return commandStatus(fixedDepositAccountId, ACTIVATE_FIXED_DEPOSIT_COMMAND, body);
+    }
+
+    public Integer postInterestForFixedDeposit(final Long fixedDepositAccountId) {
+        return ok(() -> api().handleCommand(fixedDepositAccountId, POST_INTEREST_FIXED_DEPOSIT_COMMAND, new HashMap<>())).getResourceId()
+                .intValue();
+    }
+
+    public List<HashMap> prematureCloseForFixedDepositExpectingError(final Integer fixedDepositAccountId, final String closedOnDate,
+            final String closureType, final Integer toSavingsId) {
+        final CallFailedRuntimeException error = fail(() -> api().handleCommand(fixedDepositAccountId.longValue(), PREMATURE_CLOSE_COMMAND,
+                prematureCloseBody(closedOnDate, closureType, toSavingsId)));
+        return extractErrors(error);
+    }
+
+    private static HashMap commandStatus(final Long accountId, final String command, final Map<String, Object> body) {
+        final Map<String, Object> changes = ok(() -> api().handleCommand(accountId, command, body)).getChanges();
+        return changes == null ? null : (HashMap) changes.get("status");
+    }
+
+    private static Map<String, Object> prematureCloseBody(final String closedOnDate, final String closureType, final Integer toSavingsId) {
+        final Map<String, Object> map = new HashMap<>();
+        map.put("locale", CommonConstants.LOCALE);
+        map.put("dateFormat", CommonConstants.DATE_FORMAT);
+        map.put("closedOnDate", closedOnDate);
+        map.put("onAccountClosureId", closureType);
+        if (toSavingsId != null) {
+            map.put("toSavingsAccountId", toSavingsId);
+            map.put("transferDescription", "Transferring To Savings Account");
+        }
+        return map;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<HashMap> extractErrors(final CallFailedRuntimeException error) {
+        final Throwable cause = error.getCause();
+        final String body = cause instanceof FeignException ? ((FeignException) cause).responseBodyAsString() : null;
+        if (body == null) {
+            return new ArrayList<>();
+        }
+        final HashMap parsed = new Gson().fromJson(body, HashMap.class);
+        return (List<HashMap>) parsed.get("errors");
     }
 
     public FixedDepositAccountHelper withSubmittedOnDate(final String fixedDepositApplicationSubmittedDate) {

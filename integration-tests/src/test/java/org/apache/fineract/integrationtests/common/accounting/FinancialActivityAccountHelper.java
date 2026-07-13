@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.integrationtests.common.accounting;
 
+import static org.apache.fineract.client.feign.util.FeignCalls.ok;
+
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import java.util.HashMap;
@@ -26,8 +28,7 @@ import org.apache.fineract.client.models.DeleteFinancialActivityAccountsResponse
 import org.apache.fineract.client.models.GetFinancialActivityAccountsResponse;
 import org.apache.fineract.client.models.PostFinancialActivityAccountsRequest;
 import org.apache.fineract.client.models.PostFinancialActivityAccountsResponse;
-import org.apache.fineract.client.util.Calls;
-import org.apache.fineract.integrationtests.common.FineractClientHelper;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 
 @SuppressWarnings("rawtypes")
@@ -92,16 +93,21 @@ public class FinancialActivityAccountHelper {
     }
 
     public PostFinancialActivityAccountsResponse createFinancialActivityAccount(PostFinancialActivityAccountsRequest request) {
-        return Calls.ok(FineractClientHelper.getFineractClient().financialActivyAccountMappings
+        return ok(() -> FineractFeignClientHelper.getFineractFeignClient().mappingFinancialActivitiesToAccounts()
                 .createGLAccountMappingFinancialActivityAccount(request));
     }
 
     public List<GetFinancialActivityAccountsResponse> getAllFinancialActivityAccounts() {
-        return Calls.ok(FineractClientHelper.getFineractClient().financialActivyAccountMappings.retrieveAll());
+        return ok(() -> FineractFeignClientHelper.getFineractFeignClient().mappingFinancialActivitiesToAccounts().retrieveAll());
+    }
+
+    public GetFinancialActivityAccountsResponse getFinancialActivityAccount(Long financialActivityAccountId) {
+        return ok(() -> FineractFeignClientHelper.getFineractFeignClient().mappingFinancialActivitiesToAccounts()
+                .retreive(financialActivityAccountId));
     }
 
     public DeleteFinancialActivityAccountsResponse deleteFinancialActivityAccount(Long financialMappingId) {
-        return Calls.ok(FineractClientHelper.getFineractClient().financialActivyAccountMappings
+        return ok(() -> FineractFeignClientHelper.getFineractFeignClient().mappingFinancialActivitiesToAccounts()
                 .deleteGLAccountMappingFinancialActivityAccount(financialMappingId));
     }
 }
