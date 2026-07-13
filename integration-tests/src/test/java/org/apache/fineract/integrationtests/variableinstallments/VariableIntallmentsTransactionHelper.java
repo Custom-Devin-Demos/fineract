@@ -18,55 +18,67 @@
  */
 package org.apache.fineract.integrationtests.variableinstallments;
 
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.Param;
+import feign.RequestLine;
+import feign.Response;
+import feign.Util;
+import io.restassured.path.json.JsonPath;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.fineract.integrationtests.ConfigProperties;
-import org.apache.fineract.integrationtests.common.Utils;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class VariableIntallmentsTransactionHelper {
 
-    private static final String URL = ConfigProperties.Backend.PROTOCOL + "://" + ConfigProperties.Backend.HOST + ":"
-            + ConfigProperties.Backend.PORT + "/fineract-provider/api/v1/loans/";
+    private static final ObjectMapper RAW_MAPPER = new ObjectMapper();
 
-    private final RequestSpecification requestSpec;
-    private final ResponseSpecification responseSpec;
+    private final ScheduleApi api;
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public VariableIntallmentsTransactionHelper(final RequestSpecification requestSpec, final ResponseSpecification responseSpec) {
-        this.requestSpec = requestSpec;
-        this.responseSpec = responseSpec;
+    interface ScheduleApi {
+
+        @RequestLine("GET v1/loans/{loanId}?associations=repaymentSchedule&exclude=guarantors")
+        Response retrieveSchedule(@Param("loanId") Integer loanId);
+
+        @RequestLine("POST v1/loans/{loanId}/schedule?command=calculateLoanSchedule")
+        Response calculateLoanSchedule(@Param("loanId") Integer loanId, JsonNode body);
+
+        @RequestLine("POST v1/loans/{loanId}/schedule?command=addVariations")
+        Response addVariations(@Param("loanId") Integer loanId, JsonNode body);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
+    public VariableIntallmentsTransactionHelper() {
+        this.api = FineractFeignClientHelper.getFineractFeignClient().create(ScheduleApi.class);
+    }
+
     public Map retrieveSchedule(Integer loanId) {
-        String url = URL + loanId + "?associations=repaymentSchedule&exclude=guarantors&" + Utils.TENANT_IDENTIFIER;
-        return Utils.performServerGet(requestSpec, responseSpec, url, "");
+        return JsonPath.from(rawBody(this.api.retrieveSchedule(loanId))).get("");
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
     public HashMap validateVariations(final String exceptions, Integer loanId) {
-        String url = URL + loanId + "/schedule?command=calculateLoanSchedule&" + Utils.TENANT_IDENTIFIER;
-        return Utils.performServerPost(this.requestSpec, this.responseSpec, url, exceptions, "");
+        return JsonPath.from(rawBody(this.api.calculateLoanSchedule(loanId, rawJson(exceptions)))).get("");
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
     public HashMap submitVariations(final String exceptions, Integer loanId) {
-        String url = URL + loanId + "/schedule?command=addVariations&" + Utils.TENANT_IDENTIFIER;
-        return Utils.performServerPost(this.requestSpec, this.responseSpec, url, exceptions, "");
+        return JsonPath.from(rawBody(this.api.addVariations(loanId, rawJson(exceptions)))).get("");
+    }
+
+    private static String rawBody(Response response) {
+        try (Response r = response) {
+            return Util.toString(r.body().asReader(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static JsonNode rawJson(String json) {
+        try {
+            return RAW_MAPPER.readTree(json);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
