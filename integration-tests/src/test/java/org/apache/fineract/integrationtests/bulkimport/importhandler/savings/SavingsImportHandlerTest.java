@@ -18,14 +18,9 @@
  */
 package org.apache.fineract.integrationtests.bulkimport.importhandler.savings;
 
-import com.google.gson.Gson;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
+import static org.apache.fineract.client.feign.util.FeignCalls.ok;
+
+import feign.Response;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,19 +30,23 @@ import java.nio.file.Path;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 import org.apache.fineract.client.models.GetOfficesResponse;
+import org.apache.fineract.client.models.PostClientsRequest;
+import org.apache.fineract.client.models.PostGroupsRequest;
+import org.apache.fineract.client.models.PostSavingsProductsRequest;
+import org.apache.fineract.client.models.StaffCreateRequest;
+import org.apache.fineract.client.models.StaffData;
 import org.apache.fineract.infrastructure.bulkimport.constants.SavingsConstants;
 import org.apache.fineract.infrastructure.bulkimport.constants.TemplatePopulateImportConstants;
 import org.apache.fineract.integrationtests.bulkimport.importhandler.LocalContentStorageUtil;
+import org.apache.fineract.integrationtests.common.ClientHelper;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.GroupHelper;
 import org.apache.fineract.integrationtests.common.OfficeHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.organisation.StaffHelper;
-import org.apache.fineract.integrationtests.common.savings.SavingsAccountHelper;
 import org.apache.fineract.integrationtests.common.savings.SavingsProductHelper;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -56,7 +55,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,24 +63,11 @@ public class SavingsImportHandlerTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(SavingsImportHandlerTest.class);
 
-    private ResponseSpecification responseSpec;
-    private RequestSpecification requestSpec;
-
-    private static final String CREATE_CLIENT_URL = "/fineract-provider/api/v1/clients?" + Utils.TENANT_IDENTIFIER;
     public static final String DATE_FORMAT = "dd MMMM yyyy";
-
-    @BeforeEach
-    public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-    }
 
     @Test
     public void testSavingsImport() throws InterruptedException, IOException, ParseException {
 
-        requestSpec.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         // in order to populate helper sheets
         OfficeHelper officeHelper = new OfficeHelper();
         Integer outcome_office_creation = officeHelper.createOffice(java.time.LocalDate.of(2000, 5, 2)).getResourceId().intValue();
@@ -95,39 +80,35 @@ public class SavingsImportHandlerTest {
         String lastName = Utils.randomStringGenerator("Client_LastName_", 4);
         String externalId = UUID.randomUUID().toString();
 
-        final HashMap<String, Object> clientMap = new HashMap<>();
-        clientMap.put("officeId", outcome_office_creation.toString());
-        clientMap.put("legalFormId", 1);
-        clientMap.put("firstname", firstName);
-        clientMap.put("lastname", lastName);
-        clientMap.put("externalId", externalId);
-        clientMap.put("dateFormat", DATE_FORMAT);
-        clientMap.put("locale", "en");
-        clientMap.put("active", "true");
-        clientMap.put("activationDate", "04 March 2011");
-
-        Integer outcome_client_creation = Utils.performServerPost(requestSpec, responseSpec, CREATE_CLIENT_URL,
-                new Gson().toJson(clientMap), "clientId");
+        Long outcome_client_creation = ClientHelper.createClient(new PostClientsRequest().officeId(outcome_office_creation.longValue())
+                .legalFormId(1L).firstname(firstName).lastname(lastName).externalId(externalId).dateFormat(DATE_FORMAT).locale("en")
+                .active(true).activationDate("04 March 2011")).getClientId();
         Assertions.assertNotNull(outcome_client_creation, "Could not create client");
 
         // in order to populate helper sheets
-        Integer outcome_group_creation = GroupHelper.createGroup(requestSpec, responseSpec, true);
+        Long outcome_group_creation = GroupHelper
+                .createGroup(new PostGroupsRequest().officeId(1L).name(Utils.randomStringGenerator("Group_Name_", 5)).active(false))
+                .getGroupId();
         Assertions.assertNotNull(outcome_group_creation, "Could not create group");
 
         // in order to populate helper sheets
-        Integer outcome_staff_creation = StaffHelper.createStaff(requestSpec, responseSpec);
+        Long outcome_staff_creation = StaffHelper.createStaff(new StaffCreateRequest().officeId(1L)
+                .firstname(Utils.uniqueRandomStringGenerator("michael_", 5)).lastname(Utils.uniqueRandomStringGenerator("Doe_", 4))
+                .isLoanOfficer(true).locale("en").dateFormat("dd MMMM yyyy").joiningDate("20 September 2011")).getResourceId();
         Assertions.assertNotNull(outcome_staff_creation, "Could not create staff");
 
-        Map<String, Object> staffMap = StaffHelper.getStaff(requestSpec, responseSpec, outcome_staff_creation);
-        Assertions.assertNotNull(staffMap, "Could not retrieve created staff");
+        StaffData staffData = StaffHelper.getStaff(outcome_staff_creation);
+        Assertions.assertNotNull(staffData, "Could not retrieve created staff");
 
-        SavingsProductHelper savingsProductHelper = new SavingsProductHelper();
-        String jsonSavingsProduct = savingsProductHelper.build();
-        Integer outcome_sp_creaction = SavingsProductHelper.createSavingsProduct(jsonSavingsProduct, requestSpec, responseSpec);
+        Long outcome_sp_creaction = SavingsProductHelper.createSavingsProduct(new PostSavingsProductsRequest()
+                .name(Utils.uniqueRandomStringGenerator("SAVINGS_PRODUCT_", 6)).shortName(Utils.uniqueRandomStringGenerator("", 4))
+                .description(Utils.randomStringGenerator("", 20)).currencyCode("USD").digitsAfterDecimal(4).inMultiplesOf(0)
+                .nominalAnnualInterestRate(10.0).interestCompoundingPeriodType(4).interestPostingPeriodType(4).interestCalculationType(1)
+                .interestCalculationDaysInYearType(365).accountingRule(1).locale("en_GB").withdrawalFeeForTransfers(true)
+                .allowOverdraft(false).enforceMinRequiredBalance(false).withHoldTax(false)).getResourceId();
         Assertions.assertNotNull(outcome_sp_creaction, "Could not create Savings product");
 
-        SavingsAccountHelper savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
-        Workbook workbook = savingsAccountHelper.getSavingsWorkbook("dd MMMM yyyy");
+        Workbook workbook = getSavingsWorkbook("dd MMMM yyyy");
 
         // insert dummy data into Savings sheet
         Sheet savingsSheet = workbook.getSheet(TemplatePopulateImportConstants.SAVINGS_ACCOUNTS_SHEET_NAME);
@@ -139,7 +120,7 @@ public class SavingsImportHandlerTest {
         Sheet savingsProductSheet = workbook.getSheet(TemplatePopulateImportConstants.PRODUCT_SHEET_NAME);
         firstSavingsRow.createCell(SavingsConstants.PRODUCT_COL)
                 .setCellValue(savingsProductSheet.getRow(1).getCell(1).getStringCellValue());
-        firstSavingsRow.createCell(SavingsConstants.FIELD_OFFICER_NAME_COL).setCellValue((String) staffMap.get("displayName"));
+        firstSavingsRow.createCell(SavingsConstants.FIELD_OFFICER_NAME_COL).setCellValue(staffData.getDisplayName());
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
         Date date = simpleDateFormat.parse("13 May 2017");
         firstSavingsRow.createCell(SavingsConstants.SUBMITTED_ON_DATE_COL).setCellValue(date);
@@ -178,7 +159,7 @@ public class SavingsImportHandlerTest {
             workbook.write(outputStream);
         }
 
-        String importDocumentId = savingsAccountHelper.importSavingsTemplate(file);
+        String importDocumentId = importSavingsTemplate(file);
         file.delete();
         Assertions.assertNotNull(importDocumentId);
 
@@ -186,7 +167,7 @@ public class SavingsImportHandlerTest {
         Thread.sleep(1000);
 
         // check status column of output excel
-        String location = LocalContentStorageUtil.path(savingsAccountHelper.getOutputTemplateLocation(importDocumentId));
+        String location = LocalContentStorageUtil.path(getOutputTemplateLocation(importDocumentId));
         try (InputStream fileInputStream = Files.newInputStream(Path.of(location))) {
             Workbook wb = new HSSFWorkbook(fileInputStream);
             Sheet sheet = wb.getSheet(TemplatePopulateImportConstants.SAVINGS_ACCOUNTS_SHEET_NAME);
@@ -198,6 +179,23 @@ public class SavingsImportHandlerTest {
             Assertions.assertEquals("Imported", row.getCell(SavingsConstants.STATUS_COL).getStringCellValue());
             wb.close();
         }
+    }
+
+    private Workbook getSavingsWorkbook(final String dateFormat) throws IOException {
+        Response response = FineractFeignClientHelper.getFineractFeignClient().bulkImportFixed().getSavingsTemplate(dateFormat);
+        try (InputStream inputStream = response.body().asInputStream()) {
+            return new HSSFWorkbook(inputStream);
+        }
+    }
+
+    private String importSavingsTemplate(File file) {
+        return ok(
+                () -> FineractFeignClientHelper.getFineractFeignClient().savingsAccount().postSavingsTemplate("dd MMMM yyyy", "en", file));
+    }
+
+    private String getOutputTemplateLocation(final String importDocumentId) {
+        return ok(() -> FineractFeignClientHelper.getFineractFeignClient().bulkImport()
+                .retriveOutputTemplateLocation(Long.valueOf(importDocumentId)));
     }
 
     private void safeNumericValueSetter(Row targetRow, int targetColId, Sheet sourceSheet, int rowId, int colId) {
