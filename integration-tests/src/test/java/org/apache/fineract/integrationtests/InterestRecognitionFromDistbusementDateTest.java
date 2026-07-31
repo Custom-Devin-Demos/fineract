@@ -23,11 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.PostClientsResponse;
@@ -37,10 +32,7 @@ import org.apache.fineract.client.models.PostLoansRequest;
 import org.apache.fineract.client.models.PostLoansResponse;
 import org.apache.fineract.client.util.CallFailedRuntimeException;
 import org.apache.fineract.integrationtests.common.ClientHelper;
-import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
-import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,23 +40,6 @@ import org.slf4j.LoggerFactory;
 public class InterestRecognitionFromDistbusementDateTest extends BaseLoanIntegrationTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(InterestRecognitionFromDistbusementDateTest.class);
-    private static final String DATETIME_PATTERN = "dd MMMM yyyy";
-    private static ResponseSpecification responseSpec;
-    private static RequestSpecification requestSpec;
-    private static LoanTransactionHelper loanTransactionHelper;
-    private static Integer commonLoanProductId;
-    private static PostClientsResponse client;
-
-    @BeforeAll
-    public static void setup() {
-        Utils.initializeRESTAssured();
-        requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        requestSpec.header("Fineract-Platform-TenantId", "default");
-        responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
-        ClientHelper clientHelper = new ClientHelper(requestSpec, responseSpec);
-    }
 
     // UC1: Create Loan Product using Progressive Loan Schedule Type and interestChargedFromDisbursementDate flag
     // 1. Create a Loan product with Adv. Pment. Alloc. (PROGRESSIVE) without interestChargedFromDisbursementDate
@@ -115,7 +90,7 @@ public class InterestRecognitionFromDistbusementDateTest extends BaseLoanIntegra
             GetLoanProductsProductIdResponse loanProductData = loanProductHelper
                     .retrieveLoanProductById(loanProductResponse.getResourceId());
 
-            client = clientHelper.createClient(ClientHelper.defaultClientCreationRequest());
+            PostClientsResponse client = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest());
 
             PostLoansRequest applicationRequest = applyLoanRequest(client.getClientId(), loanProductResponse.getResourceId(), operationDate,
                     100.0, 4).transactionProcessingStrategyCode(LoanProductTestBuilder.ADVANCED_PAYMENT_ALLOCATION_STRATEGY);

@@ -50,7 +50,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void simpleChargebackWithCreditAllocationPenaltyFeeInterestAndPrincipal() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -113,7 +113,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void simpleChargebackWithCreditAllocationPenaltyFeeInterestAndPrincipalOnTheLastDayOfTheInstallment() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -178,7 +178,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void simpleChargebackWithCreditAllocationPenaltyFeeInterestAndPrincipalOnTheLastDayOfTheLoan() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -243,7 +243,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void chargebackWithCreditAllocationPenaltyFeeInterestAndPrincipalOnNPlusOneInstallment() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -320,7 +320,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void chargebackWithCreditAllocationAndReverseReplayWithBackdatedPayment() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -395,7 +395,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void chargebackWithCreditAllocationReverseReplayedWithBackdatedPayment() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -473,7 +473,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void chargebackWithCreditAllocationPrincipalInterestFeePenalty() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
 
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
@@ -539,7 +539,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void chargebackWithCreditAllocationPrincipalInterestFeePenaltyWhenOverpaid() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -607,7 +607,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void chargebackWithCreditAllocationFeePenaltyPrincipalInterestWhenOverpaid() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -674,7 +674,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void chargebackWithCreditAllocationFeePenaltyPrincipalInterestWhenOverpaidDefaultPaymentPrincipalFirst() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocationPrincipalFirst(), //
@@ -741,7 +741,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void doubleChargebackWithCreditAllocationPenaltyFeeInterestAndPrincipal() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -825,7 +825,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void doubleChargebackReverseReplayedBothFeeAndPenaltyPayedWithCreditAllocationPenaltyFeeInterestAndPrincipal() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -919,7 +919,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void doubleChargebackReverseReplayedOnlyPenaltyPayedWithCreditAllocationPenaltyFeeInterestAndPrincipal() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -1013,7 +1013,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void testAccountingChargebackOnPrincipal() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -1083,7 +1083,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void testAccountingChargebackOnPrincipalAndFees() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -1161,7 +1161,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void testAccountingChargebackOnPrincipalAndPenalties() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -1239,7 +1239,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void testAccountingOverpaymentAmountIsSmallerThanChargeback() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -1311,7 +1311,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void testAccountingOverpaymentAmountIsBiggerThanChargeback() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -1382,7 +1382,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void testAccountingOverpaidLoansWithFeesWhenOverpaymentAmountIsBiggerThanChargeback() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -1462,7 +1462,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void testAccountingChargebackOnChargeOffWithPrincipal() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -1532,7 +1532,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void testAccountingChargebackOnChargeOffFraudWithPrincipal() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -1603,7 +1603,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void testAccountingChargebackOnChargeOffWithFees() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -1690,7 +1690,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
     public void testAccountingChargebackOnChargeOffWithPenalties() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProduct(//
                     createDefaultPaymentAllocation(), //
@@ -1775,7 +1775,7 @@ public class LoanChargebackWithCreditAllocationsIntegrationTests extends BaseLoa
 
     private void verifyLoanSummaryAmounts(Long loanId, double creditedPrincipal, double creditedFee, double creditedPenalty,
             double totalOutstanding) {
-        GetLoansLoanIdResponse loanResponse = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanId.intValue());
+        GetLoansLoanIdResponse loanResponse = loanTransactionHelper.getLoanDetails(loanId);
         GetLoansLoanIdSummary summary = loanResponse.getSummary();
         Assertions.assertNotNull(summary);
         Assertions.assertEquals(creditedPrincipal, Utils.getDoubleValue(summary.getPrincipalAdjustments()));

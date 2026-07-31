@@ -22,10 +22,6 @@ import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDa
 import org.springframework.data.auditing.AuditableBeanWrapper;
 import org.springframework.data.auditing.AuditingHandler;
 import org.springframework.data.auditing.DateTimeProvider;
-import org.springframework.data.domain.AuditorAware;
-import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
@@ -42,21 +38,6 @@ public class CustomAuditingHandler extends AuditingHandler {
      */
     public CustomAuditingHandler(PersistentEntities entities) {
         super(entities);
-    }
-
-    /**
-     * Creates a new {@link AuditableBeanWrapper} using the given {@link MappingContext} when looking up auditing
-     * metadata via reflection.
-     *
-     * @param mappingContext
-     *            must not be {@literal null}.
-     * @since 1.8
-     * @deprecated use AuditingHandler with PersistentEntities instead.
-     */
-    public CustomAuditingHandler(MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext,
-            AuditorAware<?> auditorAware) {
-        this(PersistentEntities.of(mappingContext));
-        setAuditorAware(auditorAware);
     }
 
     private DateTimeProvider fetchDateTimeProvider(Object bean) {

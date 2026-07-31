@@ -21,51 +21,36 @@ package org.apache.fineract.integrationtests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import com.google.gson.Gson;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.UUID;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.DelinquencyBucketResponse;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
+import org.apache.fineract.client.models.PostLoanProductsRequest;
+import org.apache.fineract.client.models.PostLoanProductsResponse;
+import org.apache.fineract.client.models.PostLoansLoanIdRequest;
+import org.apache.fineract.client.models.PostLoansRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.models.PutLoanProductsProductIdRequest;
 import org.apache.fineract.client.models.PutLoanProductsProductIdResponse;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
+import org.apache.fineract.client.util.JSON;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
-import org.apache.fineract.integrationtests.common.GlobalConfigurationHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.loans.LoanApplicationTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
 import org.apache.fineract.integrationtests.common.products.DelinquencyBucketsHelper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class LoanProductRepaymentStartDateConfigurationTest {
+public class LoanProductRepaymentStartDateConfigurationTest extends BaseLoanIntegrationTest {
 
-    private ResponseSpecification responseSpec;
-    private RequestSpecification requestSpec;
-    private LoanTransactionHelper loanTransactionHelper;
-    private ClientHelper clientHelper;
-    private GlobalConfigurationHelper globalConfigurationHelper;
-
-    @BeforeEach
-    public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
-        this.clientHelper = new ClientHelper(this.requestSpec, this.responseSpec);
-        this.globalConfigurationHelper = new GlobalConfigurationHelper();
-    }
+    private static final Gson GSON = new JSON().getGson();
 
     @Test
     public void loanProductWithRepaymentStartDateTypeConfigurationCreateAndModifyTest() {
@@ -81,7 +66,8 @@ public class LoanProductRepaymentStartDateConfigurationTest {
         Integer loanProductId = createLoanProductWithRepaymentStartDateTypeConfiguration(loanTransactionHelper, delinquencyBucketId,
                 repaymentStartDateType);
 
-        GetLoanProductsProductIdResponse getLoanProductsProductResponse = loanTransactionHelper.getLoanProduct(loanProductId);
+        GetLoanProductsProductIdResponse getLoanProductsProductResponse = loanProductHelper
+                .retrieveLoanProductById(loanProductId.longValue());
         assertNotNull(getLoanProductsProductResponse);
         assertEquals(repaymentStartDateType, getLoanProductsProductResponse.getRepaymentStartDateType().getId().intValue());
         assertEquals("repaymentStartDateType.submittedOnDate", getLoanProductsProductResponse.getRepaymentStartDateType().getCode());
@@ -92,7 +78,7 @@ public class LoanProductRepaymentStartDateConfigurationTest {
                 getLoanProductsProductResponse.getId());
         assertNotNull(loanProductModifyResponse);
 
-        getLoanProductsProductResponse = loanTransactionHelper.getLoanProduct(loanProductId);
+        getLoanProductsProductResponse = loanProductHelper.retrieveLoanProductById(loanProductId.longValue());
         assertNotNull(getLoanProductsProductResponse);
         assertEquals(1, getLoanProductsProductResponse.getRepaymentStartDateType().getId().intValue());
         assertEquals("repaymentStartDateType.disbursementDate", getLoanProductsProductResponse.getRepaymentStartDateType().getCode());
@@ -113,7 +99,8 @@ public class LoanProductRepaymentStartDateConfigurationTest {
         Integer loanProductId = createLoanProductWithRepaymentStartDateTypeConfiguration(loanTransactionHelper, delinquencyBucketId,
                 repaymentStartDateType);
 
-        GetLoanProductsProductIdResponse getLoanProductsProductResponse = loanTransactionHelper.getLoanProduct(loanProductId);
+        GetLoanProductsProductIdResponse getLoanProductsProductResponse = loanProductHelper
+                .retrieveLoanProductById(loanProductId.longValue());
         assertNotNull(getLoanProductsProductResponse);
         assertEquals(1, getLoanProductsProductResponse.getRepaymentStartDateType().getId().intValue());
         assertEquals("repaymentStartDateType.disbursementDate", getLoanProductsProductResponse.getRepaymentStartDateType().getCode());
@@ -130,12 +117,13 @@ public class LoanProductRepaymentStartDateConfigurationTest {
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat("dd MMMM yyyy").locale("en"));
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
 
-            final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
             // set repayment start date type as submittedOn date
             final Integer repaymentStartDateType = 2;
@@ -195,9 +183,11 @@ public class LoanProductRepaymentStartDateConfigurationTest {
 
             LocalDate disbursementDate = LocalDate.of(2023, 3, 7);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat("dd MMMM yyyy").locale("en"));
 
-            loanTransactionHelper.disburseLoanWithTransactionAmount("07 March 2023", loanId, "500");
+            loanTransactionHelper.disburseLoan(loanId.longValue(), new PostLoansLoanIdRequest().actualDisbursementDate("07 March 2023")
+                    .transactionAmount(new BigDecimal("500")).dateFormat("dd MMMM yyyy").locale("en").note("DISBURSE NOTE"));
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanId.longValue());
 
@@ -237,9 +227,11 @@ public class LoanProductRepaymentStartDateConfigurationTest {
 
             disbursementDate = LocalDate.of(2023, 4, 7);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat("dd MMMM yyyy").locale("en"));
 
-            loanTransactionHelper.disburseLoanWithTransactionAmount("07 April 2023", loanId, "500");
+            loanTransactionHelper.disburseLoan(loanId.longValue(), new PostLoansLoanIdRequest().actualDisbursementDate("07 April 2023")
+                    .transactionAmount(new BigDecimal("500")).dateFormat("dd MMMM yyyy").locale("en").note("DISBURSE NOTE"));
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanId.longValue());
 
@@ -295,12 +287,13 @@ public class LoanProductRepaymentStartDateConfigurationTest {
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat("dd MMMM yyyy").locale("en"));
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
 
-            final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
             // set repayment start date type as default, disbursement date
             final Integer repaymentStartDateType = 1;
@@ -361,9 +354,11 @@ public class LoanProductRepaymentStartDateConfigurationTest {
 
             LocalDate disbursementDate = LocalDate.of(2023, 3, 7);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat("dd MMMM yyyy").locale("en"));
 
-            loanTransactionHelper.disburseLoanWithTransactionAmount("07 March 2023", loanId, "500");
+            loanTransactionHelper.disburseLoan(loanId.longValue(), new PostLoansLoanIdRequest().actualDisbursementDate("07 March 2023")
+                    .transactionAmount(new BigDecimal("500")).dateFormat("dd MMMM yyyy").locale("en").note("DISBURSE NOTE"));
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanId.longValue());
 
@@ -404,9 +399,11 @@ public class LoanProductRepaymentStartDateConfigurationTest {
 
             disbursementDate = LocalDate.of(2023, 4, 7);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat("dd MMMM yyyy").locale("en"));
 
-            loanTransactionHelper.disburseLoanWithTransactionAmount("07 April 2023", loanId, "500");
+            loanTransactionHelper.disburseLoan(loanId.longValue(), new PostLoansLoanIdRequest().actualDisbursementDate("07 April 2023")
+                    .transactionAmount(new BigDecimal("500")).dateFormat("dd MMMM yyyy").locale("en").note("DISBURSE NOTE"));
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanId.longValue());
 
@@ -463,9 +460,8 @@ public class LoanProductRepaymentStartDateConfigurationTest {
             final Long delinquencyBucketId, final Integer repaymentStartDateType) {
         final HashMap<String, Object> loanProductMap = new LoanProductTestBuilder().withRepaymentStartDateType(repaymentStartDateType)
                 .build(null, delinquencyBucketId);
-        final Integer loanProductId = loanTransactionHelper.getLoanProductId(Utils.convertToJson(loanProductMap));
-        return loanProductId;
-
+        return loanTransactionHelper.createLoanProduct(GSON.fromJson(Utils.convertToJson(loanProductMap), PostLoanProductsRequest.class))
+                .getResourceId().intValue();
     }
 
     private Integer createLoanAccountMultipleRepaymentsDisbursement(final Integer clientID, final Long loanProductID,
@@ -478,8 +474,10 @@ public class LoanProductRepaymentStartDateConfigurationTest {
                 .withExpectedDisbursementDate("07 March 2023").withSubmittedOnDate("03 March 2023").withLoanType("individual")
                 .withExternalId(externalId).build(clientID.toString(), loanProductID.toString(), null);
 
-        final Integer loanId = loanTransactionHelper.getLoanId(loanApplicationJSON);
-        loanTransactionHelper.approveLoan("03 March 2023", "1000", loanId, null);
+        final Integer loanId = loanTransactionHelper.applyLoan(GSON.fromJson(loanApplicationJSON, PostLoansRequest.class)).getLoanId()
+                .intValue();
+        loanTransactionHelper.approveLoan(loanId.longValue(), new PostLoansLoanIdRequest().approvedOnDate("03 March 2023")
+                .approvedLoanAmount(new BigDecimal("1000")).dateFormat("dd MMMM yyyy").locale("en").note("Approval NOTE"));
         return loanId;
     }
 
@@ -491,8 +489,9 @@ public class LoanProductRepaymentStartDateConfigurationTest {
                 .withInterestCalculationPeriodTypeAsRepaymentPeriod(true).withDaysInMonth("30").withDaysInYear("365")
                 .withMoratorium("0", "0").withMultiDisburse().withDisallowExpectedDisbursements(true)
                 .withRepaymentStartDateType(repaymentStartDateType).build(null);
-        final Integer loanProductId = loanTransactionHelper.getLoanProductId(loanProductJSON);
-        return loanTransactionHelper.getLoanProduct(loanProductId);
+        final PostLoanProductsResponse loanProductResponse = loanTransactionHelper
+                .createLoanProduct(GSON.fromJson(loanProductJSON, PostLoanProductsRequest.class));
+        return loanProductHelper.retrieveLoanProductById(loanProductResponse.getResourceId());
     }
 
 }

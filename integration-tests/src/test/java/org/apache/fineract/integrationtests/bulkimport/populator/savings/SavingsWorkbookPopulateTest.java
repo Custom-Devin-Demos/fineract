@@ -20,68 +20,60 @@ package org.apache.fineract.integrationtests.bulkimport.populator.savings;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
+import feign.Response;
 import java.io.IOException;
+import java.io.InputStream;
+import org.apache.fineract.client.models.PostGroupsRequest;
+import org.apache.fineract.client.models.PostSavingsProductsRequest;
+import org.apache.fineract.client.models.StaffCreateRequest;
 import org.apache.fineract.infrastructure.bulkimport.constants.TemplatePopulateImportConstants;
 import org.apache.fineract.integrationtests.common.ClientHelper;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.GroupHelper;
 import org.apache.fineract.integrationtests.common.OfficeHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.organisation.StaffHelper;
-import org.apache.fineract.integrationtests.common.savings.SavingsAccountHelper;
 import org.apache.fineract.integrationtests.common.savings.SavingsProductHelper;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class SavingsWorkbookPopulateTest {
 
-    private ResponseSpecification responseSpec;
-    private RequestSpecification requestSpec;
-
-    @BeforeEach
-    public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-    }
-
     @Test
     public void testSavingsWorkbookPopulate() throws IOException {
-        requestSpec.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         // in order to populate helper sheets
         OfficeHelper officeHelper = new OfficeHelper();
         Integer outcome_office_creation = officeHelper.createOffice(java.time.LocalDate.of(2000, 5, 2)).getResourceId().intValue();
         assertNotNull(outcome_office_creation, "Could not create office");
 
         // in order to populate helper sheets
-        Integer outcome_client_creation = ClientHelper.createClient(requestSpec, responseSpec);
+        Long outcome_client_creation = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
         assertNotNull(outcome_client_creation, "Could not create client");
 
         // in order to populate helper sheets
-        Integer outcome_group_creation = GroupHelper.createGroup(requestSpec, responseSpec, true);
+        Long outcome_group_creation = GroupHelper
+                .createGroup(new PostGroupsRequest().officeId(1L).name(Utils.randomStringGenerator("Group_Name_", 5)).active(false))
+                .getGroupId();
         assertNotNull(outcome_group_creation, "Could not create group");
 
         // in order to populate helper sheets
-        Integer outcome_staff_creation = StaffHelper.createStaff(requestSpec, responseSpec);
+        Long outcome_staff_creation = StaffHelper.createStaff(new StaffCreateRequest().officeId(1L)
+                .firstname(Utils.uniqueRandomStringGenerator("michael_", 5)).lastname(Utils.uniqueRandomStringGenerator("Doe_", 4))
+                .isLoanOfficer(true).locale("en").dateFormat("dd MMMM yyyy").joiningDate("20 September 2011")).getResourceId();
         assertNotNull(outcome_staff_creation, "Could not create staff");
 
-        SavingsProductHelper savingsProductHelper = new SavingsProductHelper();
-        String jsonSavingsProduct = savingsProductHelper.build();
-        Integer outcome_sp_creaction = SavingsProductHelper.createSavingsProduct(jsonSavingsProduct, requestSpec, responseSpec);
+        Long outcome_sp_creaction = SavingsProductHelper.createSavingsProduct(new PostSavingsProductsRequest()
+                .name(Utils.uniqueRandomStringGenerator("SAVINGS_PRODUCT_", 6)).shortName(Utils.uniqueRandomStringGenerator("", 4))
+                .description(Utils.randomStringGenerator("", 20)).currencyCode("USD").digitsAfterDecimal(4).inMultiplesOf(0)
+                .nominalAnnualInterestRate(10.0).interestCompoundingPeriodType(4).interestPostingPeriodType(4).interestCalculationType(1)
+                .interestCalculationDaysInYearType(365).accountingRule(1).locale("en_GB").withdrawalFeeForTransfers(true)
+                .allowOverdraft(false).enforceMinRequiredBalance(false).withHoldTax(false)).getResourceId();
         assertNotNull(outcome_sp_creaction, "Could not create Savings product");
 
-        SavingsAccountHelper savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
-        Workbook workbook = savingsAccountHelper.getSavingsWorkbook("dd MMMM yyyy");
+        Workbook workbook = getSavingsWorkbook("dd MMMM yyyy");
 
         Sheet officeSheet = workbook.getSheet(TemplatePopulateImportConstants.OFFICE_SHEET_NAME);
         Row firstOfficeRow = officeSheet.getRow(1);
@@ -102,5 +94,12 @@ public class SavingsWorkbookPopulateTest {
         Sheet productSheet = workbook.getSheet(TemplatePopulateImportConstants.PRODUCT_SHEET_NAME);
         Row firstProductRow = productSheet.getRow(1);
         assertNotNull(firstProductRow.getCell(1), "No products found ");
+    }
+
+    private Workbook getSavingsWorkbook(final String dateFormat) throws IOException {
+        Response response = FineractFeignClientHelper.getFineractFeignClient().bulkImportFixed().getSavingsTemplate(dateFormat);
+        try (InputStream inputStream = response.body().asInputStream()) {
+            return new HSSFWorkbook(inputStream);
+        }
     }
 }

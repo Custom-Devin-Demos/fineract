@@ -25,6 +25,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.fineract.client.models.StaffCreateRequest;
+import org.apache.fineract.client.models.StaffCreateResponse;
+import org.apache.fineract.client.models.StaffData;
+import org.apache.fineract.client.models.StaffUpdateRequest;
+import org.apache.fineract.client.models.StaffUpdateResponse;
+import org.apache.fineract.client.util.Calls;
+import org.apache.fineract.integrationtests.common.FineractClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,5 +203,29 @@ public final class StaffHelper {
         }
         LOG.info("map :  {}", map);
         return new Gson().toJson(map);
+    }
+
+    public static StaffCreateResponse createStaff(final StaffCreateRequest request) {
+        return Calls.ok(FineractClientHelper.getFineractClient().staff.createStaff(request));
+    }
+
+    public static StaffData getStaff(final Long staffId) {
+        return Calls.ok(FineractClientHelper.getFineractClient().staff.retrieveOneStaff(staffId));
+    }
+
+    public static List<StaffData> getStaffList() {
+        return Calls.ok(FineractClientHelper.getFineractClient().staff.retrieveAllStaff(null, null, null, null));
+    }
+
+    public static List<StaffData> getStaffListWithState(final String status) {
+        return Calls.ok(FineractClientHelper.getFineractClient().staff.retrieveAllStaff(null, null, null, status));
+    }
+
+    public static List<StaffData> getStaffListWithLoanOfficerStatus(final Boolean loanOfficersOnly) {
+        return Calls.ok(FineractClientHelper.getFineractClient().staff.retrieveAllStaff(null, null, loanOfficersOnly, null));
+    }
+
+    public static StaffUpdateResponse updateStaff(final Long staffId, final StaffUpdateRequest request) {
+        return Calls.ok(FineractClientHelper.getFineractClient().staff.updateStaff(staffId, request));
     }
 }

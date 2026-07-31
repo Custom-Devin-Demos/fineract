@@ -18,19 +18,25 @@
  */
 package org.apache.fineract.integrationtests.common;
 
+import static org.apache.fineract.client.feign.util.FeignCalls.ok;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import feign.Headers;
+import feign.Param;
+import feign.RequestLine;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.apache.fineract.client.models.CenterData;
+import org.apache.fineract.client.models.PostCentersRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings({ "rawtypes", "unchecked", "deprecation", "removal" })
 public final class CenterHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(CenterHelper.class);
@@ -41,6 +47,34 @@ public final class CenterHelper {
 
     private CenterHelper() {
 
+    }
+
+    /**
+     * Creates an inactive center via the typed fineract-client-feign API and returns the generated resource id.
+     */
+    public static Long createCenter(final String name, final Long officeId) {
+        LOG.info("------------------------CREATING CENTER-------------------------");
+        return ok(() -> FineractFeignClientHelper.getFineractFeignClient().centers()
+                .createCenter(new PostCentersRequest().name(name).officeId(officeId).active(false))).getResourceId();
+    }
+
+    /**
+     * Retrieves a center (including its group members) via the typed fineract-client-feign API.
+     */
+    public static CenterData retrieveCenter(final Long centerId) {
+        LOG.info("------------------------ RETRIEVING CENTER AT {}-------------------------", centerId);
+        return ok(() -> FineractFeignClientHelper.getFineractFeignClient().create(CenterRetrievalApi.class).retrieveCenter(centerId));
+    }
+
+    /**
+     * Retrieval endpoint that maps to the richer {@link CenterData} model, which (unlike the generated
+     * {@code GetCentersCenterIdResponse}) exposes the generated account number.
+     */
+    interface CenterRetrievalApi {
+
+        @RequestLine("GET /v1/centers/{centerId}?associations=groupMembers")
+        @Headers("Accept: application/json")
+        CenterData retrieveCenter(@Param("centerId") Long centerId);
     }
 
     // TODO: Rewrite to use fineract-client instead!

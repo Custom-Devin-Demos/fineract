@@ -21,34 +21,32 @@ package org.apache.fineract.integrationtests;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import com.google.gson.Gson;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.FloatingRatePeriodRequest;
 import org.apache.fineract.client.models.FloatingRateRequest;
 import org.apache.fineract.client.models.GetLoansLoanIdRepaymentPeriod;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.PostFloatingRatesResponse;
+import org.apache.fineract.client.models.PostLoanProductsRequest;
+import org.apache.fineract.client.models.PostLoansLoanIdRequest;
+import org.apache.fineract.client.models.PostLoansRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.util.Calls;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
+import org.apache.fineract.client.util.JSON;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.accounting.Account;
-import org.apache.fineract.integrationtests.common.accounting.AccountHelper;
 import org.apache.fineract.integrationtests.common.loans.LoanApplicationTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
-import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,11 +59,7 @@ import org.junit.jupiter.api.Test;
  */
 public class FloatingRateInterestRecalculationTest extends BaseLoanIntegrationTest {
 
-    private ResponseSpecification responseSpec;
-    private RequestSpecification requestSpec;
-    private LoanTransactionHelper loanTransactionHelper;
-    private ClientHelper clientHelper;
-    private AccountHelper accountHelper;
+    private static final Gson GSON = new JSON().getGson();
     private final DateTimeFormatter dateFormatter = new DateTimeFormatterBuilder().appendPattern("dd MMMM yyyy").toFormatter();
 
     private static final BigDecimal INITIAL_INTEREST_RATE = new BigDecimal("12");
@@ -73,14 +67,6 @@ public class FloatingRateInterestRecalculationTest extends BaseLoanIntegrationTe
 
     @BeforeEach
     public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
-        this.clientHelper = new ClientHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
-
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(true));
     }
@@ -103,7 +89,8 @@ public class FloatingRateInterestRecalculationTest extends BaseLoanIntegrationTe
 
     private void runFloatingRateRecalculationScenario(boolean overPayment) {
         LocalDate setupDate = LocalDate.of(2024, 2, 1);
-        BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, setupDate);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(dateFormatter.format(setupDate)).dateFormat("dd MMMM yyyy").locale("en"));
 
         Long floatingRateId = createFloatingRate();
 
@@ -116,15 +103,16 @@ public class FloatingRateInterestRecalculationTest extends BaseLoanIntegrationTe
                 overpaymentAccount);
         assertNotNull(loanProductId);
 
-        final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
         LocalDate disbursementDate = LocalDate.of(2024, 3, 15);
-        BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(dateFormatter.format(disbursementDate)).dateFormat("dd MMMM yyyy").locale("en"));
 
         final Integer loanId = createAndDisburseLoan(clientId, loanProductId, disbursementDate);
         assertNotNull(loanId);
 
-        GetLoansLoanIdResponse initialLoan = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanId);
+        GetLoansLoanIdResponse initialLoan = loanTransactionHelper.getLoanDetails(loanId.longValue());
         assertNotNull(initialLoan.getRepaymentSchedule());
         List<GetLoansLoanIdRepaymentPeriod> initialPeriods = initialLoan.getRepaymentSchedule().getPeriods();
 
@@ -139,13 +127,14 @@ public class FloatingRateInterestRecalculationTest extends BaseLoanIntegrationTe
         assertTrue(initialEmi.compareTo(BigDecimal.ZERO) > 0, "Initial EMI should be greater than zero");
 
         LocalDate postRateChangeDate = LocalDate.of(2024, 4, 10);
-        BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, postRateChangeDate);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(dateFormatter.format(postRateChangeDate)).dateFormat("dd MMMM yyyy").locale("en"));
 
         String repaymentDate = dateFormatter.format(postRateChangeDate);
         float repaymentAmount = overPayment ? initialEmi.floatValue() + 0.01f : initialEmi.floatValue();
-        loanTransactionHelper.makeRepayment(repaymentDate, repaymentAmount, loanId);
+        loanTransactionHelper.makeLoanRepayment(loanId.longValue(), "repayment", repaymentDate, (double) repaymentAmount);
 
-        GetLoansLoanIdResponse updatedLoan = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanId);
+        GetLoansLoanIdResponse updatedLoan = loanTransactionHelper.getLoanDetails(loanId.longValue());
         assertNotNull(updatedLoan.getRepaymentSchedule());
         List<GetLoansLoanIdRepaymentPeriod> updatedPeriods = updatedLoan.getRepaymentSchedule().getPeriods();
 
@@ -200,7 +189,8 @@ public class FloatingRateInterestRecalculationTest extends BaseLoanIntegrationTe
         loanProductMap.put("defaultDifferentialLendingRate", "0");
         loanProductMap.put("maxDifferentialLendingRate", "50");
 
-        return loanTransactionHelper.getLoanProductId(Utils.convertToJson(loanProductMap));
+        return loanTransactionHelper.createLoanProduct(GSON.fromJson(Utils.convertToJson(loanProductMap), PostLoanProductsRequest.class))
+                .getResourceId().intValue();
     }
 
     private Integer createAndDisburseLoan(Integer clientId, Integer loanProductId, LocalDate disbursementDate) {
@@ -219,9 +209,12 @@ public class FloatingRateInterestRecalculationTest extends BaseLoanIntegrationTe
         jsonObject.addProperty("isFloatingInterestRate", true);
         loanApplicationJSON = jsonObject.toString();
 
-        final Integer loanId = loanTransactionHelper.getLoanId(loanApplicationJSON);
-        loanTransactionHelper.approveLoan(disburseDateStr, "10000", loanId, null);
-        loanTransactionHelper.disburseLoanWithNetDisbursalAmount(disburseDateStr, loanId, "10000");
+        final Integer loanId = loanTransactionHelper.applyLoan(GSON.fromJson(loanApplicationJSON, PostLoansRequest.class)).getLoanId()
+                .intValue();
+        loanTransactionHelper.approveLoan(loanId.longValue(), new PostLoansLoanIdRequest().approvedOnDate(disburseDateStr)
+                .approvedLoanAmount(new BigDecimal("10000")).dateFormat("dd MMMM yyyy").locale("en").note("Approval NOTE"));
+        loanTransactionHelper.disburseLoan(loanId.longValue(), new PostLoansLoanIdRequest().actualDisbursementDate(disburseDateStr)
+                .dateFormat("dd MMMM yyyy").locale("en").note("DISBURSE NOTE"));
         return loanId;
     }
 }

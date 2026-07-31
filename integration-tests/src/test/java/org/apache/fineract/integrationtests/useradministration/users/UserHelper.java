@@ -28,10 +28,16 @@ import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.fineract.client.models.DeleteUsersUserIdResponse;
 import org.apache.fineract.client.models.GetOfficesResponse;
+import org.apache.fineract.client.models.GetUsersResponse;
 import org.apache.fineract.client.models.PostUsersRequest;
 import org.apache.fineract.client.models.PostUsersResponse;
+import org.apache.fineract.client.models.PutUsersUserIdRequest;
+import org.apache.fineract.client.models.PutUsersUserIdResponse;
+import org.apache.fineract.client.util.Calls;
 import org.apache.fineract.client.util.JSON;
+import org.apache.fineract.integrationtests.common.FineractClientHelper;
 import org.apache.fineract.integrationtests.common.OfficeHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.useradministration.roles.RolesHelper;
@@ -50,6 +56,28 @@ public final class UserHelper {
     private static boolean SIMPLE_USER_CREATED = false;
 
     private UserHelper() {}
+
+    public static PostUsersResponse createUser(final PostUsersRequest request) {
+        return Calls.ok(FineractClientHelper.getFineractClient().users.createUser(request));
+    }
+
+    public static Long getUserId(final String userName) {
+        final List<GetUsersResponse> users = Calls.ok(FineractClientHelper.getFineractClient().users.retrieveAllUsers());
+        for (final GetUsersResponse user : users) {
+            if (userName.equals(user.getUsername())) {
+                return user.getId();
+            }
+        }
+        return null;
+    }
+
+    public static DeleteUsersUserIdResponse deleteUser(final Long userId) {
+        return Calls.ok(FineractClientHelper.getFineractClient().users.deleteUser(userId));
+    }
+
+    public static PutUsersUserIdResponse updateUser(final Long userId, final PutUsersUserIdRequest request) {
+        return Calls.ok(FineractClientHelper.getFineractClient().users.updateUser(userId, request));
+    }
 
     // TODO: Rewrite to use fineract-client instead!
     // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,

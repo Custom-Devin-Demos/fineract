@@ -63,8 +63,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-@Deprecated(forRemoval = true)
-final class LegacyMeetingAttendanceListener {
+final class CollectionSheetMeetingAttendanceListener {
 
     private static final String COLLECTIONSHEET_ENTITY_NAME = "collectionsheet";
 
@@ -122,8 +121,6 @@ final class LegacyMeetingAttendanceListener {
     public void updateAttendance(Meeting meeting, final Collection<MeetingAttendance> clientsAttendance) {
         var result = new ArrayList<MeetingAttendance>();
 
-        // TODO: never use "goto" statemements... ever; leaving it here, because the whole class will eventually
-        // disappear
         updateAttendanceLoop: for (final MeetingAttendance clientAttendance : clientsAttendance) {
             if (meeting.getClientsAttendance() == null) {
                 meeting.setClientsAttendance(new HashSet<>());

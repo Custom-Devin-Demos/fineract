@@ -51,7 +51,6 @@ public class ImageWritePlatformServiceImpl implements ImageWritePlatformService 
     private static final String DEFAULT_ENTITY_TYPE = "clients";
     private static final String DEFAULT_EXTENSION = ".jpg";
 
-    @Deprecated
     private final List<EntityImageIdAdapter> imageIdAdapters;
     private final ContentStoreService storeService;
     private final ImageRepository imageRepository;

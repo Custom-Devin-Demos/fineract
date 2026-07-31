@@ -23,9 +23,13 @@ import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import org.apache.fineract.client.models.ChargeData;
 import org.apache.fineract.client.models.ChargeRequest;
+import org.apache.fineract.client.models.DeleteChargesChargeIdResponse;
 import org.apache.fineract.client.models.GetChargesResponse;
 import org.apache.fineract.client.models.PostChargesResponse;
+import org.apache.fineract.client.models.PutChargesChargeIdResponse;
 import org.apache.fineract.client.util.Calls;
 import org.apache.fineract.client.util.JSON;
 import org.apache.fineract.integrationtests.common.CommonConstants;
@@ -810,5 +814,17 @@ public final class ChargesHelper {
 
     public GetChargesResponse retrieveCharge(final Long chargeId) {
         return Calls.ok(FineractClientHelper.getFineractClient().charges.retrieveOneCharge(chargeId));
+    }
+
+    public List<ChargeData> getCharges() {
+        return Calls.ok(FineractClientHelper.getFineractClient().charges.retrieveAllCharges());
+    }
+
+    public PutChargesChargeIdResponse updateCharges(final Long chargeId, final ChargeRequest request) {
+        return Calls.ok(FineractClientHelper.getFineractClient().charges.updateCharge(chargeId, request));
+    }
+
+    public DeleteChargesChargeIdResponse deleteCharge(final Long chargeId) {
+        return Calls.ok(FineractClientHelper.getFineractClient().charges.deleteCharge(chargeId));
     }
 }

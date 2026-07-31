@@ -22,19 +22,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import org.apache.fineract.client.models.JournalEntryTransactionItem;
+import org.apache.fineract.client.models.PostCodeValuesDataRequest;
 import org.apache.fineract.client.models.PostLoanProductsRequest;
 import org.apache.fineract.client.models.PostLoanProductsResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsTransactionIdRequest;
+import org.apache.fineract.client.models.PutLoansLoanIdRequest;
 import org.apache.fineract.integrationtests.common.ClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.accounting.Account;
-import org.apache.fineract.integrationtests.common.system.CodeHelper;
 import org.junit.jupiter.api.Test;
 
 public class LoanTransactionReverseReplayChargeOffTest extends BaseLoanIntegrationTest {
@@ -51,7 +51,7 @@ public class LoanTransactionReverseReplayChargeOffTest extends BaseLoanIntegrati
 
             // Client and Loan account creation
 
-            final Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            final Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
 
             PostLoanProductsRequest loanProductsRequest = createOnePeriod30DaysLongNoInterestPeriodicAccrualProduct()
                     .chargeOffExpenseAccountId(chargeOffExpenseAccount.getAccountID().longValue())
@@ -73,18 +73,17 @@ public class LoanTransactionReverseReplayChargeOffTest extends BaseLoanIntegrati
                             .transactionAmount(10.0).externalId(loanTransactionExternalIdStr));
 
             // mark loan as fraud
-            final String command = "markAsFraud";
-            String payload = loanTransactionHelper.getLoanFraudPayloadAsJSON("fraud", "true");
-            loanTransactionHelper.modifyLoanCommand(loanId.intValue(), command, payload, responseSpec);
+            ok(fineractClient().loans.modifyLoanApplication(loanId, new PutLoansLoanIdRequest().fraud(true), "markAsFraud"));
 
             // charge-off loan
             String randomText = Utils.randomStringGenerator("en", 5) + Utils.randomNumberGenerator(6)
                     + Utils.randomStringGenerator("is", 5);
-            Integer chargeOffReasonId = CodeHelper.createChargeOffCodeValue(requestSpec, responseSpec, randomText, 1);
+            Long chargeOffReasonId = codeHelper.createCodeValue(codeHelper.retrieveCodeByName("ChargeOffReasons").getId(),
+                    new PostCodeValuesDataRequest().name(randomText).position(1)).getSubResourceId();
             String transactionExternalId = UUID.randomUUID().toString();
             PostLoansLoanIdTransactionsResponse chargeOffTransaction = loanTransactionHelper.chargeOffLoan((long) loanId,
                     new PostLoansLoanIdTransactionsRequest().transactionDate("4 October 2022").locale("en").dateFormat("dd MMMM yyyy")
-                            .externalId(transactionExternalId).chargeOffReasonId((long) chargeOffReasonId));
+                            .externalId(transactionExternalId).chargeOffReasonId(chargeOffReasonId));
 
             updateBusinessDate("6 October 2022");
 
@@ -92,16 +91,18 @@ public class LoanTransactionReverseReplayChargeOffTest extends BaseLoanIntegrati
                     new PostLoansLoanIdTransactionsTransactionIdRequest().transactionDate("6 October 2022").locale("en")
                             .dateFormat(DATETIME_PATTERN).transactionAmount(0.0));
 
-            ArrayList<HashMap> journalEntriesForChargeOffTransaction = journalEntryHelper
-                    .getJournalEntriesByTransactionId("L" + chargeOffTransaction.getResourceId());
+            List<JournalEntryTransactionItem> journalEntriesForChargeOffTransaction = ok(
+                    fineractClient().journalEntries.retrieveAllJournalEntries(null, null, null, null, null, null, null,
+                            "L" + chargeOffTransaction.getResourceId(), null, null, null, "id", "desc", null, null, null, null, null, null))
+                    .getPageItems();
             assertNotNull(journalEntriesForChargeOffTransaction);
 
-            List<HashMap> assetAccountJournalEntries = journalEntriesForChargeOffTransaction.stream() //
-                    .filter(journalEntry -> assetAccount.getAccountID().equals(journalEntry.get("glAccountId"))) //
+            List<JournalEntryTransactionItem> assetAccountJournalEntries = journalEntriesForChargeOffTransaction.stream() //
+                    .filter(journalEntry -> journalEntry.getGlAccountId().equals(assetAccount.getAccountID().longValue())) //
                     .toList();
 
-            List<HashMap> expenseAccountJournalEntries = journalEntriesForChargeOffTransaction.stream() //
-                    .filter(journalEntry -> chargeOffFraudExpenseAccount.getAccountID().equals(journalEntry.get("glAccountId"))) //
+            List<JournalEntryTransactionItem> expenseAccountJournalEntries = journalEntriesForChargeOffTransaction.stream() //
+                    .filter(journalEntry -> journalEntry.getGlAccountId().equals(chargeOffFraudExpenseAccount.getAccountID().longValue())) //
                     .toList();
 
             assertEquals(2, assetAccountJournalEntries.size());

@@ -18,8 +18,6 @@
  */
 package org.apache.fineract.portfolio.savings.domain;
 
-import static org.apache.fineract.infrastructure.core.service.DateUtils.getSystemZoneId;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,15 +28,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import org.apache.fineract.infrastructure.core.domain.AbstractAuditableWithUTCDateTimeCustom;
 import org.apache.fineract.infrastructure.core.domain.ExternalId;
@@ -108,10 +103,6 @@ public final class SavingsAccountTransaction extends AbstractAuditableWithUTCDat
     @Column(name = "overdraft_amount_derived", scale = 6, precision = 19, nullable = true)
     private BigDecimal overdraftAmount;
 
-    @Deprecated
-    @Column(name = "created_date", nullable = true)
-    private LocalDateTime createdDateToRemove;
-
     @Column(name = "submitted_on_date", nullable = false)
     private LocalDate submittedOnDate;
 
@@ -154,7 +145,6 @@ public final class SavingsAccountTransaction extends AbstractAuditableWithUTCDat
         this.amount = amount;
         this.reversed = isReversed;
         this.paymentDetail = paymentDetail;
-        this.createdDateToRemove = null; // #audit backward compatibility deprecated
         this.submittedOnDate = DateUtils.getBusinessLocalDate();
         this.isManualTransaction = isManualTransaction;
         this.lienTransaction = lienTransaction;
@@ -886,13 +876,6 @@ public final class SavingsAccountTransaction extends AbstractAuditableWithUTCDat
     public boolean isPaymentForCurrentCharge(final SavingsAccountCharge savingsAccountCharge) {
         final SavingsAccountChargePaidBy chargePaidBy = getSavingsAccountChargePaidBy();
         return chargePaidBy != null && chargePaidBy.getSavingsAccountCharge().equals(savingsAccountCharge);
-    }
-
-    @Override
-    public Optional<OffsetDateTime> getCreatedDate() {
-        // #audit backward compatibility keep system datetime
-        return Optional.ofNullable(super.getCreatedDate()
-                .orElse(createdDateToRemove == null ? null : createdDateToRemove.atZone(getSystemZoneId()).toOffsetDateTime()));
     }
 
     public boolean isAmountOnHoldNotReleased() {

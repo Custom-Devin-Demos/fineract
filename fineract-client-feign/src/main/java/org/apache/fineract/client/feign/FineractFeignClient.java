@@ -27,6 +27,7 @@ import org.apache.fineract.client.feign.services.AuditsApi;
 import org.apache.fineract.client.feign.services.AuthenticationHttpBasicApi;
 import org.apache.fineract.client.feign.services.BatchApiApi;
 import org.apache.fineract.client.feign.services.BulkImportApi;
+import org.apache.fineract.client.feign.services.BulkImportApiFixed;
 import org.apache.fineract.client.feign.services.BulkLoansApi;
 import org.apache.fineract.client.feign.services.BusinessDateManagementApi;
 import org.apache.fineract.client.feign.services.BusinessStepConfigurationApi;
@@ -51,6 +52,7 @@ import org.apache.fineract.client.feign.services.CollectionSheetApi;
 import org.apache.fineract.client.feign.services.CreditBureauConfigurationApi;
 import org.apache.fineract.client.feign.services.CurrencyApi;
 import org.apache.fineract.client.feign.services.DataTablesApi;
+import org.apache.fineract.client.feign.services.DataTablesApiFixed;
 import org.apache.fineract.client.feign.services.DefaultApi;
 import org.apache.fineract.client.feign.services.DelinquencyRangeAndBucketsManagementApi;
 import org.apache.fineract.client.feign.services.DepositAccountOnHoldFundTransactionsApi;
@@ -345,6 +347,10 @@ public final class FineractFeignClient {
         return create(DataTablesApi.class);
     }
 
+    public DataTablesApiFixed dataTablesFixed() {
+        return create(DataTablesApiFixed.class);
+    }
+
     public DefaultApi defaultApi() {
         return create(DefaultApi.class);
     }
@@ -363,6 +369,10 @@ public final class FineractFeignClient {
 
     public DocumentsApiFixed documentsFixed() {
         return create(DocumentsApiFixed.class);
+    }
+
+    public BulkImportApiFixed bulkImportFixed() {
+        return create(BulkImportApiFixed.class);
     }
 
     public EntityDataTableApi entityDataTable() {

@@ -31,6 +31,7 @@ import java.util.UUID;
 import org.apache.fineract.client.models.ExternalTransferData;
 import org.apache.fineract.client.models.PageExternalTransferData;
 import org.apache.fineract.client.models.PostInitiateTransferResponse;
+import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.junit.jupiter.api.Test;
 
@@ -253,7 +254,8 @@ public class ExternalAssetOwnerToOwnerTransferTest extends ExternalAssetOwnerTra
 
             // Write off the loan — this will trigger decline when COB processes the PENDING transfer
             updateBusinessDateAndExecuteCOBJob("2020-03-04");
-            LOAN_TRANSACTION_HELPER.writeOffLoan("04 March 2020", loanID);
+            loanTransactionHelper.makeWriteoff(loanID.longValue(), new PostLoansLoanIdTransactionsRequest().transactionDate("04 March 2020")
+                    .dateFormat("dd MMMM yyyy").locale("en").note(" LOAN WRITE OFF!!!"));
 
             // Verify Owner A is still the active owner (PENDING for Owner B should be declined, not yet settled)
             ExternalTransferData activeTransfer = EXTERNAL_ASSET_OWNER_HELPER.retrieveActiveTransferByLoanId(loanID.longValue());

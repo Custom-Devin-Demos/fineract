@@ -361,7 +361,7 @@ public enum JavaType {
             case STRING -> s;
             case DATETIME -> Timestamp.valueOf(s);
             case TIME -> Time.valueOf(s);
-            case DATE -> new Date(s);
+            case DATE -> java.sql.Date.valueOf(s);
             default -> throw new PlatformServiceUnavailableException("error.msg.database.type.parse",
                     "Parse string representation is not supported " + this);
         };

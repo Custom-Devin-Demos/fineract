@@ -48,7 +48,7 @@ public class AdvancedPaymentAllocationWaiveLoanCharges extends BaseLoanIntegrati
     public void testAddFeeAndWaiveAdvancedPaymentAllocationNoBackdated() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProductWithAdvancedAllocation();
             // Apply and Approve Loan
@@ -68,7 +68,7 @@ public class AdvancedPaymentAllocationWaiveLoanCharges extends BaseLoanIntegrati
                     transaction(50, "Waive loan charges", "01 January 2023", 1000.0, 0.0, 0.0, 0.0, 0.0, 50.0, 0.0) //
             );
 
-            GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanId.intValue());
+            GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             GetLoansLoanIdTransactions waiveTransaction = loanDetails.getTransactions().get(1);
             Assertions.assertNotNull(waiveTransaction.getLoanChargePaidByList());
             Assertions.assertEquals(1, waiveTransaction.getLoanChargePaidByList().size());
@@ -81,7 +81,7 @@ public class AdvancedPaymentAllocationWaiveLoanCharges extends BaseLoanIntegrati
     public void testAddPenaltyAndWaiveAdvancedPaymentAllocationNoBackDated() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProductWithAdvancedAllocation();
             // Apply and Approve Loan
@@ -101,7 +101,7 @@ public class AdvancedPaymentAllocationWaiveLoanCharges extends BaseLoanIntegrati
                     transaction(50, "Waive loan charges", "01 January 2023", 1000.0, 0.0, 0.0, 0.0, 0.0, 50.0, 0.0) //
             );
 
-            GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanId.intValue());
+            GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             GetLoansLoanIdTransactions waiveTransaction = loanDetails.getTransactions().get(1);
             Assertions.assertNotNull(waiveTransaction.getLoanChargePaidByList());
             Assertions.assertEquals(1, waiveTransaction.getLoanChargePaidByList().size());
@@ -114,7 +114,7 @@ public class AdvancedPaymentAllocationWaiveLoanCharges extends BaseLoanIntegrati
     public void testAddPenaltyAndWaiveAdvancedPaymentAllocationAndBackdatedRepayment() {
         runAt("01 January 2023", () -> {
             // Create Client
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             // Create Loan Product
             Long loanProductId = createLoanProductWithAdvancedAllocation();
             // Apply and Approve Loan
@@ -139,7 +139,7 @@ public class AdvancedPaymentAllocationWaiveLoanCharges extends BaseLoanIntegrati
                     transaction(50, "Waive loan charges", "05 January 2023", 1000.0, 0.0, 0.0, 0.0, 0.0, 50.0, 0.0) //
             );
 
-            GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanId.intValue());
+            GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId);
             GetLoansLoanIdTransactions waiveTransaction = loanDetails.getTransactions().get(1);
             Assertions.assertNotNull(waiveTransaction.getLoanChargePaidByList());
             Assertions.assertEquals(1, waiveTransaction.getLoanChargePaidByList().size());

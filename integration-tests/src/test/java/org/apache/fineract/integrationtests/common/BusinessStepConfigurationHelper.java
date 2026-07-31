@@ -24,6 +24,7 @@ import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.fineract.client.util.Calls;
 import org.apache.fineract.cob.data.BusinessStep;
 import org.apache.fineract.cob.data.JobBusinessStepConfigData;
 import org.apache.fineract.cob.data.JobBusinessStepDetail;
@@ -38,6 +39,10 @@ public final class BusinessStepConfigurationHelper {
 
     private BusinessStepConfigurationHelper() {
 
+    }
+
+    public static org.apache.fineract.client.models.JobBusinessStepConfigData getConfiguredBusinessStepsByJobName(final String jobName) {
+        return Calls.ok(FineractClientHelper.getFineractClient().businessStepConfiguration.retrieveAllConfiguredBusinessStep(jobName));
     }
 
     // TODO: Rewrite to use fineract-client instead!

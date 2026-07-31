@@ -27,11 +27,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -43,10 +41,14 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.fineract.client.feign.FeignException;
+import org.apache.fineract.client.feign.util.FeignCalls;
 import org.apache.fineract.client.models.AdvancedPaymentData;
 import org.apache.fineract.client.models.BusinessDateUpdateRequest;
+import org.apache.fineract.client.models.ChargeRequest;
 import org.apache.fineract.client.models.CreditAllocationData;
 import org.apache.fineract.client.models.CreditAllocationOrder;
+import org.apache.fineract.client.models.GetCodesResponse;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdInterestRateFrequencyType;
 import org.apache.fineract.client.models.GetLoansLoanIdLoanChargeData;
@@ -58,26 +60,35 @@ import org.apache.fineract.client.models.GetLoansLoanIdTransactionsTransactionId
 import org.apache.fineract.client.models.LoanProduct;
 import org.apache.fineract.client.models.PaymentAllocationOrder;
 import org.apache.fineract.client.models.PostClientsResponse;
+import org.apache.fineract.client.models.PostCodeValueDataResponse;
+import org.apache.fineract.client.models.PostCodeValuesDataRequest;
 import org.apache.fineract.client.models.PostCreateRescheduleLoansRequest;
 import org.apache.fineract.client.models.PostCreateRescheduleLoansResponse;
 import org.apache.fineract.client.models.PostLoanProductsRequest;
 import org.apache.fineract.client.models.PostLoanProductsResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdChargesChargeIdRequest;
+import org.apache.fineract.client.models.PostLoansLoanIdChargesRequest;
+import org.apache.fineract.client.models.PostLoansLoanIdChargesResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsTransactionIdRequest;
 import org.apache.fineract.client.models.PostLoansRequest;
 import org.apache.fineract.client.models.PostLoansResponse;
+import org.apache.fineract.client.models.PostRunaccrualsRequest;
 import org.apache.fineract.client.models.PostUpdateRescheduleLoansRequest;
+import org.apache.fineract.client.models.PostUsersRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.models.PutLoansLoanIdRequest;
+import org.apache.fineract.client.models.StaffCreateRequest;
 import org.apache.fineract.client.util.CallFailedRuntimeException;
+import org.apache.fineract.client.util.JSON;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.BusinessStepHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
 import org.apache.fineract.integrationtests.common.CommonConstants;
+import org.apache.fineract.integrationtests.common.FineractFeignClientHelper;
 import org.apache.fineract.integrationtests.common.LoanRescheduleRequestHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.accounting.Account;
@@ -86,10 +97,8 @@ import org.apache.fineract.integrationtests.common.accounting.PeriodicAccrualAcc
 import org.apache.fineract.integrationtests.common.charges.ChargesHelper;
 import org.apache.fineract.integrationtests.common.loans.CobHelper;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
-import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
 import org.apache.fineract.integrationtests.common.organisation.StaffHelper;
 import org.apache.fineract.integrationtests.common.products.DelinquencyBucketsHelper;
-import org.apache.fineract.integrationtests.common.system.CodeHelper;
 import org.apache.fineract.integrationtests.useradministration.roles.RolesHelper;
 import org.apache.fineract.integrationtests.useradministration.users.UserHelper;
 import org.apache.fineract.portfolio.loanaccount.domain.transactionprocessor.impl.AdvancedPaymentScheduleTransactionProcessor;
@@ -109,36 +118,23 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
 
     private static final Logger LOG = LoggerFactory.getLogger(AdvancedPaymentAllocationLoanRepaymentScheduleTest.class);
     private static final String DATETIME_PATTERN = "dd MMMM yyyy";
-    private static ResponseSpecification responseSpec;
-    private static RequestSpecification requestSpec;
-    private static BusinessDateHelper businessDateHelper;
-    private static LoanTransactionHelper loanTransactionHelper;
-    private static AccountHelper accountHelper;
+    private static final Gson GSON = new JSON().getGson();
     private static Integer commonLoanProductId;
     private static PostClientsResponse client;
     private static LoanRescheduleRequestHelper loanRescheduleRequestHelper;
 
     @BeforeAll
     public static void setup() {
-        Utils.initializeRESTAssured();
-        requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        requestSpec.header("Fineract-Platform-TenantId", "default");
-        responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
-        businessDateHelper = new BusinessDateHelper();
-        accountHelper = new AccountHelper(requestSpec, responseSpec);
-        ClientHelper clientHelper = new ClientHelper(requestSpec, responseSpec);
-        loanRescheduleRequestHelper = new LoanRescheduleRequestHelper(requestSpec, responseSpec);
+        loanRescheduleRequestHelper = new LoanRescheduleRequestHelper(null, null);
 
-        final Account assetAccount = accountHelper.createAssetAccount();
-        final Account incomeAccount = accountHelper.createIncomeAccount();
-        final Account expenseAccount = accountHelper.createExpenseAccount();
-        final Account overpaymentAccount = accountHelper.createLiabilityAccount();
+        final Account assetAccount = AccountHelper.createAssetGlAccount("Asset Account");
+        final Account incomeAccount = AccountHelper.createIncomeGlAccount("Income Account");
+        final Account expenseAccount = AccountHelper.createExpenseGlAccount("Expense Account");
+        final Account overpaymentAccount = AccountHelper.createLiabilityGlAccount("Liability Account");
 
         commonLoanProductId = createLoanProduct("500", "15", "4", true, "25", true, LoanScheduleType.PROGRESSIVE,
                 LoanScheduleProcessingType.HORIZONTAL, assetAccount, incomeAccount, expenseAccount, overpaymentAccount);
-        client = clientHelper.createClient(ClientHelper.defaultClientCreationRequest());
+        client = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest());
         // setup COB Business Steps to prevent test failing due other integration test configurations
         new BusinessStepHelper().updateSteps("LOAN_CLOSE_OF_BUSINESS", "APPLY_CHARGE_TO_OVERDUE_LOANS", "LOAN_DELINQUENCY_CLASSIFICATION",
                 "CHECK_LOAN_REPAYMENT_DUE", "CHECK_LOAN_REPAYMENT_OVERDUE", "UPDATE_LOAN_ARREARS_AGING", "ADD_PERIODIC_ACCRUAL_ENTRIES",
@@ -1729,10 +1725,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             assertTrue(loanDetails.getStatus().getActive());
 
             // Add Charge Penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "100", true));
-            Integer penalty1LoanChargeId = loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "22 February 2023", "100"));
+            Long penalty = createSpecifiedDueDateCharge("100", true);
+            Long penalty1LoanChargeId = addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "22 February 2023", "100");
             assertNotNull(penalty1LoanChargeId);
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanResponse.getLoanId());
@@ -1877,10 +1871,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             assertTrue(loanDetails.getStatus().getActive());
 
             // Add Charge Penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "100", true));
-            Integer penalty1LoanChargeId = loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "22 February 2023", "100"));
+            Long penalty = createSpecifiedDueDateCharge("100", true);
+            Long penalty1LoanChargeId = addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "22 February 2023", "100");
             assertNotNull(penalty1LoanChargeId);
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanResponse.getLoanId());
@@ -1944,12 +1936,9 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             assertTrue(loanDetails.getStatus().getActive());
 
             // Add Charge Penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "25", true));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "20 January 2023", "25"));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "10 February 2023", "25"));
+            Long penalty = createSpecifiedDueDateCharge("25", true);
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "20 January 2023", "25");
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "10 February 2023", "25");
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanResponse.getLoanId());
             validateLoanSummaryBalances(loanDetails, 550.0, 0.0, 500.0, 0.0, null);
@@ -2024,12 +2013,9 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             assertTrue(loanDetails.getStatus().getActive());
 
             // Add Charge Penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "25", true));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "20 January 2023", "25"));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "10 February 2023", "25"));
+            Long penalty = createSpecifiedDueDateCharge("25", true);
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "20 January 2023", "25");
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "10 February 2023", "25");
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanResponse.getLoanId());
             validateLoanSummaryBalances(loanDetails, 550.0, 0.0, 500.0, 0.0, null);
@@ -2461,10 +2447,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             assertTrue(loanDetails.getStatus().getActive());
 
             // Add Charge Penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "20", true));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "17 October 2023", "20"));
+            Long penalty = createSpecifiedDueDateCharge("20", true);
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "17 October 2023", "20");
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanResponse.getLoanId());
             validateLoanSummaryBalances(loanDetails, 1020.0, 0.0, 1000.0, 0.0, null);
@@ -2488,7 +2472,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
                     0.0, 0.0, 0.0);
             assertTrue(loanDetails.getStatus().getActive());
 
-            businessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
                     .date("2023.09.16").dateFormat("yyyy.MM.dd").locale("en"));
 
             loanTransactionHelper.makeLoanRepayment(loanResponse.getLoanId(), new PostLoansLoanIdTransactionsRequest()
@@ -2503,10 +2487,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
                     0.0, 0.0, 0.0);
             assertTrue(loanDetails.getStatus().getActive());
 
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "17 September 2023", "20"));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "16 October 2023", "20"));
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "17 September 2023", "20");
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "16 October 2023", "20");
 
             loanTransactionHelper.makeGoodwillCredit(loanResponse.getLoanId(), new PostLoansLoanIdTransactionsRequest()
                     .dateFormat(DATETIME_PATTERN).transactionDate("16 September 2023").locale("en").transactionAmount(50.0));
@@ -2568,10 +2550,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             assertTrue(loanDetails.getStatus().getActive());
 
             // Add Charge Penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "20", true));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "17 October 2023", "20"));
+            Long penalty = createSpecifiedDueDateCharge("20", true);
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "17 October 2023", "20");
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanResponse.getLoanId());
             validateLoanSummaryBalances(loanDetails, 1020.0, 0.0, 1000.0, 0.0, null);
@@ -2595,7 +2575,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
                     0.0, 0.0, 0.0);
             assertTrue(loanDetails.getStatus().getActive());
 
-            businessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
                     .date("2023.09.16").dateFormat("yyyy.MM.dd").locale("en"));
 
             loanTransactionHelper.makeLoanRepayment(loanResponse.getLoanId(), new PostLoansLoanIdTransactionsRequest()
@@ -2610,10 +2590,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
                     0.0, 0.0, 0.0);
             assertTrue(loanDetails.getStatus().getActive());
 
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "17 September 2023", "20"));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "16 October 2023", "20"));
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "17 September 2023", "20");
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "16 October 2023", "20");
 
             loanTransactionHelper.makeGoodwillCredit(loanResponse.getLoanId(), new PostLoansLoanIdTransactionsRequest()
                     .dateFormat(DATETIME_PATTERN).transactionDate("16 September 2023").locale("en").transactionAmount(50.0));
@@ -2673,10 +2651,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             assertTrue(loanDetails.getStatus().getActive());
 
             // Add Charge Penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "20", true));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "17 October 2023", "20"));
+            Long penalty = createSpecifiedDueDateCharge("20", true);
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "17 October 2023", "20");
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanResponse.getLoanId());
             validateLoanSummaryBalances(loanDetails, 1020.0, 0.0, 1000.0, 0.0, null);
@@ -2700,7 +2676,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
                     0.0, 0.0, 0.0);
             assertTrue(loanDetails.getStatus().getActive());
 
-            businessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
                     .date("2023.09.16").dateFormat("yyyy.MM.dd").locale("en"));
 
             loanTransactionHelper.makeLoanRepayment(loanResponse.getLoanId(), new PostLoansLoanIdTransactionsRequest()
@@ -2715,10 +2691,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
                     0.0, 0.0, 0.0);
             assertTrue(loanDetails.getStatus().getActive());
 
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "17 September 2023", "20"));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "16 October 2023", "20"));
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "17 September 2023", "20");
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "16 October 2023", "20");
 
             loanTransactionHelper.makeMerchantIssuedRefund(loanResponse.getLoanId(), new PostLoansLoanIdTransactionsRequest()
                     .dateFormat(DATETIME_PATTERN).transactionDate("16 September 2023").locale("en").transactionAmount(30.0));
@@ -2778,10 +2752,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             assertTrue(loanDetails.getStatus().getActive());
 
             // Add Charge Penalty
-            Integer penalty = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "20", true));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "17 October 2023", "20"));
+            Long penalty = createSpecifiedDueDateCharge("20", true);
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "17 October 2023", "20");
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanResponse.getLoanId());
             validateLoanSummaryBalances(loanDetails, 1020.0, 0.0, 1000.0, 0.0, null);
@@ -2805,7 +2777,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
                     0.0, 0.0, 0.0);
             assertTrue(loanDetails.getStatus().getActive());
 
-            businessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
                     .date("2023.09.16").dateFormat("yyyy.MM.dd").locale("en"));
 
             loanTransactionHelper.makeLoanRepayment(loanResponse.getLoanId(), new PostLoansLoanIdTransactionsRequest()
@@ -2819,10 +2791,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             validateRepaymentPeriod(loanDetails, 5, LocalDate.of(2023, 10, 17), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 20.0, 0.0, 20.0, 0.0, 0.0,
                     0.0, 0.0, 0.0);
             assertTrue(loanDetails.getStatus().getActive());
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "17 September 2023", "20"));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), "16 October 2023", "20"));
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "17 September 2023", "20");
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), penalty, "16 October 2023", "20");
             loanTransactionHelper.makeMerchantIssuedRefund(loanResponse.getLoanId(), new PostLoansLoanIdTransactionsRequest()
                     .dateFormat(DATETIME_PATTERN).transactionDate("16 September 2023").locale("en").transactionAmount(30.0));
             loanDetails = loanTransactionHelper.getLoanDetails(loanResponse.getLoanId());
@@ -2878,10 +2848,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             assertTrue(loanDetails.getStatus().getActive());
 
             // Add Charge Fee
-            Integer fee = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "50", false));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(fee), "01 January 2023", "50"));
+            Long fee = createSpecifiedDueDateCharge("50", false);
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), fee, "01 January 2023", "50");
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanResponse.getLoanId());
             validateLoanSummaryBalances(loanDetails, 1050.0, 0.0, 1000.0, 0.0, null);
@@ -2965,10 +2933,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             assertTrue(loanDetails.getStatus().getActive());
 
             // Add Charge Fee
-            Integer fee = ChargesHelper.createCharges(requestSpec, responseSpec,
-                    ChargesHelper.getLoanSpecifiedDueDateJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "50", false));
-            loanTransactionHelper.addChargesForLoan(loanResponse.getLoanId().intValue(),
-                    LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(fee), "01 January 2023", "50"));
+            Long fee = createSpecifiedDueDateCharge("50", false);
+            addSpecifiedDueDateCharge(loanResponse.getLoanId(), fee, "01 January 2023", "50");
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanResponse.getLoanId());
             validateLoanSummaryBalances(loanDetails, 1050.0, 0.0, 1000.0, 0.0, null);
@@ -3202,7 +3168,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
     @Test
     public void uc122() {
         runAt("24 November 2023", () -> {
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .numberOfRepayments(3).repaymentEvery(15).enableDownPayment(true)
                     .disbursedAmountPercentageForDownPayment(BigDecimal.valueOf(25)).enableAutoRepaymentForDownPayment(false);
@@ -3281,7 +3247,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
     @Test
     public void uc123() {
         runAt("22 November 2023", () -> {
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .numberOfRepayments(3).repaymentEvery(15).enableDownPayment(true)
                     .disbursedAmountPercentageForDownPayment(BigDecimal.valueOf(25)).enableAutoRepaymentForDownPayment(false);
@@ -3364,7 +3330,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
     @Test
     public void uc124() {
         runAt("06 March 2024", () -> {
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .numberOfRepayments(1).repaymentEvery(30).enableDownPayment(false);
             PostLoanProductsResponse loanProductResponse = loanProductHelper.createLoanProduct(product);
@@ -3617,7 +3583,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
     public void uc126() {
         runAt("22 November 2023", () -> {
             final Integer fixedLength = 40; // 40 days
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .numberOfRepayments(3).repaymentEvery(15).fixedLength(fixedLength);
             PostLoanProductsResponse loanProductResponse = loanProductHelper.createLoanProduct(product);
@@ -3665,7 +3631,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             final Integer fixedLength = 5; // 5 weeks
             final Integer repaymentFrequencyType = 1; // week
 
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .numberOfRepayments(3).repaymentEvery(2).repaymentFrequencyType(repaymentFrequencyType.longValue())
                     .fixedLength(fixedLength);
@@ -3716,7 +3682,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             final Integer fixedLength = 11; // 11 months
             final Integer repaymentFrequencyType = 2; // month
 
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .numberOfRepayments(6).repaymentEvery(2).repaymentFrequencyType(repaymentFrequencyType.longValue())
                     .fixedLength(fixedLength);
@@ -3909,7 +3875,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             final Integer repaymentFrequencyType = RepaymentFrequencyType.DAYS;
             final Integer numberOfRepayments = 3;
 
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
 
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .numberOfRepayments(numberOfRepayments).repaymentEvery(15).repaymentFrequencyType(repaymentFrequencyType.longValue())
@@ -3960,7 +3926,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             final Integer repaymentFrequencyType = RepaymentFrequencyType.DAYS;
             final Integer numberOfRepayments = 4;
 
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .numberOfRepayments(numberOfRepayments).repaymentEvery(30).fixedLength(fixedLength);
             PostLoanProductsResponse loanProductResponse = loanProductHelper.createLoanProduct(product);
@@ -4033,7 +3999,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             final Integer repaymentFrequencyType = RepaymentFrequencyType.DAYS;
             final Integer numberOfRepayments = 4;
 
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .numberOfRepayments(numberOfRepayments).repaymentEvery(30).fixedLength(fixedLength);
             PostLoanProductsResponse loanProductResponse = loanProductHelper.createLoanProduct(product);
@@ -4323,7 +4289,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             double amount = 1000.0;
             String loanDisbursementDate = "1 January 2023";
 
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
 
             LOG.info("------------------------------CREATING NEW LOAN PRODUCT ---------------------------------------");
             PostLoanProductsResponse loanProductResponse = loanProductHelper
@@ -4407,7 +4373,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
                     installment(250.0, false, "01 May 2023") //
             );
 
-            loanTransactionHelper.reverseRepayment(Math.toIntExact(loanId), Math.toIntExact(repayment1TransactionId), "2 January 2023");
+            loanTransactionHelper.reverseLoanTransaction(loanId, repayment1TransactionId, "2 January 2023");
 
             verifyTransactions(loanId, //
                     transaction(1000.0, "Disbursement", "01 January 2023", 1000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
@@ -4453,7 +4419,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
     public void uc141() {
         final String operationDate = "1 January 2024";
         runAt(operationDate, () -> {
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRatePerPeriod(5.0).interestCalculationPeriodType(DAYS).interestRateFrequencyType(YEARS)
                     .daysInMonthType(DaysInMonthType.DAYS_30).daysInYearType(DaysInYearType.DAYS_360).numberOfRepayments(5)//
@@ -4515,7 +4481,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
     public void uc142() {
         final String operationDate = "1 January 2024";
         runAt(operationDate, () -> {
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRatePerPeriod(12.3).interestCalculationPeriodType(RepaymentFrequencyType.DAYS).interestRateFrequencyType(YEARS)
                     .daysInMonthType(DaysInMonthType.DAYS_30).daysInYearType(DaysInYearType.DAYS_360).numberOfRepayments(5)//
@@ -4578,7 +4544,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
     public void uc143() {
         final String operationDate = "1 January 2024";
         runAt(operationDate, () -> {
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRatePerPeriod(12.3).interestCalculationPeriodType(RepaymentFrequencyType.DAYS).interestRateFrequencyType(YEARS)
                     .daysInMonthType(DaysInMonthType.DAYS_30).daysInYearType(DaysInYearType.DAYS_360).numberOfRepayments(5)//
@@ -4641,7 +4607,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         final String operationDate = "1 January 2024";
         AtomicLong createdLoanId = new AtomicLong();
         runAt(operationDate, () -> {
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRatePerPeriod(12.3).interestCalculationPeriodType(RepaymentFrequencyType.DAYS).interestRateFrequencyType(YEARS)
                     .daysInMonthType(DaysInMonthType.ACTUAL).daysInYearType(DaysInYearType.DAYS_365).numberOfRepayments(4)//
@@ -4681,9 +4647,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         // Not Due yet
         runAt("30 January 2024", () -> {
             // Generate the Accruals
-            final PeriodicAccrualAccountingHelper periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(requestSpec,
-                    responseSpec);
-            periodicAccrualAccountingHelper.runPeriodicAccrualAccounting("30 January 2024");
+            runPeriodicAccrualAccounting("30 January 2024");
 
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(createdLoanId.get());
             assertEquals(BigDecimal.ZERO, loanDetails.getSummary().getTotalUnpaidPayableDueInterest().stripTrailingZeros());
@@ -4698,9 +4662,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
 
         runAt("31 January 2024", () -> {
             // Generate the Accruals
-            final PeriodicAccrualAccountingHelper periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(requestSpec,
-                    responseSpec);
-            periodicAccrualAccountingHelper.runPeriodicAccrualAccounting("31 January 2024");
+            runPeriodicAccrualAccounting("31 January 2024");
 
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(createdLoanId.get());
             assertEquals(BigDecimal.ZERO, loanDetails.getSummary().getTotalUnpaidPayableDueInterest().stripTrailingZeros());
@@ -4709,9 +4671,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
 
         runAt("1 February 2024", () -> {
             // Generate the Accruals
-            final PeriodicAccrualAccountingHelper periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(requestSpec,
-                    responseSpec);
-            periodicAccrualAccountingHelper.runPeriodicAccrualAccounting("1 February 2024");
+            runPeriodicAccrualAccounting("1 February 2024");
 
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(createdLoanId.get());
             assertEquals(new BigDecimal("0.12"), loanDetails.getSummary().getTotalUnpaidPayableDueInterest().stripTrailingZeros());
@@ -4720,9 +4680,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
 
         // Not Due and Due Interest
         runAt("20 February 2024", () -> {
-            final PeriodicAccrualAccountingHelper periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(requestSpec,
-                    responseSpec);
-            periodicAccrualAccountingHelper.runPeriodicAccrualAccounting("20 February 2024");
+            runPeriodicAccrualAccounting("20 February 2024");
 
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(createdLoanId.get());
             assertEquals(new BigDecimal("0.12"), loanDetails.getSummary().getTotalUnpaidPayableDueInterest().stripTrailingZeros());
@@ -4741,12 +4699,12 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         final String operationDate = "1 January 2024";
         AtomicLong createdLoanId = new AtomicLong();
         runAt(operationDate, () -> {
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRatePerPeriod(108.0).interestCalculationPeriodType(RepaymentFrequencyType.DAYS)
                     .interestRateFrequencyType(YEARS).daysInMonthType(DaysInMonthType.ACTUAL).daysInYearType(DaysInYearType.DAYS_360)
                     .numberOfRepayments(4)//
-                    .maxInterestRatePerPeriod((double) 110)//
+                    .maxInterestRatePerPeriod(110.0)//
                     .repaymentEvery(1)//
                     .repaymentFrequencyType(1L)//
                     .allowPartialPeriodInterestCalculation(false)//
@@ -4783,9 +4741,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         // First day on First Period, then TotalUnpaidPayableDueInterest = 0 and TotalUnpaidPayableNotDueInterest = 3
         runAt("2 January 2024", () -> {
             // Generate the Accruals
-            final PeriodicAccrualAccountingHelper periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(requestSpec,
-                    responseSpec);
-            periodicAccrualAccountingHelper.runPeriodicAccrualAccounting("2 January 2024");
+            runPeriodicAccrualAccounting("2 January 2024");
 
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(createdLoanId.get());
             assertEquals(BigDecimal.ZERO, loanDetails.getSummary().getTotalUnpaidPayableDueInterest().stripTrailingZeros());
@@ -4919,7 +4875,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
     public void uc146() {
         AtomicLong createdLoanId = new AtomicLong();
         runAt("1 January 2024", () -> {
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             final ArrayList<String> interestRefundTypes = new ArrayList<String>();
             interestRefundTypes.add("PAYOUT_REFUND");
             interestRefundTypes.add("MERCHANT_ISSUED_REFUND");
@@ -4984,7 +4940,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         runAt(operationDate, () -> {
             BigDecimal interestRatePerPeriod = BigDecimal.valueOf(9.4822);
 
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRatePerPeriod(interestRatePerPeriod.doubleValue()).interestCalculationPeriodType(RepaymentFrequencyType.DAYS)
                     .interestRateFrequencyType(YEARS).daysInMonthType(DaysInMonthType.DAYS_30).daysInYearType(DaysInYearType.DAYS_360)
@@ -5066,7 +5022,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         runAt(operationDate, () -> {
             BigDecimal interestRatePerPeriod = BigDecimal.valueOf(9.4822);
 
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRatePerPeriod(interestRatePerPeriod.doubleValue()).interestCalculationPeriodType(RepaymentFrequencyType.DAYS)
                     .interestRateFrequencyType(YEARS).daysInMonthType(DaysInMonthType.DAYS_30).daysInYearType(DaysInYearType.DAYS_360)
@@ -5111,7 +5067,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
 
             final String repaymentDate = "1 February 2024";
             updateBusinessDate(repaymentDate);
-            loanTransactionHelper.makeRepayment(repaymentDate, 17.13f, loanResponse.getLoanId().intValue());
+            loanTransactionHelper.makeLoanRepayment(loanResponse.getLoanId(), new PostLoansLoanIdTransactionsRequest()
+                    .transactionDate(repaymentDate).dateFormat(DATETIME_PATTERN).locale("en").transactionAmount(17.13));
 
             loanDetails = loanTransactionHelper.getLoanDetails(loanResponse.getLoanId());
 
@@ -5161,7 +5118,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         runAt(operationDate, () -> {
             BigDecimal interestRatePerPeriod = BigDecimal.valueOf(9.4822);
 
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()//
                     .interestRatePerPeriod(interestRatePerPeriod.doubleValue())//
                     .interestCalculationPeriodType(RepaymentFrequencyType.DAYS)//
@@ -5280,7 +5237,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         runAt(operationDate, () -> {
             BigDecimal interestRatePerPeriod = BigDecimal.valueOf(7.0);
 
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRatePerPeriod(interestRatePerPeriod.doubleValue()).interestRateFrequencyType(YEARS)//
                     .daysInMonthType(DaysInMonthType.DAYS_30)//
@@ -5348,7 +5305,8 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             assertEquals(loanDetails.getNumberOfRepayments(), 6);
 
             updateBusinessDate("1 February 2024");
-            loanTransactionHelper.makeRepayment("1 February 2024", 17.01f, loanResponse.getLoanId().intValue());
+            loanTransactionHelper.makeLoanRepayment(loanResponse.getLoanId(), new PostLoansLoanIdTransactionsRequest()
+                    .transactionDate("1 February 2024").dateFormat(DATETIME_PATTERN).locale("en").transactionAmount(17.01));
 
             updateBusinessDate("14 February 2024");
             PostCreateRescheduleLoansResponse rescheduleLoansResponse = loanRescheduleRequestHelper//
@@ -5391,7 +5349,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         runAt("23 March 2024", () -> {
             final Integer rescheduleStrategyMethod = 4; // Adjust last, unpaid period
             PostLoanProductsRequest loanProduct = createOnePeriod30DaysPeriodicAccrualProductWithAdvancedPaymentAllocationAndInterestRecalculation(
-                    (double) 80.0, rescheduleStrategyMethod);
+                    80.0, rescheduleStrategyMethod);
 
             final PostLoanProductsResponse loanProductResponse = loanProductHelper.createLoanProduct(loanProduct);
             assertNotNull(loanProductResponse);
@@ -5415,7 +5373,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         runAt("23 March 2024", () -> {
             final Integer rescheduleStrategyMethod = 3; // Reduce EMI amount
             PostLoanProductsRequest loanProduct = createOnePeriod30DaysPeriodicAccrualProductWithAdvancedPaymentAllocationAndInterestRecalculation(
-                    (double) 80.0, rescheduleStrategyMethod);
+                    80.0, rescheduleStrategyMethod);
 
             CallFailedRuntimeException callFailedRuntimeException = Assertions.assertThrows(CallFailedRuntimeException.class,
                     () -> loanProductHelper.createLoanProduct(loanProduct));
@@ -5434,7 +5392,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         runAt("23 March 2024", () -> {
             final Integer rescheduleStrategyMethod = 4; // Adjust last, unpaid period
             PostLoanProductsRequest loanProduct = createOnePeriod30DaysPeriodicAccrualProductWithAdvancedPaymentAllocationAndInterestRecalculation(
-                    (double) 80.0, rescheduleStrategyMethod).transactionProcessingStrategyCode(LoanProductTestBuilder.DEFAULT_STRATEGY)//
+                    80.0, rescheduleStrategyMethod).transactionProcessingStrategyCode(LoanProductTestBuilder.DEFAULT_STRATEGY)//
                     .loanScheduleType(LoanScheduleType.CUMULATIVE.toString());
 
             CallFailedRuntimeException callFailedRuntimeException = Assertions.assertThrows(CallFailedRuntimeException.class,
@@ -5461,7 +5419,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             Long clientId = client.getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRateFrequencyType(YEARS).numberOfRepayments(4)//
-                    .maxInterestRatePerPeriod((double) 0)//
+                    .maxInterestRatePerPeriod(0.0)//
                     .repaymentEvery(1)//
                     .repaymentFrequencyType(1L)//
                     .allowPartialPeriodInterestCalculation(false)//
@@ -5512,8 +5470,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             // Get the Repayment transaction
             GetLoansLoanIdTransactions loanTransaction = loanDetails.getTransactions().stream()
                     .filter(t -> Boolean.TRUE.equals(t.getType().getRepayment())).toList().get(0);
-            loanTransactionHelper.reverseRepayment(Math.toIntExact(createdLoanId.get()), Math.toIntExact(loanTransaction.getId()),
-                    operationDate);
+            loanTransactionHelper.reverseLoanTransaction(createdLoanId.get(), loanTransaction.getId(), operationDate);
 
             // Validate Loan Accrual transaction
             loanTransaction = loanDetails.getTransactions().stream().filter(t -> Boolean.TRUE.equals(t.getType().getAccrual())).toList()
@@ -5534,7 +5491,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             Long clientId = client.getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRateFrequencyType(YEARS).numberOfRepayments(4)//
-                    .maxInterestRatePerPeriod((double) 12)//
+                    .maxInterestRatePerPeriod(12.0)//
                     .repaymentEvery(1)//
                     .repaymentFrequencyType(RepaymentFrequencyType.MONTHS.longValue())//
                     .allowPartialPeriodInterestCalculation(false)//
@@ -5612,94 +5569,38 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
                     .dateFormat(DATETIME_PATTERN).transactionAmount(BigDecimal.valueOf(100.0)).locale("en"));
 
             // Before 1st disbursement date
-            HashMap prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2023, 12, 31));
-            assertEquals(100.0f, prepayAmounts.get("amount"));
-            assertEquals(0.0f, prepayAmounts.get("interestPortion"));
-            assertEquals(100.0f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2023, 12, 31), 100.0, 0.0, 100.0);
             // On 1st day
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 1, 1));
-            assertEquals(100.0f, prepayAmounts.get("amount"));
-            assertEquals(0.0f, prepayAmounts.get("interestPortion"));
-            assertEquals(100.0f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 1, 1), 100.0, 0.0, 100.0);
             // On 2nd day
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 1, 2));
-            assertEquals(100.02f, prepayAmounts.get("amount"));
-            assertEquals(0.02f, prepayAmounts.get("interestPortion"));
-            assertEquals(100.0f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 1, 2), 100.02, 0.02, 100.0);
             // On due date of 1st period
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 2, 1));
-            assertEquals(100.58f, prepayAmounts.get("amount"));
-            assertEquals(0.58f, prepayAmounts.get("interestPortion"));
-            assertEquals(100.0f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 2, 1), 100.58, 0.58, 100.0);
             // On the 1st day of 2nd period
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 2, 2));
-            assertEquals(100.60f, prepayAmounts.get("amount"));
-            assertEquals(0.60f, prepayAmounts.get("interestPortion"));
-            assertEquals(100.0f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 2, 2), 100.60, 0.60, 100.0);
             // In the middle of 2nd period (15 Feb)
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 2, 15));
-            assertEquals(100.86f, prepayAmounts.get("amount"));
-            assertEquals(0.86f, prepayAmounts.get("interestPortion"));
-            assertEquals(100.0f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 2, 15), 100.86, 0.86, 100.0);
             // On the due date of 2nd period
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 3, 1));
-            assertEquals(101.16f, prepayAmounts.get("amount"));
-            assertEquals(1.16f, prepayAmounts.get("interestPortion"));
-            assertEquals(100.0f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 3, 1), 101.16, 1.16, 100.0);
         });
         String repaymentDate = "01 February 2024";
         runAt(repaymentDate, () -> {
             loanTransactionHelper.makeLoanRepayment(createdLoanId.get(), new PostLoansLoanIdTransactionsRequest()
                     .transactionDate(repaymentDate).dateFormat("dd MMMM yyyy").locale("en").transactionAmount(17.01));
             // Before 1st disbursement date
-            HashMap prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2023, 12, 31));
-            assertEquals(83.57f, prepayAmounts.get("amount"));
-            assertEquals(0.0f, prepayAmounts.get("interestPortion"));
-            assertEquals(83.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2023, 12, 31), 83.57, 0.0, 83.57);
             // On 1st day
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 1, 1));
-            assertEquals(83.57f, prepayAmounts.get("amount"));
-            assertEquals(0.0f, prepayAmounts.get("interestPortion"));
-            assertEquals(83.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 1, 1), 83.57, 0.0, 83.57);
             // On 2nd day
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 1, 2));
-            assertEquals(83.57f, prepayAmounts.get("amount"));
-            assertEquals(0.00f, prepayAmounts.get("interestPortion"));
-            assertEquals(83.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 1, 2), 83.57, 0.00, 83.57);
             // On due date of 1st period
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 2, 1));
-            assertEquals(83.57f, prepayAmounts.get("amount"));
-            assertEquals(0.0f, prepayAmounts.get("interestPortion"));
-            assertEquals(83.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 2, 1), 83.57, 0.0, 83.57);
             // On the 1st day of 2nd period
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 2, 2));
-            assertEquals(83.59f, prepayAmounts.get("amount"));
-            assertEquals(0.02f, prepayAmounts.get("interestPortion"));
-            assertEquals(83.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 2, 2), 83.59, 0.02, 83.57);
             // In the middle of 2nd period (15 Feb)
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 2, 15));
-            assertEquals(83.81f, prepayAmounts.get("amount"));
-            assertEquals(0.24f, prepayAmounts.get("interestPortion"));
-            assertEquals(83.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 2, 15), 83.81, 0.24, 83.57);
             // On the due date of 2nd period
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 3, 1));
-            assertEquals(84.06f, prepayAmounts.get("amount"));
-            assertEquals(0.49f, prepayAmounts.get("interestPortion"));
-            assertEquals(83.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 3, 1), 84.06, 0.49, 83.57);
         });
 
         String secondRepaymentDate = "15 February 2024";
@@ -5707,47 +5608,19 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             loanTransactionHelper.makeLoanRepayment(createdLoanId.get(), new PostLoansLoanIdTransactionsRequest()
                     .transactionDate(secondRepaymentDate).dateFormat("dd MMMM yyyy").locale("en").transactionAmount(5.0));
             // Before 1st disbursement date
-            HashMap prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2023, 12, 31));
-            assertEquals(78.57f, prepayAmounts.get("amount"));
-            assertEquals(0.0f, prepayAmounts.get("interestPortion"));
-            assertEquals(78.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2023, 12, 31), 78.57, 0.0, 78.57);
             // On 1st day
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 1, 1));
-            assertEquals(78.57f, prepayAmounts.get("amount"));
-            assertEquals(0.0f, prepayAmounts.get("interestPortion"));
-            assertEquals(78.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 1, 1), 78.57, 0.0, 78.57);
             // On 2nd day
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 1, 2));
-            assertEquals(78.57f, prepayAmounts.get("amount"));
-            assertEquals(0.00f, prepayAmounts.get("interestPortion"));
-            assertEquals(78.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 1, 2), 78.57, 0.00, 78.57);
             // On due date of 1st period
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 2, 1));
-            assertEquals(78.57f, prepayAmounts.get("amount"));
-            assertEquals(0.0f, prepayAmounts.get("interestPortion"));
-            assertEquals(78.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 2, 1), 78.57, 0.0, 78.57);
             // On the 1st day of 2nd period
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 2, 2));
-            assertEquals(78.59f, prepayAmounts.get("amount"));
-            assertEquals(0.02f, prepayAmounts.get("interestPortion"));
-            assertEquals(78.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 2, 2), 78.59, 0.02, 78.57);
             // In the middle of 2nd period (15 Feb)
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 2, 15));
-            assertEquals(78.81f, prepayAmounts.get("amount"));
-            assertEquals(0.24f, prepayAmounts.get("interestPortion"));
-            assertEquals(78.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 2, 15), 78.81, 0.24, 78.57);
             // On the due date of 2nd period
-            prepayAmounts = loanTransactionHelper.getPrepayAmount(requestSpec, responseSpec, createdLoanId.intValue(),
-                    LocalDate.of(2024, 3, 1));
-            assertEquals(79.04f, prepayAmounts.get("amount"));
-            assertEquals(0.47f, prepayAmounts.get("interestPortion"));
-            assertEquals(78.57f, prepayAmounts.get("principalPortion"));
+            assertPrepaymentAmounts(createdLoanId.get(), LocalDate.of(2024, 3, 1), 79.04, 0.47, 78.57);
 
             loanTransactionHelper.makeLoanRepayment(createdLoanId.get(), new PostLoansLoanIdTransactionsRequest()
                     .transactionDate(secondRepaymentDate).dateFormat("dd MMMM yyyy").locale("en").transactionAmount(78.81));
@@ -5764,7 +5637,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             Long clientId = client.getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRateFrequencyType(YEARS).numberOfRepayments(4)//
-                    .maxInterestRatePerPeriod((double) 0)//
+                    .maxInterestRatePerPeriod(0.0)//
                     .repaymentEvery(1)//
                     .repaymentFrequencyType(1L)//
                     .allowPartialPeriodInterestCalculation(false)//
@@ -5805,14 +5678,17 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         });
 
         runAt("03 January 2024", () -> {
-            Integer roleId = RolesHelper.createRole(requestSpec, responseSpec);
+            Long roleId = RolesHelper.createRole();
             Map<String, Boolean> permissionMap = Map.of("REPAYMENT_LOAN", true);
-            RolesHelper.addPermissionsToRole(requestSpec, responseSpec, roleId, permissionMap);
-            final Integer staffId = StaffHelper.createStaff(this.requestSpec, this.responseSpec);
+            RolesHelper.addPermissionsToRole(roleId, permissionMap);
+            final Long staffId = StaffHelper.createStaff(new StaffCreateRequest().officeId(1L)
+                    .firstname(Utils.uniqueRandomStringGenerator("michael_", 5)).lastname(Utils.uniqueRandomStringGenerator("Doe_", 4))
+                    .isLoanOfficer(true).locale("en").dateFormat(DATETIME_PATTERN).joiningDate("20 September 2011")).getResourceId();
 
             final String operatorUser = Utils.uniqueRandomStringGenerator("user", 8);
-            UserHelper.createUser(this.requestSpec, this.responseSpec, roleId, staffId, operatorUser, UserHelper.SIMPLE_USER_PASSWORD,
-                    "resourceId");
+            UserHelper.createUser(new PostUsersRequest().username(operatorUser).firstname("Test").lastname("User")
+                    .email("whatever@mifos.org").officeId(1L).staffId(staffId).roles(List.of(roleId)).sendPasswordToEmail(false)
+                    .password(UserHelper.SIMPLE_USER_PASSWORD).repeatPassword(UserHelper.SIMPLE_USER_PASSWORD));
 
             loanTransactionHelper.makeLoanRepayment(
                     createdLoanId.get(), new PostLoansLoanIdTransactionsRequest().transactionDate("03 January 2024")
@@ -5839,7 +5715,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
 
             final Integer rescheduleStrategyMethod = 4; // Adjust last, unpaid period
             PostLoanProductsRequest loanProduct = createOnePeriod30DaysPeriodicAccrualProductWithAdvancedPaymentAllocationAndInterestRecalculation(
-                    (double) 80.0, rescheduleStrategyMethod);
+                    80.0, rescheduleStrategyMethod);
             final PostLoanProductsResponse loanProductResponse = loanProductHelper.createLoanProduct(loanProduct);
             assertNotNull(loanProductResponse);
 
@@ -5883,11 +5759,13 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             String randomText = Utils.randomStringGenerator("en", 5) + Utils.randomNumberGenerator(6)
                     + Utils.randomStringGenerator("is", 5);
             String transactionExternalId = UUID.randomUUID().toString();
-            Integer chargeOffReasonId = CodeHelper.createChargeOffCodeValue(requestSpec, responseSpec, randomText, 1);
+            GetCodesResponse chargeOffReasonCode = codeHelper.retrieveCodeByName("ChargeOffReasons");
+            PostCodeValueDataResponse codeValue = codeHelper.createCodeValue(chargeOffReasonCode.getId(),
+                    new PostCodeValuesDataRequest().name(randomText).position(1));
 
             loanTransactionHelper.chargeOffLoan(createdLoanId.get(),
                     new PostLoansLoanIdTransactionsRequest().transactionDate("01 March 2024").locale("en").dateFormat("dd MMMM yyyy")
-                            .externalId(transactionExternalId).chargeOffReasonId((long) chargeOffReasonId));
+                            .externalId(transactionExternalId).chargeOffReasonId(codeValue.getSubResourceId()));
 
             // Loan Prepayment (before) Charge-Off transaction - With Interest Recalculation
             GetLoansLoanIdTransactionsTemplateResponse transactionBefore = loanTransactionHelper
@@ -5919,7 +5797,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         final String operationDate = "23 December 2024";
         AtomicLong createdLoanId = new AtomicLong();
         runAt(operationDate, () -> {
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRatePerPeriod(4.0).interestCalculationPeriodType(RepaymentFrequencyType.DAYS).interestRateFrequencyType(YEARS)
                     .daysInMonthType(DaysInMonthType.ACTUAL).daysInYearType(DaysInYearType.DAYS_360).numberOfRepayments(3)//
@@ -5978,7 +5856,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         final String operationDate = "1 January 2024";
         AtomicLong createdLoanId = new AtomicLong();
         runAt(operationDate, () -> {
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRatePerPeriod(12.0).interestCalculationPeriodType(RepaymentFrequencyType.DAYS).numberOfRepayments(4)//
                     .repaymentEvery(1)//
@@ -6042,7 +5920,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             final ArrayList<String> interestRefundTypes = new ArrayList<String>();
             interestRefundTypes.add("PAYOUT_REFUND");
             interestRefundTypes.add("MERCHANT_ISSUED_REFUND");
-            Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+            Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
             PostLoanProductsRequest product = createOnePeriod30DaysLongNoInterestPeriodicAccrualProductWithAdvancedPaymentAllocation()
                     .interestRatePerPeriod(interestRatePerPeriod.doubleValue()).interestRateFrequencyType(YEARS)//
                     .daysInMonthType(DaysInMonthType.DAYS_30)//
@@ -6265,7 +6143,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
     @Test
     public void uc158() {
         AtomicLong loanIdRef = new AtomicLong();
-        Long clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
+        Long clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId();
         final BigDecimal principalAmount = BigDecimal.valueOf(2000.0);
 
         runAt("1 January 2024", () -> {
@@ -6419,6 +6297,40 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
         }
     }
 
+    private static void runPeriodicAccrualAccounting(String date) {
+        new PeriodicAccrualAccountingHelper()
+                .runPeriodicAccrualAccounting(new PostRunaccrualsRequest().dateFormat(DATETIME_PATTERN).locale("en_GB").tillDate(date));
+    }
+
+    private static Integer submitLoanProduct(String loanProductJson) {
+        PostLoanProductsRequest request = GSON.fromJson(loanProductJson, PostLoanProductsRequest.class);
+        PostLoanProductsResponse response = FeignCalls
+                .ok(() -> FineractFeignClientHelper.getFineractFeignClient().loanProducts().createLoanProduct(request));
+        return Math.toIntExact(response.getResourceId());
+    }
+
+    private Long createSpecifiedDueDateCharge(String amount, boolean penalty) {
+        ChargeRequest request = new ChargeRequest().active(true).amount(Double.valueOf(amount)).chargeAppliesTo(1)
+                .chargeCalculationType(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT).chargePaymentMode(0)
+                .chargeTimeType(ChargesHelper.CHARGE_SPECIFIED_DUE_DATE).currencyCode("USD").locale(CommonConstants.LOCALE)
+                .monthDayFormat("dd MMM").name(Utils.uniqueRandomStringGenerator("Charge_Loans_", 6)).penalty(penalty);
+        return chargesHelper.createCharges(request).getResourceId();
+    }
+
+    private Long addSpecifiedDueDateCharge(Long loanId, Long chargeId, String dueDate, String amount) {
+        PostLoansLoanIdChargesResponse response = loanTransactionHelper.addChargesForLoan(loanId, new PostLoansLoanIdChargesRequest()
+                .locale("en_GB").dateFormat(DATETIME_PATTERN).amount(Double.valueOf(amount)).dueDate(dueDate).chargeId(chargeId));
+        return response.getResourceId();
+    }
+
+    private void assertPrepaymentAmounts(Long loanId, LocalDate transactionDate, double amount, double interest, double principal) {
+        GetLoansLoanIdTransactionsTemplateResponse response = loanTransactionHelper.getPrepaymentAmount(loanId, transactionDate.toString(),
+                "yyyy-MM-dd");
+        assertEquals(amount, response.getAmount());
+        assertEquals(interest, response.getInterestPortion());
+        assertEquals(principal, response.getPrincipalPortion());
+    }
+
     private static AdvancedPaymentData createDefaultPaymentAllocationWithMixedGrouping() {
         AdvancedPaymentData advancedPaymentData = new AdvancedPaymentData();
         advancedPaymentData.setTransactionType("DEFAULT");
@@ -6448,7 +6360,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
                 .withInterestTypeAsDecliningBalance().withMultiDisburse().withDisallowExpectedDisbursements(true)
                 .withLoanScheduleType(loanScheduleType).withLoanScheduleProcessingType(loanScheduleProcessingType).withDaysInMonth("30")
                 .withDaysInYear("365").withMoratorium("0", "0").build(null);
-        return loanTransactionHelper.getLoanProductId(loanProductJSON);
+        return submitLoanProduct(loanProductJSON);
     }
 
     private static Integer createLoanProduct(final String principal, final String repaymentAfterEvery, final String numberOfRepayments,
@@ -6463,7 +6375,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
                 .withInterestCalculationPeriodTypeAsRepaymentPeriod(true).withInterestTypeAsDecliningBalance().withMultiDisburse()
                 .withDisallowExpectedDisbursements(true).withLoanScheduleType(loanScheduleType).withDaysInMonth("30").withDaysInYear("365")
                 .withMoratorium("0", "0").build(null);
-        return loanTransactionHelper.getLoanProductId(loanProductJSON);
+        return submitLoanProduct(loanProductJSON);
     }
 
     private static ArrayList<HashMap<String, Object>> createLoanProductGetError(final String principal, final String repaymentAfterEvery,
@@ -6480,9 +6392,13 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
                 .withInterestTypeAsDecliningBalance().withMultiDisburse().withDisallowExpectedDisbursements(true)
                 .withLoanScheduleType(loanScheduleType).withLoanScheduleProcessingType(loanScheduleProcessingType).withDaysInMonth("30")
                 .withDaysInYear("365").withMoratorium("0", "0").build(null);
-        LoanTransactionHelper loanTransactionHelperBadRequest = new LoanTransactionHelper(requestSpec,
-                new ResponseSpecBuilder().expectStatusCode(400).build());
-        return loanTransactionHelperBadRequest.getLoanProductError(loanProductJSON, CommonConstants.RESPONSE_ERROR);
+        PostLoanProductsRequest request = GSON.fromJson(loanProductJSON, PostLoanProductsRequest.class);
+        FeignException exception = assertThrows(FeignException.class,
+                () -> FineractFeignClientHelper.getFineractFeignClient().loanProducts().createLoanProduct(request));
+        assertEquals(400, exception.status());
+        Type responseType = new TypeToken<HashMap<String, ArrayList<HashMap<String, Object>>>>() {}.getType();
+        HashMap<String, ArrayList<HashMap<String, Object>>> response = GSON.fromJson(exception.responseBodyAsString(), responseType);
+        return response.get(CommonConstants.RESPONSE_ERROR);
     }
 
     private static Integer createLoanProduct(final String principal, final String repaymentAfterEvery, final String numberOfRepayments,
@@ -6505,7 +6421,7 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
                 .withDisallowExpectedDisbursements(true).withLoanScheduleType(loanScheduleType)
                 .withLoanScheduleProcessingType(loanScheduleProcessingType).withDaysInMonth("30").withDaysInYear("365")
                 .withMoratorium("0", "0").build(null);
-        return loanTransactionHelper.getLoanProductId(loanProductJSON);
+        return submitLoanProduct(loanProductJSON);
     }
 
     private static void validatePeriod(GetLoansLoanIdResponse loanDetails, Integer index, LocalDate dueDate, LocalDate paidDate,
@@ -6537,14 +6453,16 @@ public class AdvancedPaymentAllocationLoanRepaymentScheduleTest extends BaseLoan
             final String expectedDisbursementDate, final String submittedOnDate, String transactionProcessorCode,
             String loanScheduleProcessingType) {
         LOG.info("--------------------------------APPLYING FOR LOAN APPLICATION--------------------------------");
-        return loanTransactionHelper.applyLoan(new PostLoansRequest().clientId(clientId).productId(loanProductId.longValue())
+        PostLoansRequest request = new PostLoansRequest().clientId(clientId).productId(loanProductId.longValue())
                 .expectedDisbursementDate(expectedDisbursementDate).dateFormat(DATETIME_PATTERN)
                 .transactionProcessingStrategyCode(transactionProcessorCode).locale("en").submittedOnDate(submittedOnDate)
                 .amortizationType(1).interestRatePerPeriod(interestRate).interestCalculationPeriodType(1).interestType(0)
                 .repaymentFrequencyType(0).repaymentEvery(repaymentAfterEvery).repaymentFrequencyType(0)
                 .numberOfRepayments(numberOfRepayments).loanTermFrequency(loanTermFrequency).loanTermFrequencyType(0).principal(principal)
                 .loanType("individual").loanScheduleProcessingType(loanScheduleProcessingType)
-                .maxOutstandingLoanBalance(BigDecimal.valueOf(35000)));
+                .maxOutstandingLoanBalance(BigDecimal.valueOf(35000));
+        return FeignCalls.ok(() -> FineractFeignClientHelper.getFineractFeignClient().loans()
+                .calculateLoanScheduleOrSubmitLoanApplication(request, (String) null));
     }
 
     private static PostLoansResponse applyForLoanApplication(final Long clientId, final Integer loanProductId, final BigDecimal principal,

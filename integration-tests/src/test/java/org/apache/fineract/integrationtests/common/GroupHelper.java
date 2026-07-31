@@ -30,6 +30,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import org.apache.fineract.client.models.DeleteGroupsGroupIdResponse;
+import org.apache.fineract.client.models.GetGroupsGroupIdResponse;
+import org.apache.fineract.client.models.PostGroupsGroupIdRequest;
+import org.apache.fineract.client.models.PostGroupsGroupIdResponse;
+import org.apache.fineract.client.models.PostGroupsRequest;
+import org.apache.fineract.client.models.PostGroupsResponse;
+import org.apache.fineract.client.models.PutGroupsGroupIdRequest;
+import org.apache.fineract.client.models.PutGroupsGroupIdResponse;
+import org.apache.fineract.client.util.Calls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -459,5 +468,34 @@ public class GroupHelper {
         datatablesListMap.add(datatableMap);
         map.put("datatables", datatablesListMap);
         return new Gson().toJson(map);
+    }
+
+    public static PostGroupsResponse createGroup(final PostGroupsRequest request) {
+        LOG.info("---------------------------------CREATING A GROUP---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().groups.createGroup(request));
+    }
+
+    public static GetGroupsGroupIdResponse getGroup(final Long groupId) {
+        return Calls.ok(FineractClientHelper.getFineractClient().groups.retrieveOneGroup(groupId, null, null));
+    }
+
+    public static PostGroupsGroupIdResponse associateClient(final Long groupId, final PostGroupsGroupIdRequest request) {
+        LOG.info("---------------------------------Associate Client To A GROUP---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().groups.handleCommandsGroup(groupId, request, "associateClients", null));
+    }
+
+    public static PostGroupsGroupIdResponse disAssociateClient(final Long groupId, final PostGroupsGroupIdRequest request) {
+        LOG.info("---------------------------------Disassociate Client To A GROUP---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().groups.handleCommandsGroup(groupId, request, "disassociateClients", null));
+    }
+
+    public static PutGroupsGroupIdResponse updateGroup(final Long groupId, final PutGroupsGroupIdRequest request) {
+        LOG.info("---------------------------------UPDATE GROUP---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().groups.updateGroup(groupId, request));
+    }
+
+    public static DeleteGroupsGroupIdResponse deleteGroup(final Long groupId) {
+        LOG.info("---------------------------------DELETE GROUP---------------------------------------------");
+        return Calls.ok(FineractClientHelper.getFineractClient().groups.deleteGroup(groupId));
     }
 }

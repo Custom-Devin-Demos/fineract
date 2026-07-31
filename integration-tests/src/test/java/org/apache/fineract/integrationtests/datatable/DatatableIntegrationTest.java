@@ -18,7 +18,7 @@
  */
 package org.apache.fineract.integrationtests.datatable;
 
-import static org.apache.fineract.integrationtests.common.system.DatatableHelper.addDatatableColumn;
+import static org.apache.fineract.integrationtests.common.system.DatatableHelper.addColumn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -29,11 +29,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.builder.ResponseSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -44,20 +39,28 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import org.apache.fineract.client.models.GetCodeValuesDataResponse;
+import org.apache.fineract.client.models.GetCodesResponse;
 import org.apache.fineract.client.models.GetDataTablesResponse;
+import org.apache.fineract.client.models.PostCodeValuesDataRequest;
+import org.apache.fineract.client.models.PostCodesRequest;
 import org.apache.fineract.client.models.PostDataTablesAppTableIdResponse;
 import org.apache.fineract.client.models.PostDataTablesResponse;
+import org.apache.fineract.client.models.PostLoanProductsRequest;
+import org.apache.fineract.client.models.PostLoansRequest;
 import org.apache.fineract.client.models.PutDataTablesAppTableIdDatatableIdResponse;
+import org.apache.fineract.client.models.PutDataTablesAppTableIdResponse;
 import org.apache.fineract.client.models.PutDataTablesResponse;
 import org.apache.fineract.client.models.ResultsetColumnHeaderData;
 import org.apache.fineract.client.util.Calls;
+import org.apache.fineract.client.util.JSON;
 import org.apache.fineract.integrationtests.client.IntegrationTest;
 import org.apache.fineract.integrationtests.common.ClientHelper;
 import org.apache.fineract.integrationtests.common.Utils;
 import org.apache.fineract.integrationtests.common.loans.LoanApplicationTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanProductTestBuilder;
 import org.apache.fineract.integrationtests.common.loans.LoanTestLifecycleExtension;
-import org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper;
 import org.apache.fineract.integrationtests.common.system.CodeHelper;
 import org.apache.fineract.integrationtests.common.system.DatatableHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,43 +89,43 @@ public class DatatableIntegrationTest extends IntegrationTest {
     public static final String ACCOUNT_TYPE_INDIVIDUAL = "INDIVIDUAL";
     public static final String MINIMUM_OPENING_BALANCE = "1000.0";
     public static final String DEPOSIT_AMOUNT = "7000";
-    private RequestSpecification requestSpec;
-    private ResponseSpecification responseSpec;
-    private DatatableHelper datatableHelper;
 
-    private LoanTransactionHelper loanTransactionHelper;
+    private static final Gson SDK_GSON = new JSON().getGson();
+
+    private DatatableHelper datatableHelper;
+    private CodeHelper codeHelper;
 
     @BeforeEach
     public void setup() {
-        Utils.initializeRESTAssured();
-        this.requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
-        this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
-        this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        this.datatableHelper = new DatatableHelper(this.requestSpec, this.responseSpec);
-        this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
+        this.datatableHelper = new DatatableHelper();
+        this.codeHelper = new CodeHelper();
     }
 
     @Test
     public void validateCreateReadDeleteDatatable() throws ParseException {
         // Fetch / Create tst code
         String tst_tst_tst = "TST_TST_TST".toLowerCase();
-        HashMap<String, Object> codeResponse = CodeHelper.getCodeByName(this.requestSpec, this.responseSpec, tst_tst_tst);
+        GetCodesResponse existingCode = this.codeHelper.retrieveCodes().stream().filter(code -> tst_tst_tst.equals(code.getName()))
+                .findFirst().orElse(null);
 
-        Integer createdCodeId = (Integer) codeResponse.get("id");
+        Integer createdCodeId = existingCode == null ? null : existingCode.getId().intValue();
         Integer createdCodeValueId;
         Integer createdCodeValueIdSecond;
         if (createdCodeId == null) {
-            createdCodeId = (Integer) CodeHelper.createCode(this.requestSpec, this.responseSpec, tst_tst_tst, "resourceId");
+            createdCodeId = this.codeHelper.createCode(new PostCodesRequest().name(tst_tst_tst)).getResourceId().intValue();
 
-            createdCodeValueId = CodeHelper.createCodeValue(this.requestSpec, this.responseSpec, createdCodeId,
-                    Utils.randomStringGenerator("cv_", 8), 1);
-            createdCodeValueIdSecond = CodeHelper.createCodeValue(this.requestSpec, this.responseSpec, createdCodeId,
-                    Utils.randomStringGenerator("cv_", 8), 2);
+            createdCodeValueId = this.codeHelper
+                    .createCodeValue(createdCodeId.longValue(),
+                            new PostCodeValuesDataRequest().name(Utils.randomStringGenerator("cv_", 8)).position(1))
+                    .getSubResourceId().intValue();
+            createdCodeValueIdSecond = this.codeHelper
+                    .createCodeValue(createdCodeId.longValue(),
+                            new PostCodeValuesDataRequest().name(Utils.randomStringGenerator("cv_", 8)).position(2))
+                    .getSubResourceId().intValue();
         } else {
-            List<HashMap<String, Object>> codeValuesForCode = CodeHelper.getCodeValuesForCode(this.requestSpec, this.responseSpec,
-                    createdCodeId, "");
-            createdCodeValueId = (Integer) codeValuesForCode.get(0).get("id");
-            createdCodeValueIdSecond = (Integer) codeValuesForCode.get(1).get("id");
+            List<GetCodeValuesDataResponse> codeValuesForCode = this.codeHelper.getCodeValuesForCode(createdCodeId.longValue());
+            createdCodeValueId = codeValuesForCode.get(0).getId().intValue();
+            createdCodeValueIdSecond = codeValuesForCode.get(1).getId().intValue();
         }
 
         // creating datatable for client entity
@@ -143,21 +146,19 @@ public class DatatableIntegrationTest extends IntegrationTest {
         String tst_tst_tst_cd_itsADropdown = tst_tst_tst + "_cd_itsadropdown";
         String dateFormat = "dateFormat";
 
-        addDatatableColumn(datatableColumnsList, itsABoolean, "Boolean", false, null, null);
-        addDatatableColumn(datatableColumnsList, itsADate, "Date", true, null, null);
-        addDatatableColumn(datatableColumnsList, itsADatetime, "Datetime", true, null, null);
-        addDatatableColumn(datatableColumnsList, itsADecimal, "Decimal", true, null, null);
-        addDatatableColumn(datatableColumnsList, itsADropdown, "Dropdown", false, null, tst_tst_tst);
-        addDatatableColumn(datatableColumnsList, itsANumber, "Number", true, null, null);
-        addDatatableColumn(datatableColumnsList, itsAString, "String", true, 10, null);
+        addColumn(datatableColumnsList, itsABoolean, "Boolean", false, null, null);
+        addColumn(datatableColumnsList, itsADate, "Date", true, null, null);
+        addColumn(datatableColumnsList, itsADatetime, "Datetime", true, null, null);
+        addColumn(datatableColumnsList, itsADecimal, "Decimal", true, null, null);
+        addColumn(datatableColumnsList, itsADropdown, "Dropdown", false, null, tst_tst_tst);
+        addColumn(datatableColumnsList, itsANumber, "Number", true, null, null);
+        addColumn(datatableColumnsList, itsAString, "String", true, 10, null);
         columnMap.put("columns", datatableColumnsList);
 
         // try to create datatable without apptable
         columnMap.put("apptableName", null);
         String errorRequestJsonString = new Gson().toJson(columnMap);
-        ResponseSpecification responseSpecError400 = new ResponseSpecBuilder().expectStatusCode(400).build();
-        DatatableHelper error400Helper = new DatatableHelper(this.requestSpec, responseSpecError400);
-        HashMap<String, Object> errorResponse = error400Helper.createDatatable(errorRequestJsonString, "");
+        HashMap<String, Object> errorResponse = this.datatableHelper.createDatatableFromJson(errorRequestJsonString, "");
         assertEquals("validation.msg.validation.errors.exist", ((Map) errorResponse).get("userMessageGlobalisationCode"));
         List errors = (List) ((Map) errorResponse).get("errors");
         assertEquals(2, errors.size());
@@ -169,9 +170,9 @@ public class DatatableIntegrationTest extends IntegrationTest {
         columnMap.put("apptableName", CLIENT_APP_TABLE_NAME);
 
         // try to create datatable with invalid column type
-        HashMap<String, Object> textColumn = addDatatableColumn(datatableColumnsList, itsAText, "Invalid", true, null, null);
+        HashMap<String, Object> textColumn = addColumn(datatableColumnsList, itsAText, "Invalid", true, null, null);
         errorRequestJsonString = new Gson().toJson(columnMap);
-        errorResponse = error400Helper.createDatatable(errorRequestJsonString, "");
+        errorResponse = this.datatableHelper.createDatatableFromJson(errorRequestJsonString, "");
         assertEquals("validation.msg.validation.errors.exist", ((Map) errorResponse).get("userMessageGlobalisationCode"));
         errors = (List) ((Map) errorResponse).get("errors");
         assertEquals(1, errors.size());
@@ -183,21 +184,22 @@ public class DatatableIntegrationTest extends IntegrationTest {
         // set valid type
         textColumn.put("type", "Text");
         // add json type
-        addDatatableColumn(datatableColumnsList, itsAJson, "Json", false, null, null);
+        addColumn(datatableColumnsList, itsAJson, "Json", false, null, null);
 
         String datatabelRequestJsonString = new Gson().toJson(columnMap);
         LOG.info("map : {}", datatabelRequestJsonString);
 
-        HashMap<String, Object> datatableResponse = this.datatableHelper.createDatatable(datatabelRequestJsonString, "");
+        HashMap<String, Object> datatableResponse = this.datatableHelper.createDatatableFromJson(datatabelRequestJsonString, "");
         String datatableName = (String) datatableResponse.get("resourceIdentifier");
-        DatatableHelper.verifyDatatableCreatedOnServer(this.requestSpec, this.responseSpec, datatableName);
+        this.datatableHelper.verifyDatatableCreated(datatableName);
 
         // try to create with the same name
-        errorResponse = error400Helper.createDatatable(datatabelRequestJsonString, "");
+        errorResponse = this.datatableHelper.createDatatableFromJson(datatabelRequestJsonString, "");
         assertEquals("validation.msg.validation.errors.exist", ((Map) errorResponse).get("userMessageGlobalisationCode"));
 
         // creating client with datatables
-        final Integer clientID = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.addClientAsPerson("1", ClientHelper.LEGALFORM_ID_PERSON, UUID.randomUUID().toString())
+                .getClientId().intValue();
 
         // creating new client datatable entry
         final boolean genericResultSet = true;
@@ -219,9 +221,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         datatableEntryMap.put(itsAJson, '{' + json);
 
         String datatabelEntryRequestJsonString = new Gson().toJson(datatableEntryMap);
-        ResponseSpecification responseSpecError403 = new ResponseSpecBuilder().expectStatusCode(403).build();
-        DatatableHelper error403Helper = new DatatableHelper(this.requestSpec, responseSpecError403);
-        errorResponse = error403Helper.createDatatableEntry(datatableName, clientID, genericResultSet, datatabelEntryRequestJsonString);
+        this.datatableHelper.createEntryExpectingError(datatableName, clientID, datatabelEntryRequestJsonString);
 
         // add valid json
         datatableEntryMap.put(itsAJson, json);
@@ -229,13 +229,13 @@ public class DatatableIntegrationTest extends IntegrationTest {
         datatabelEntryRequestJsonString = new Gson().toJson(datatableEntryMap);
         LOG.info("map : {}", datatabelEntryRequestJsonString);
 
-        HashMap<String, Object> datatableEntryResponse = this.datatableHelper.createDatatableEntry(datatableName, clientID,
-                genericResultSet, datatabelEntryRequestJsonString);
+        HashMap<String, Object> datatableEntryResponse = this.datatableHelper.createEntry(datatableName, clientID,
+                datatabelEntryRequestJsonString);
         assertNotNull(datatableEntryResponse.get("resourceId"), "ERROR IN CREATING THE ENTITY DATATABLE RECORD");
 
         // Read the Datatable entry generated with genericResultSet in true (default)
-        final HashMap<String, Object> items = this.datatableHelper.readDatatableEntry(datatableName, clientID, genericResultSet,
-                (Integer) datatableEntryResponse.get("resourceId"), "");
+        final HashMap<String, Object> items = this.datatableHelper.readEntry(datatableName, clientID, genericResultSet,
+                (Integer) datatableEntryResponse.get("resourceId"));
         assertNotNull(items);
 
         List columnHeaders = (List) items.get("columnHeaders");
@@ -254,7 +254,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals(datatableEntryMap.get(itsADate), Utils.arrayDateToString((List) ((List) data.get("row")).get(2)));
 
         assertEquals(itsADatetime, ((Map) columnHeaders.get(3)).get("columnName"));
-        assertEquals(datatableEntryMap.get(itsADatetime), Utils.arrayDateTimeToString((List) ((List) data.get("row")).get(3)));
+        assertEquals(datatableEntryMap.get(itsADatetime), Utils.arrayDateTimeToString(toIntegerList(((List) data.get("row")).get(3))));
 
         assertEquals(itsADecimal, ((Map) columnHeaders.get(4)).get("columnName"));
         assertEquals(datatableEntryMap.get(itsADecimal), ((List) data.get("row")).get(4));
@@ -276,8 +276,8 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals(datatableEntryMap.get(itsAJson), jsonResponse instanceof Map ? ((Map) jsonResponse).get("value") : jsonResponse);
 
         // Read the Datatable entry generated with genericResultSet in false
-        List<HashMap<String, Object>> datatableEntryResponseNoGenericResult = this.datatableHelper.readDatatableEntry(datatableName,
-                clientID, !genericResultSet, (Integer) datatableEntryResponse.get("resourceId"), "");
+        List<HashMap<String, Object>> datatableEntryResponseNoGenericResult = this.datatableHelper.readEntry(datatableName, clientID,
+                !genericResultSet, (Integer) datatableEntryResponse.get("resourceId"));
         assertNotNull(datatableEntryResponseNoGenericResult, "ERROR IN GETTING THE DATE VALUE FROM DATATABLE RECORD");
         assertEquals(1, datatableEntryResponseNoGenericResult.size());
 
@@ -286,7 +286,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals(datatableEntryMap.get(itsABoolean), Boolean.valueOf((String) responseMap.get(itsABoolean)));
         assertEquals(datatableEntryMap.get(itsADate), Utils.arrayDateToString((List) responseMap.get(itsADate)));
         assertEquals(datatableEntryMap.get(itsADecimal), responseMap.get(itsADecimal));
-        assertEquals(datatableEntryMap.get(itsADatetime), Utils.arrayDateTimeToString((List<Integer>) responseMap.get(itsADatetime)));
+        assertEquals(datatableEntryMap.get(itsADatetime), Utils.arrayDateTimeToString(toIntegerList(responseMap.get(itsADatetime))));
         assertEquals(datatableEntryMap.get(tst_tst_tst_cd_itsADropdown), responseMap.get(tst_tst_tst_cd_itsADropdown));
         assertEquals(datatableEntryMap.get(itsANumber), responseMap.get(itsANumber));
         assertEquals(datatableEntryMap.get(itsAString), responseMap.get(itsAString));
@@ -310,7 +310,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         datatabelEntryRequestJsonString = new Gson().toJson(datatableEntryMap);
         LOG.info("map : {}", datatabelEntryRequestJsonString);
 
-        HashMap<String, Object> updatedDatatableEntryResponse = this.datatableHelper.updateDatatableEntry(datatableName, clientID, false,
+        HashMap<String, Object> updatedDatatableEntryResponse = this.datatableHelper.updateEntry(datatableName, clientID,
                 datatabelEntryRequestJsonString);
 
         assertEquals(clientID, updatedDatatableEntryResponse.get("clientId"));
@@ -320,7 +320,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
                 Utils.arrayDateToString((List) ((Map) updatedDatatableEntryResponse.get("changes")).get(itsADate)));
         assertEquals(datatableEntryMap.get(itsADecimal), ((Map) updatedDatatableEntryResponse.get("changes")).get(itsADecimal));
         assertEquals(datatableEntryMap.get(itsADatetime),
-                Utils.arrayDateTimeToString((List<Integer>) ((Map) updatedDatatableEntryResponse.get("changes")).get(itsADatetime)));
+                Utils.arrayDateTimeToString(toIntegerList(((Map) updatedDatatableEntryResponse.get("changes")).get(itsADatetime))));
         assertEquals(datatableEntryMap.get(tst_tst_tst_cd_itsADropdown),
                 ((Map) updatedDatatableEntryResponse.get("changes")).get(tst_tst_tst_cd_itsADropdown));
         assertEquals(datatableEntryMap.get(itsANumber), ((Map) updatedDatatableEntryResponse.get("changes")).get(itsANumber));
@@ -352,11 +352,11 @@ public class DatatableIntegrationTest extends IntegrationTest {
         }
 
         // deleting datatable entries
-        Integer appTableId = (Integer) this.datatableHelper.deleteDatatableEntries(datatableName, clientID, "clientId");
+        Integer appTableId = (Integer) this.datatableHelper.deleteEntries(datatableName, clientID, "clientId");
         assertEquals(clientID, appTableId, "ERROR IN DELETING THE DATATABLE ENTRIES");
 
         // deleting the datatable
-        String deletedDataTableName = this.datatableHelper.deleteDatatable(datatableName);
+        String deletedDataTableName = this.datatableHelper.deleteDatatableByName(datatableName);
         assertEquals(datatableName, deletedDataTableName, "ERROR IN DELETING THE DATATABLE");
 
         GetDataTablesResponse dataTable = datatableHelper.getDataTableDetails(datatableName);
@@ -377,19 +377,20 @@ public class DatatableIntegrationTest extends IntegrationTest {
         String itsAString = "itsAString";
         String dateFormat = "dateFormat";
 
-        addDatatableColumn(datatableColumnsList, itsADate, "Date", true, null, null);
-        addDatatableColumn(datatableColumnsList, itsADecimal, "Decimal", true, null, null);
-        addDatatableColumn(datatableColumnsList, itsAString, "String", true, 10, null);
+        addColumn(datatableColumnsList, itsADate, "Date", true, null, null);
+        addColumn(datatableColumnsList, itsADecimal, "Decimal", true, null, null);
+        addColumn(datatableColumnsList, itsAString, "String", true, 10, null);
         columnMap.put("columns", datatableColumnsList);
         String datatabelRequestJsonString = new Gson().toJson(columnMap);
         LOG.info("map : {}", datatabelRequestJsonString);
 
-        HashMap<String, Object> datatableResponse = this.datatableHelper.createDatatable(datatabelRequestJsonString, "");
+        HashMap<String, Object> datatableResponse = this.datatableHelper.createDatatableFromJson(datatabelRequestJsonString, "");
         String datatableName = (String) datatableResponse.get("resourceIdentifier");
-        DatatableHelper.verifyDatatableCreatedOnServer(this.requestSpec, this.responseSpec, datatableName);
+        this.datatableHelper.verifyDatatableCreated(datatableName);
 
         // creating client with datatables
-        final Integer clientID = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.addClientAsPerson("1", ClientHelper.LEGALFORM_ID_PERSON, UUID.randomUUID().toString())
+                .getClientId().intValue();
 
         // creating new client datatable entry
         final boolean genericResultSet = true;
@@ -404,13 +405,13 @@ public class DatatableIntegrationTest extends IntegrationTest {
         String datatabelEntryRequestJsonString = new Gson().toJson(datatableEntryMap);
         LOG.info("map : {}", datatabelEntryRequestJsonString);
 
-        HashMap<String, Object> datatableEntryResponse = this.datatableHelper.createDatatableEntry(datatableName, clientID,
-                genericResultSet, datatabelEntryRequestJsonString);
+        HashMap<String, Object> datatableEntryResponse = this.datatableHelper.createEntry(datatableName, clientID,
+                datatabelEntryRequestJsonString);
         assertNotNull(datatableEntryResponse.get("resourceId"), "ERROR IN CREATING THE ENTITY DATATABLE RECORD");
 
         // Read the Datatable entry generated with genericResultSet in true (default)
-        final HashMap<String, Object> items = this.datatableHelper.readDatatableEntry(datatableName, clientID, genericResultSet,
-                (Integer) datatableEntryResponse.get("resourceId"), "");
+        final HashMap<String, Object> items = this.datatableHelper.readEntry(datatableName, clientID, genericResultSet,
+                (Integer) datatableEntryResponse.get("resourceId"));
         assertNotNull(items);
         assertEquals(1, ((List) items.get("data")).size());
 
@@ -439,7 +440,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         datatabelEntryRequestJsonString = new Gson().toJson(datatableEntryMap);
         LOG.info("map : {}", datatabelEntryRequestJsonString);
 
-        HashMap<String, Object> updatedDatatableEntryResponse = this.datatableHelper.updateDatatableEntry(datatableName, clientID, false,
+        HashMap<String, Object> updatedDatatableEntryResponse = this.datatableHelper.updateEntry(datatableName, clientID,
                 datatabelEntryRequestJsonString);
 
         assertEquals(clientID, updatedDatatableEntryResponse.get("clientId"));
@@ -456,19 +457,16 @@ public class DatatableIntegrationTest extends IntegrationTest {
         LOG.info("query result : {}", queryResult);
 
         // deleting datatable entries
-        Integer appTableId = (Integer) this.datatableHelper.deleteDatatableEntries(datatableName, clientID, "clientId");
+        Integer appTableId = (Integer) this.datatableHelper.deleteEntries(datatableName, clientID, "clientId");
         assertEquals(clientID, appTableId, "ERROR IN DELETING THE DATATABLE ENTRIES");
 
         // deleting the datatable
-        String deletedDataTableName = this.datatableHelper.deleteDatatable(datatableName);
+        String deletedDataTableName = this.datatableHelper.deleteDatatableByName(datatableName);
         assertEquals(datatableName, deletedDataTableName, "ERROR IN DELETING THE DATATABLE");
     }
 
     @Test
     public void validateInsertNullValues() {
-        // Fetch / Create TST code
-        HashMap<String, Object> codeResponse = CodeHelper.getCodeByName(this.requestSpec, this.responseSpec, "TST_TST_TST");
-
         // creating datatable for client entity
         final HashMap<String, Object> columnMap = new HashMap<>();
         final List<HashMap<String, Object>> datatableColumnsList = new ArrayList<>();
@@ -476,30 +474,29 @@ public class DatatableIntegrationTest extends IntegrationTest {
         columnMap.put("apptableName", LOAN_APP_TABLE_NAME);
         columnMap.put("entitySubType", "");
         columnMap.put("multiRow", true);
-        addDatatableColumn(datatableColumnsList, "itsABoolean", "Boolean", false, null, null);
-        addDatatableColumn(datatableColumnsList, "itsADate", "Date", false, null, null);
-        addDatatableColumn(datatableColumnsList, "itsADatetime", "Datetime", false, null, null);
-        addDatatableColumn(datatableColumnsList, "itsADecimal", "Decimal", false, null, null);
-        addDatatableColumn(datatableColumnsList, "itsADropdown", "Dropdown", false, null, "TST_TST_TST");
-        addDatatableColumn(datatableColumnsList, "itsANumber", "Number", false, null, null);
-        addDatatableColumn(datatableColumnsList, "itsAString", "String", false, 10, null);
-        addDatatableColumn(datatableColumnsList, "itsAText", "Text", false, null, null);
+        addColumn(datatableColumnsList, "itsABoolean", "Boolean", false, null, null);
+        addColumn(datatableColumnsList, "itsADate", "Date", false, null, null);
+        addColumn(datatableColumnsList, "itsADatetime", "Datetime", false, null, null);
+        addColumn(datatableColumnsList, "itsADecimal", "Decimal", false, null, null);
+        addColumn(datatableColumnsList, "itsADropdown", "Dropdown", false, null, "TST_TST_TST");
+        addColumn(datatableColumnsList, "itsANumber", "Number", false, null, null);
+        addColumn(datatableColumnsList, "itsAString", "String", false, 10, null);
+        addColumn(datatableColumnsList, "itsAText", "Text", false, null, null);
         columnMap.put("columns", datatableColumnsList);
         String datatabelRequestJsonString = new Gson().toJson(columnMap);
         LOG.info("map : {}", datatabelRequestJsonString);
 
-        HashMap<String, Object> datatableResponse = this.datatableHelper.createDatatable(datatabelRequestJsonString, "");
+        HashMap<String, Object> datatableResponse = this.datatableHelper.createDatatableFromJson(datatabelRequestJsonString, "");
         String datatableName = (String) datatableResponse.get("resourceIdentifier");
-        DatatableHelper.verifyDatatableCreatedOnServer(this.requestSpec, this.responseSpec, datatableName);
+        this.datatableHelper.verifyDatatableCreated(datatableName);
 
         // try to create with the same name
-        ResponseSpecification responseSpecError400 = new ResponseSpecBuilder().expectStatusCode(400).build();
-        DatatableHelper error400Helper = new DatatableHelper(this.requestSpec, responseSpecError400);
-        HashMap<String, Object> response = error400Helper.createDatatable(datatabelRequestJsonString, "");
+        HashMap<String, Object> response = this.datatableHelper.createDatatableFromJson(datatabelRequestJsonString, "");
         assertEquals("validation.msg.validation.errors.exist", ((Map) response).get("userMessageGlobalisationCode"));
 
         // creating client with datatables
-        final Integer clientID = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.addClientAsPerson("1", ClientHelper.LEGALFORM_ID_PERSON, UUID.randomUUID().toString())
+                .getClientId().intValue();
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingEnabled();
         final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -522,8 +519,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         String firstEntryRequestJsonString = new GsonBuilder().serializeNulls().create().toJson(firstEntryMap);
         LOG.info("map : {}", firstEntryRequestJsonString);
 
-        HashMap<String, Object> firstEntryResponse = this.datatableHelper.createDatatableEntry(datatableName, loanID, genericResultSet,
-                firstEntryRequestJsonString);
+        HashMap<String, Object> firstEntryResponse = this.datatableHelper.createEntry(datatableName, loanID, firstEntryRequestJsonString);
         assertNotNull(firstEntryResponse.get("resourceId"), "ERROR IN CREATING THE ENTITY DATATABLE RECORD");
 
         HashMap<String, Object> secondEntryMap = new HashMap<>();
@@ -540,12 +536,11 @@ public class DatatableIntegrationTest extends IntegrationTest {
         secondEntryMap.put("dateFormat", "yyyy-MM-dd");
 
         String secondEntryRequestJsonString = new GsonBuilder().serializeNulls().create().toJson(secondEntryMap);
-        HashMap<String, Object> secondEntryResponse = this.datatableHelper.createDatatableEntry(datatableName, loanID, genericResultSet,
-                secondEntryRequestJsonString);
+        HashMap<String, Object> secondEntryResponse = this.datatableHelper.createEntry(datatableName, loanID, secondEntryRequestJsonString);
         assertNotNull(secondEntryResponse.get("resourceId"), "ERROR IN CREATING THE ENTITY DATATABLE RECORD");
 
         // Read the Datatable entry generated with genericResultSet in true (default)
-        HashMap<String, Object> items = this.datatableHelper.readDatatableEntry(datatableName, loanID, genericResultSet, null, "");
+        HashMap<String, Object> items = this.datatableHelper.readEntry(datatableName, loanID, genericResultSet, null);
         assertNotNull(items);
         assertEquals(2, ((List) items.get("data")).size());
 
@@ -584,7 +579,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertNull(secondEntryValues.get(8));
         assertNull(secondEntryValues.get(9));
 
-        PutDataTablesAppTableIdDatatableIdResponse updatedDatatableEntryResponse = this.datatableHelper.updateDatatableEntry(datatableName,
+        PutDataTablesAppTableIdDatatableIdResponse updatedDatatableEntryResponse = this.datatableHelper.updateEntryOneToMany(datatableName,
                 loanID, 1, secondEntryRequestJsonString);
         assertNotNull(updatedDatatableEntryResponse);
         assertEquals(0, updatedDatatableEntryResponse.getChanges().size());
@@ -593,7 +588,8 @@ public class DatatableIntegrationTest extends IntegrationTest {
     @Test
     public void validateCreateAndEditDatatable() {
         // Creating client
-        final Integer clientId = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
+        final Integer clientId = ClientHelper.addClientAsPerson("1", ClientHelper.LEGALFORM_ID_PERSON, UUID.randomUUID().toString())
+                .getClientId().intValue();
         final Integer randomNumber = Utils.randomNumberGenerator(3);
 
         // Creating datatable for Client Person
@@ -606,15 +602,15 @@ public class DatatableIntegrationTest extends IntegrationTest {
         columnMap.put("apptableName", CLIENT_APP_TABLE_NAME);
         columnMap.put("entitySubType", CLIENT_PERSON_SUBTYPE_NAME);
         columnMap.put("multiRow", false);
-        addDatatableColumn(datatableColumnsList, "itsANumber", "Number", false, null, null);
-        addDatatableColumn(datatableColumnsList, "itsAString", "String", false, 10, null);
+        addColumn(datatableColumnsList, "itsANumber", "Number", false, null, null);
+        addColumn(datatableColumnsList, "itsAString", "String", false, 10, null);
         columnMap.put("columns", datatableColumnsList);
         String datatabelRequestJsonString = new Gson().toJson(columnMap);
         LOG.info("map : {}", datatabelRequestJsonString);
 
-        PostDataTablesResponse datatableCreateResponse = this.datatableHelper.createDatatable(datatabelRequestJsonString);
+        PostDataTablesResponse datatableCreateResponse = this.datatableHelper.createDatatableFromJson(datatabelRequestJsonString);
         assertEquals(datatableName, datatableCreateResponse.getResourceIdentifier());
-        DatatableHelper.verifyDatatableCreatedOnServer(this.requestSpec, this.responseSpec, datatableName);
+        this.datatableHelper.verifyDatatableCreated(datatableName);
 
         // Insert first values
         final String randomString = Utils.randomStringGenerator("Q", 8);
@@ -626,12 +622,12 @@ public class DatatableIntegrationTest extends IntegrationTest {
         datatableEntryMap.put("dateFormat", "yyyy-MM-dd");
 
         String datatableEntryRequestJsonString = new GsonBuilder().serializeNulls().create().toJson(datatableEntryMap);
-        PostDataTablesAppTableIdResponse datatableEntryResponse = this.datatableHelper.addDatatableEntry(datatableName, clientId,
-                genericResultSet, datatableEntryRequestJsonString);
+        PostDataTablesAppTableIdResponse datatableEntryResponse = this.datatableHelper.addEntry(datatableName, clientId,
+                datatableEntryRequestJsonString);
         assertNotNull(datatableEntryResponse.getResourceId(), "ERROR IN CREATING THE ENTITY DATATABLE RECORD");
 
         // Read the Datatable entry generated with genericResultSet in true (default)
-        HashMap<String, Object> items = this.datatableHelper.readDatatableEntry(datatableName, clientId, genericResultSet, null, "");
+        HashMap<String, Object> items = this.datatableHelper.readEntry(datatableName, clientId, genericResultSet, null);
         assertNotNull(items);
         List data = (List) items.get("data");
         assertEquals(1, data.size());
@@ -647,11 +643,12 @@ public class DatatableIntegrationTest extends IntegrationTest {
         columnMap.put("apptableName", CLIENT_APP_TABLE_NAME);
         columnMap.put("entitySubType", CLIENT_PERSON_SUBTYPE_NAME);
         datatableColumnsList = new ArrayList<>();
-        addDatatableColumn(datatableColumnsList, "itsAText", "Text", false, null, null);
+        addColumn(datatableColumnsList, "itsAText", "Text", false, null, null);
         columnMap.put("addColumns", datatableColumnsList);
         datatabelRequestJsonString = new Gson().toJson(columnMap);
         LOG.info("map to update : {}", datatabelRequestJsonString);
-        PutDataTablesResponse datatableUpdateResponse = this.datatableHelper.updateDatatable(datatableName, datatabelRequestJsonString);
+        PutDataTablesResponse datatableUpdateResponse = this.datatableHelper.updateDatatableFromJson(datatableName,
+                datatabelRequestJsonString);
         assertNotNull(datatableUpdateResponse);
         assertEquals(datatableName, datatableUpdateResponse.getResourceIdentifier());
 
@@ -664,13 +661,13 @@ public class DatatableIntegrationTest extends IntegrationTest {
 
         datatableEntryRequestJsonString = new GsonBuilder().serializeNulls().create().toJson(datatableEntryMap);
         LOG.info("map to update : {}", datatableEntryRequestJsonString);
-        PutDataTablesAppTableIdDatatableIdResponse updatedDatatableEntryResponse = this.datatableHelper.updateDatatableEntry(datatableName,
-                clientId, datatableEntryRequestJsonString);
+        PutDataTablesAppTableIdResponse updatedDatatableEntryResponse = this.datatableHelper.updateEntryOneToOne(datatableName, clientId,
+                datatableEntryRequestJsonString);
         assertNotNull(updatedDatatableEntryResponse);
         assertEquals(1, updatedDatatableEntryResponse.getChanges().size());
 
         // Read the Datatable entry generated with genericResultSet in true (default)
-        items = this.datatableHelper.readDatatableEntry(datatableName, clientId, genericResultSet, null, "");
+        items = this.datatableHelper.readEntry(datatableName, clientId, genericResultSet, null);
         assertNotNull(items);
         data = (List) items.get("data");
         assertEquals(1, data.size());
@@ -683,7 +680,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals(randomString, records.get(2));
         assertEquals(textValue, records.get(5));
 
-        Integer resourceId = (Integer) this.datatableHelper.deleteDatatableEntries(datatableName, clientId, "resourceId");
+        Integer resourceId = (Integer) this.datatableHelper.deleteEntries(datatableName, clientId, "resourceId");
         assertEquals(clientId, resourceId, "ERROR IN DELETING THE DATATABLE ENTRIES");
 
         // Update - update, delete DataTable columns
@@ -693,11 +690,11 @@ public class DatatableIntegrationTest extends IntegrationTest {
         List<Map<String, Object>> dropColumnsList = Collections.singletonList(Collections.singletonMap("name", "itsANumber"));
         columnMap.put("dropColumns", dropColumnsList);
         ArrayList<HashMap<String, Object>> changeColumnsList = new ArrayList<>();
-        addDatatableColumn(changeColumnsList, "itsAString", null, false, 100, null);
+        addColumn(changeColumnsList, "itsAString", null, false, 100, null);
         columnMap.put("changeColumns", changeColumnsList);
         datatabelRequestJsonString = new Gson().toJson(columnMap);
         LOG.info("map to update : {}", datatabelRequestJsonString);
-        datatableUpdateResponse = this.datatableHelper.updateDatatable(datatableName, datatabelRequestJsonString);
+        datatableUpdateResponse = this.datatableHelper.updateDatatableFromJson(datatableName, datatabelRequestJsonString);
         assertNotNull(datatableUpdateResponse);
         assertEquals(datatableName, datatableUpdateResponse.getResourceIdentifier());
 
@@ -713,23 +710,27 @@ public class DatatableIntegrationTest extends IntegrationTest {
     public void validateReadDatatableMultirow() {
         // Fetch / Create TST code
         String tst_tst_tst = "tst_tst_tst";
-        HashMap<String, Object> codeResponse = CodeHelper.getCodeByName(this.requestSpec, this.responseSpec, tst_tst_tst);
+        GetCodesResponse existingCode = this.codeHelper.retrieveCodes().stream().filter(code -> tst_tst_tst.equals(code.getName()))
+                .findFirst().orElse(null);
 
-        Integer createdCodeId = (Integer) codeResponse.get("id");
+        Integer createdCodeId = existingCode == null ? null : existingCode.getId().intValue();
         Integer createdCodeValueId;
         Integer createdCodeValueIdSecond;
         if (createdCodeId == null) {
-            createdCodeId = (Integer) CodeHelper.createCode(this.requestSpec, this.responseSpec, tst_tst_tst, "resourceId");
+            createdCodeId = this.codeHelper.createCode(new PostCodesRequest().name(tst_tst_tst)).getResourceId().intValue();
 
-            createdCodeValueId = CodeHelper.createCodeValue(this.requestSpec, this.responseSpec, createdCodeId,
-                    Utils.randomStringGenerator("cv_", 8), 1);
-            createdCodeValueIdSecond = CodeHelper.createCodeValue(this.requestSpec, this.responseSpec, createdCodeId,
-                    Utils.randomStringGenerator("cv_", 8), 2);
+            createdCodeValueId = this.codeHelper
+                    .createCodeValue(createdCodeId.longValue(),
+                            new PostCodeValuesDataRequest().name(Utils.randomStringGenerator("cv_", 8)).position(1))
+                    .getSubResourceId().intValue();
+            createdCodeValueIdSecond = this.codeHelper
+                    .createCodeValue(createdCodeId.longValue(),
+                            new PostCodeValuesDataRequest().name(Utils.randomStringGenerator("cv_", 8)).position(2))
+                    .getSubResourceId().intValue();
         } else {
-            List<HashMap<String, Object>> codeValuesForCode = CodeHelper.getCodeValuesForCode(this.requestSpec, this.responseSpec,
-                    createdCodeId, "");
-            createdCodeValueId = (Integer) codeValuesForCode.get(0).get("id");
-            createdCodeValueIdSecond = (Integer) codeValuesForCode.get(1).get("id");
+            List<GetCodeValuesDataResponse> codeValuesForCode = this.codeHelper.getCodeValuesForCode(createdCodeId.longValue());
+            createdCodeValueId = codeValuesForCode.get(0).getId().intValue();
+            createdCodeValueIdSecond = codeValuesForCode.get(1).getId().intValue();
         }
 
         // creating datatable for client entity
@@ -739,30 +740,29 @@ public class DatatableIntegrationTest extends IntegrationTest {
         columnMap.put("apptableName", LOAN_APP_TABLE_NAME);
         columnMap.put("entitySubType", "");
         columnMap.put("multiRow", true);
-        addDatatableColumn(datatableColumnsList, "itsABoolean", "Boolean", false, null, null);
-        addDatatableColumn(datatableColumnsList, "itsADate", "Date", false, null, null);
-        addDatatableColumn(datatableColumnsList, "itsADatetime", "Datetime", false, null, null);
-        addDatatableColumn(datatableColumnsList, "itsADecimal", "Decimal", false, null, null);
-        addDatatableColumn(datatableColumnsList, "itsADropdown", "Dropdown", false, null, tst_tst_tst);
-        addDatatableColumn(datatableColumnsList, "itsANumber", "Number", false, null, null);
-        addDatatableColumn(datatableColumnsList, "itsAString", "String", false, 10, null);
-        addDatatableColumn(datatableColumnsList, "itsAText", "Text", false, null, null);
+        addColumn(datatableColumnsList, "itsABoolean", "Boolean", false, null, null);
+        addColumn(datatableColumnsList, "itsADate", "Date", false, null, null);
+        addColumn(datatableColumnsList, "itsADatetime", "Datetime", false, null, null);
+        addColumn(datatableColumnsList, "itsADecimal", "Decimal", false, null, null);
+        addColumn(datatableColumnsList, "itsADropdown", "Dropdown", false, null, tst_tst_tst);
+        addColumn(datatableColumnsList, "itsANumber", "Number", false, null, null);
+        addColumn(datatableColumnsList, "itsAString", "String", false, 10, null);
+        addColumn(datatableColumnsList, "itsAText", "Text", false, null, null);
         columnMap.put("columns", datatableColumnsList);
         String datatabelRequestJsonString = new Gson().toJson(columnMap);
         LOG.info("map : {}", datatabelRequestJsonString);
 
-        HashMap<String, Object> datatableResponse = this.datatableHelper.createDatatable(datatabelRequestJsonString, "");
+        HashMap<String, Object> datatableResponse = this.datatableHelper.createDatatableFromJson(datatabelRequestJsonString, "");
         String datatableName = (String) datatableResponse.get("resourceIdentifier");
-        DatatableHelper.verifyDatatableCreatedOnServer(this.requestSpec, this.responseSpec, datatableName);
+        this.datatableHelper.verifyDatatableCreated(datatableName);
 
         // try to create with the same name
-        ResponseSpecification responseSpecError400 = new ResponseSpecBuilder().expectStatusCode(400).build();
-        DatatableHelper error400Helper = new DatatableHelper(this.requestSpec, responseSpecError400);
-        HashMap<String, Object> response = error400Helper.createDatatable(datatabelRequestJsonString, "");
+        HashMap<String, Object> response = this.datatableHelper.createDatatableFromJson(datatabelRequestJsonString, "");
         assertEquals("validation.msg.validation.errors.exist", ((Map) response).get("userMessageGlobalisationCode"));
 
         // creating client with datatables
-        final Integer clientID = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.addClientAsPerson("1", ClientHelper.LEGALFORM_ID_PERSON, UUID.randomUUID().toString())
+                .getClientId().intValue();
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingEnabled();
         final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -785,15 +785,15 @@ public class DatatableIntegrationTest extends IntegrationTest {
         String datatabelEntryRequestJsonString = new Gson().toJson(datatableEntryMap);
         LOG.info("map : {}", datatabelEntryRequestJsonString);
 
-        HashMap<String, Object> datatableEntryResponseFirst = this.datatableHelper.createDatatableEntry(datatableName, loanID,
-                genericResultSet, datatabelEntryRequestJsonString);
-        HashMap<String, Object> datatableEntryResponseSecond = this.datatableHelper.createDatatableEntry(datatableName, loanID,
-                genericResultSet, datatabelEntryRequestJsonString);
+        HashMap<String, Object> datatableEntryResponseFirst = this.datatableHelper.createEntry(datatableName, loanID,
+                datatabelEntryRequestJsonString);
+        HashMap<String, Object> datatableEntryResponseSecond = this.datatableHelper.createEntry(datatableName, loanID,
+                datatabelEntryRequestJsonString);
         assertNotNull(datatableEntryResponseFirst.get("resourceId"), "ERROR IN CREATING THE ENTITY DATATABLE RECORD");
         assertNotNull(datatableEntryResponseSecond.get("resourceId"), "ERROR IN CREATING THE ENTITY DATATABLE RECORD");
 
         // Read the Datatable entry generated with genericResultSet in true (default)
-        HashMap<String, Object> items = this.datatableHelper.readDatatableEntry(datatableName, loanID, genericResultSet, null, "");
+        HashMap<String, Object> items = this.datatableHelper.readEntry(datatableName, loanID, genericResultSet, null);
         assertNotNull(items);
         assertEquals(2, ((List) items.get("data")).size());
 
@@ -808,7 +808,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
                 Utils.arrayDateToString((List) ((List) ((Map) ((List) items.get("data")).get(0)).get("row")).get(3)));
         assertEquals("itsADatetime", ((Map) ((List) items.get("columnHeaders")).get(4)).get("columnName"));
         assertEquals(datatableEntryMap.get("itsADatetime"),
-                Utils.arrayDateTimeToString((List) ((List) ((Map) ((List) items.get("data")).get(0)).get("row")).get(4)));
+                Utils.arrayDateTimeToString(toIntegerList(((List) ((Map) ((List) items.get("data")).get(0)).get("row")).get(4))));
         assertEquals("itsADecimal", ((Map) ((List) items.get("columnHeaders")).get(5)).get("columnName"));
         assertEquals(datatableEntryMap.get("itsADecimal"), ((List) ((Map) ((List) items.get("data")).get(0)).get("row")).get(5));
         assertEquals(tst_tst_tst + "_cd_itsADropdown", ((Map) ((List) items.get("columnHeaders")).get(6)).get("columnName"));
@@ -827,7 +827,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals(datatableEntryMap.get("itsADate"),
                 Utils.arrayDateToString((List) ((List) ((Map) ((List) items.get("data")).get(1)).get("row")).get(3)));
         assertEquals(datatableEntryMap.get("itsADatetime"),
-                Utils.arrayDateTimeToString((List) ((List) ((Map) ((List) items.get("data")).get(1)).get("row")).get(4)));
+                Utils.arrayDateTimeToString(toIntegerList(((List) ((Map) ((List) items.get("data")).get(1)).get("row")).get(4))));
         assertEquals(datatableEntryMap.get("itsADecimal"), ((List) ((Map) ((List) items.get("data")).get(1)).get("row")).get(5));
         assertEquals(datatableEntryMap.get(tst_tst_tst + "_cd_itsADropdown"),
                 ((List) ((Map) ((List) items.get("data")).get(1)).get("row")).get(6));
@@ -836,8 +836,8 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals(datatableEntryMap.get("itsAText"), ((List) ((Map) ((List) items.get("data")).get(1)).get("row")).get(9));
 
         // Read the Datatable entry generated with genericResultSet in false
-        List<HashMap<String, Object>> datatableEntryResponseNoGenericResult = this.datatableHelper.readDatatableEntry(datatableName, loanID,
-                !genericResultSet, (Integer) datatableEntryResponseFirst.get("resourceId"), "");
+        List<HashMap<String, Object>> datatableEntryResponseNoGenericResult = this.datatableHelper.readEntry(datatableName, loanID,
+                !genericResultSet, (Integer) datatableEntryResponseFirst.get("resourceId"));
         assertNotNull(datatableEntryResponseNoGenericResult, "ERROR IN GETTING THE DATE VALUE FROM DATATABLE RECORD");
         assertEquals(1, datatableEntryResponseNoGenericResult.size());
 
@@ -848,7 +848,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
                 Utils.arrayDateToString((List) datatableEntryResponseNoGenericResult.get(0).get("itsADate")));
         assertEquals(datatableEntryMap.get("itsADecimal"), datatableEntryResponseNoGenericResult.get(0).get("itsADecimal"));
         assertEquals(datatableEntryMap.get("itsADatetime"),
-                Utils.arrayDateTimeToString((List<Integer>) datatableEntryResponseNoGenericResult.get(0).get("itsADatetime")));
+                Utils.arrayDateTimeToString(toIntegerList(datatableEntryResponseNoGenericResult.get(0).get("itsADatetime"))));
         assertEquals(datatableEntryMap.get(tst_tst_tst + "_cd_itsADropdown"),
                 datatableEntryResponseNoGenericResult.get(0).get(tst_tst_tst + "_cd_itsADropdown"));
         assertEquals(datatableEntryMap.get("itsANumber"), datatableEntryResponseNoGenericResult.get(0).get("itsANumber"));
@@ -874,11 +874,11 @@ public class DatatableIntegrationTest extends IntegrationTest {
         datatabelEntryRequestJsonString = new GsonBuilder().serializeNulls().create().toJson(datatableEntryMap);
         LOG.info("map : {}", datatabelEntryRequestJsonString);
 
-        PutDataTablesAppTableIdDatatableIdResponse updatedDatatableEntryResponse = this.datatableHelper.updateDatatableEntry(datatableName,
+        PutDataTablesAppTableIdDatatableIdResponse updatedDatatableEntryResponse = this.datatableHelper.updateEntryOneToMany(datatableName,
                 loanID, 1, datatabelEntryRequestJsonString);
         assertNotNull(updatedDatatableEntryResponse);
         assertEquals(1L, updatedDatatableEntryResponse.getResourceId());
-        updatedDatatableEntryResponse = this.datatableHelper.updateDatatableEntry(datatableName, loanID, 2,
+        updatedDatatableEntryResponse = this.datatableHelper.updateEntryOneToMany(datatableName, loanID, 2,
                 datatabelEntryRequestJsonString);
         assertNotNull(updatedDatatableEntryResponse);
         assertEquals(2L, updatedDatatableEntryResponse.getResourceId());
@@ -894,7 +894,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals(null, updatedDatatableEntryResponse.getChanges().get("itsAString"));
         assertEquals(null, updatedDatatableEntryResponse.getChanges().get("itsAText"));
 
-        items = this.datatableHelper.readDatatableEntry(datatableName, loanID, genericResultSet, null, "");
+        items = this.datatableHelper.readEntry(datatableName, loanID, genericResultSet, null);
         assertNotNull(items);
         assertEquals(2, ((List) items.get("data")).size());
 
@@ -918,8 +918,8 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals(null, ((List) ((Map) ((List) items.get("data")).get(1)).get("row")).get(9));
 
         // Read the Datatable entry generated with genericResultSet in false
-        datatableEntryResponseNoGenericResult = this.datatableHelper.readDatatableEntry(datatableName, loanID, !genericResultSet,
-                (Integer) datatableEntryResponseFirst.get("resourceId"), "");
+        datatableEntryResponseNoGenericResult = this.datatableHelper.readEntry(datatableName, loanID, !genericResultSet,
+                (Integer) datatableEntryResponseFirst.get("resourceId"));
         assertNotNull(datatableEntryResponseNoGenericResult, "ERROR IN GETTING THE DATE VALUE FROM DATATABLE RECORD");
         assertEquals(1, datatableEntryResponseNoGenericResult.size());
 
@@ -935,11 +935,11 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertEquals(datatableEntryMap.get("itsAText"), datatableEntryResponseNoGenericResult.get(0).get("itsAText"));
 
         // deleting datatable entries
-        Integer appTableId = (Integer) this.datatableHelper.deleteDatatableEntries(datatableName, loanID, "loanId");
+        Integer appTableId = (Integer) this.datatableHelper.deleteEntries(datatableName, loanID, "loanId");
         assertEquals(loanID, appTableId, "ERROR IN DELETING THE DATATABLE ENTRIES");
 
         // deleting the datatable
-        String deletedDataTableName = this.datatableHelper.deleteDatatable(datatableName);
+        String deletedDataTableName = this.datatableHelper.deleteDatatableByName(datatableName);
         assertEquals(datatableName, deletedDataTableName, "ERROR IN DELETING THE DATATABLE");
     }
 
@@ -952,7 +952,10 @@ public class DatatableIntegrationTest extends IntegrationTest {
                 .withInterestCalculationPeriodTypeSameAsRepaymentPeriod().withExpectedDisbursementDate(EXPECTED_DISBURSAL_DATE)
                 .withSubmittedOnDate(LOAN_APPLICATION_SUBMISSION_DATE).withLoanType(INDIVIDUAL_LOAN)
                 .build(clientID.toString(), loanProductID.toString(), null);
-        return this.loanTransactionHelper.getLoanId(loanApplicationJSON);
+        return Calls
+                .ok(fineractClient().loans
+                        .calculateLoanScheduleOrSubmitLoanApplication(SDK_GSON.fromJson(loanApplicationJSON, PostLoansRequest.class), null))
+                .getLoanId().intValue();
     }
 
     private Integer createLoanProductWithPeriodicAccrualAccountingEnabled() {
@@ -962,7 +965,16 @@ public class DatatableIntegrationTest extends IntegrationTest {
                 .withinterestRatePerPeriod(LP_INTEREST_RATE).withInterestRateFrequencyTypeAsMonths()
                 .withAmortizationTypeAsEqualPrincipalPayment().withInterestTypeAsFlat().withAccountingRuleAsNone().withDaysInMonth("30")
                 .withDaysInYear("365").build(null);
-        return this.loanTransactionHelper.getLoanProductId(loanProductJSON);
+        return Calls.ok(fineractClient().loanProducts.createLoanProduct(SDK_GSON.fromJson(loanProductJSON, PostLoanProductsRequest.class)))
+                .getResourceId().intValue();
+    }
+
+    private static List<Integer> toIntegerList(final Object raw) {
+        final List<Integer> result = new ArrayList<>();
+        for (Object element : (List<?>) raw) {
+            result.add((Integer) element);
+        }
+        return result;
     }
 
     @Test
@@ -976,20 +988,21 @@ public class DatatableIntegrationTest extends IntegrationTest {
         columnMap.put("multiRow", false);
 
         // Add columns: one that will have data and one that will be NULL
-        addDatatableColumn(datatableColumnsList, "columnWithData", "String", false, 50, null);
-        addDatatableColumn(datatableColumnsList, "columnWithNull", "String", false, 50, null);
+        addColumn(datatableColumnsList, "columnWithData", "String", false, 50, null);
+        addColumn(datatableColumnsList, "columnWithNull", "String", false, 50, null);
         columnMap.put("columns", datatableColumnsList);
 
         String datatableRequestJsonString = new Gson().toJson(columnMap);
         LOG.info("Creating datatable: {}", datatableRequestJsonString);
 
-        HashMap<String, Object> datatableResponse = this.datatableHelper.createDatatable(datatableRequestJsonString, "");
+        HashMap<String, Object> datatableResponse = this.datatableHelper.createDatatableFromJson(datatableRequestJsonString, "");
         String datatableName = (String) datatableResponse.get("resourceIdentifier");
         assertNotNull(datatableName);
-        DatatableHelper.verifyDatatableCreatedOnServer(this.requestSpec, this.responseSpec, datatableName);
+        this.datatableHelper.verifyDatatableCreated(datatableName);
 
         // Create a client
-        final Integer clientId = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
+        final Integer clientId = ClientHelper.addClientAsPerson("1", ClientHelper.LEGALFORM_ID_PERSON, UUID.randomUUID().toString())
+                .getClientId().intValue();
 
         // Create a datatable entry with data in one column and NULL in the other
         final HashMap<String, Object> datatableEntryMap = new HashMap<>();
@@ -1001,8 +1014,8 @@ public class DatatableIntegrationTest extends IntegrationTest {
         LOG.info("Creating datatable entry: {}", datatableEntryRequestJsonString);
 
         final boolean genericResultSet = true;
-        HashMap<String, Object> datatableEntryResponse = this.datatableHelper.createDatatableEntry(datatableName, clientId,
-                genericResultSet, datatableEntryRequestJsonString);
+        HashMap<String, Object> datatableEntryResponse = this.datatableHelper.createEntry(datatableName, clientId,
+                datatableEntryRequestJsonString);
         assertNotNull(datatableEntryResponse.get("resourceId"), "ERROR IN CREATING THE ENTITY DATATABLE RECORD");
         assertEquals(clientId, datatableEntryResponse.get("resourceId"));
 
@@ -1023,7 +1036,7 @@ public class DatatableIntegrationTest extends IntegrationTest {
         String updateRequestJsonString = new Gson().toJson(updateMap);
         LOG.info("Dropping NULL column: {}", updateRequestJsonString);
 
-        PutDataTablesResponse updateResponse = this.datatableHelper.updateDatatable(datatableName, updateRequestJsonString);
+        PutDataTablesResponse updateResponse = this.datatableHelper.updateDatatableFromJson(datatableName, updateRequestJsonString);
         assertNotNull(updateResponse);
         assertEquals(datatableName, updateResponse.getResourceIdentifier());
 
@@ -1047,8 +1060,8 @@ public class DatatableIntegrationTest extends IntegrationTest {
         assertFalse(hasColumnWithNull, "columnWithNull should have been dropped");
 
         // Clean up
-        this.datatableHelper.deleteDatatableEntries(datatableName, clientId, "clientId");
-        this.datatableHelper.deleteDatatable(datatableName);
+        this.datatableHelper.deleteEntries(datatableName, clientId, "clientId");
+        this.datatableHelper.deleteDatatableByName(datatableName);
     }
 
 }
