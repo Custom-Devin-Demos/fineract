@@ -151,7 +151,7 @@ public class SavingsAccountTransactionTest {
     @Test
     public void testConcurrentSavingsTransactions() {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer savingsProductId = createSavingsProductDailyPosting();
         assertNotNull(savingsProductId);
@@ -167,7 +167,7 @@ public class SavingsAccountTransactionTest {
     @Test
     public void testConcurrentSavingsBatchTransactions() {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer savingsProductId = createSavingsProductDailyPosting();
         assertNotNull(savingsProductId);
@@ -204,7 +204,7 @@ public class SavingsAccountTransactionTest {
     @Test
     public void testDeadlockSavingsBatchTransactions() {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer savingsProductId = createSavingsProductDailyPosting();
         assertNotNull(savingsProductId);

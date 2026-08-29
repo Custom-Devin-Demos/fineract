@@ -79,7 +79,7 @@ public class RepaymentWithPostDatedChecksTest {
 
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer loanProductID = this.loanTransactionHelper.getLoanProductId(new LoanProductTestBuilder().build(null));
         Assertions.assertNotNull(loanProductID, "Could not create Loan Product");

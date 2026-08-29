@@ -796,7 +796,7 @@ public class LoanTransactionInterestPaymentWaiverTest extends BaseLoanIntegratio
                 .currencyDetails("0", "100").build(null);
 
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);

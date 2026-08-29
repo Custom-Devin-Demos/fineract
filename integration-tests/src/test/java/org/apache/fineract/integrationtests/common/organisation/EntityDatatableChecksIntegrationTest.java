@@ -148,7 +148,7 @@ public class EntityDatatableChecksIntegrationTest {
 
         // creating client with datatables
         final Integer clientID = ClientHelper.createClientPendingWithDatatable(requestSpec, responseSpec, registeredTableName);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         // deleting entity datatable check
         entityDatatableCheckId = this.entityDatatableChecksHelper.deleteEntityDatatableCheck(entityDatatableCheckId);
@@ -274,7 +274,7 @@ public class EntityDatatableChecksIntegrationTest {
         assertNotNull(entityDatatableCheckId, "ERROR IN CREATING THE ENTITY DATATABLE CHECK");
 
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer savingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, MINIMUM_OPENING_BALANCE,
                 minBalanceForInterestCalculation, minRequiredBalance, enforceMinRequiredBalance, allowOverdraft);
@@ -320,7 +320,7 @@ public class EntityDatatableChecksIntegrationTest {
         assertNotNull(entityDatatableCheckId, "ERROR IN CREATING THE ENTITY DATATABLE CHECK");
 
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer savingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, MINIMUM_OPENING_BALANCE,
                 minBalanceForInterestCalculation, minRequiredBalance, enforceMinRequiredBalance, allowOverdraft);
@@ -348,7 +348,7 @@ public class EntityDatatableChecksIntegrationTest {
 
         // creating client
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         // creating loan product
         final Integer loanProductID = createLoanProduct("100", "0", LoanProductTestBuilder.DEFAULT_STRATEGY);
@@ -391,7 +391,7 @@ public class EntityDatatableChecksIntegrationTest {
 
         // creating client
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         // creating loan product
         final Integer loanProductID = createLoanProduct("100", "0", LoanProductTestBuilder.DEFAULT_STRATEGY);

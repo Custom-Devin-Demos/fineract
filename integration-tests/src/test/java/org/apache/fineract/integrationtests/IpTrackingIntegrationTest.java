@@ -60,7 +60,7 @@ public class IpTrackingIntegrationTest {
 
         // given
         final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        ClientHelper.verifyClientCreatedOnServer(clientId);
         List<HashMap<String, Object>> auditsRecieved = auditHelper.getAuditDetails(clientId, "CREATE", "CLIENT");
 
         // when

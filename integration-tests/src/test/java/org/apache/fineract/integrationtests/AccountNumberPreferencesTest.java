@@ -362,7 +362,7 @@ public class AccountNumberPreferencesTest {
             /* Create Client with Client Type */
             this.clientId = ClientHelper.createClientForAccountPreference(this.requestSpec, this.responseSpec, this.clientCodeValueId,
                     "clientId");
-            ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, this.clientId);
+            ClientHelper.verifyClientCreatedOnServer(this.clientId);
 
             // Assertions.assertNotNull(clientId);
 
@@ -371,7 +371,7 @@ public class AccountNumberPreferencesTest {
 
         } else if (clientPrefixName.equals(this.officeName)) {
             this.clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-            ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, this.clientId);
+            ClientHelper.verifyClientCreatedOnServer(this.clientId);
             // Assertions.assertNotNull(clientId);
             clientAccountNo = (String) ClientHelper.getClient(requestSpec, responseSpec, this.clientId.toString(), "accountNo");
             String officeName = (String) ClientHelper.getClient(requestSpec, responseSpec, this.clientId.toString(), "officeName");

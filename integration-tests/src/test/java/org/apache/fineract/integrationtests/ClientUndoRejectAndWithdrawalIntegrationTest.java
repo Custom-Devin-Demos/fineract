@@ -63,7 +63,7 @@ public class ClientUndoRejectAndWithdrawalIntegrationTest {
         // CREATE CLIENT
         this.clientHelper = new ClientHelper(this.requestSpec, this.responseSpec);
         final Integer clientId = ClientHelper.createClientPending(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        ClientHelper.verifyClientCreatedOnServer(clientId);
         // Assertions.assertNotNull(clientId);
 
         // GET CLIENT STATUS

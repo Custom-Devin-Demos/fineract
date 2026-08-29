@@ -503,7 +503,7 @@ public class AccountingScenarioIntegrationTest {
         final Account liabilityAccount = this.accountHelper.createLiabilityAccount();
 
         Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+        ClientHelper.verifyClientCreatedOnServer(clientId);
         // Assertions.assertNotNull(clientId);
 
         Integer fixedDepositProductId = createFixedDepositProduct(VALID_FROM, VALID_TO, assetAccount, incomeAccount, expenseAccount,
@@ -577,7 +577,7 @@ public class AccountingScenarioIntegrationTest {
         final String INTEREST_POSTED_DATE = dateFormat.format(todaysDate);
 
         Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         Integer recurringDepositProductId = createRecurringDepositProduct(VALID_FROM, VALID_TO, assetAccount, liabilityAccount,
                 incomeAccount, expenseAccount);

@@ -349,7 +349,7 @@ public class DisbursalAndRepaymentScheduleTest {
      **/
     private void createClientEntity() {
         this.clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, this.clientId);
+        ClientHelper.verifyClientCreatedOnServer(this.clientId);
     }
 
     /**

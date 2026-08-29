@@ -434,7 +434,7 @@ public class ClientLoanChargeRefundIntegrationTest {
             final String accountingRule, final Account... accounts) {
 
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         boolean allowMultipleDisbursals = false;
         final Integer loanProductID = createLoanProduct(principal, allowMultipleDisbursals, accountingRule, accounts);

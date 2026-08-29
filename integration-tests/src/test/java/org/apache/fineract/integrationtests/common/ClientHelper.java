@@ -561,16 +561,11 @@ public class ClientHelper {
         return GSON.toJson(map);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static void verifyClientCreatedOnServer(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            final Integer clientId) {
+    public static void verifyClientCreatedOnServer(final Integer clientId) {
         log.info("------------------------------CHECK CLIENT DETAILS------------------------------------\n");
-        final String CLIENT_URL = "/fineract-provider/api/v1/clients/" + clientId + "?" + Utils.TENANT_IDENTIFIER;
-        final Integer responseClientID = Utils.performServerGet(requestSpec, responseSpec, CLIENT_URL, "id");
-        assertEquals(clientId, responseClientID, "ERROR IN CREATING THE CLIENT");
+        final GetClientsClientIdResponse client = Calls
+                .ok(FineractClientHelper.getFineractClient().clients.retrieveOneClient(clientId.longValue(), null));
+        assertEquals(clientId.longValue(), client.getId(), "ERROR IN CREATING THE CLIENT");
     }
 
     // TODO: Rewrite to use fineract-client instead!

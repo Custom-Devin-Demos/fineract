@@ -73,7 +73,7 @@ public class LoanValidationIntegrationTest {
 
         LOG.info("-------------------------Creating Client---------------------------");
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         LOG.info("-------------------------Creating Loan---------------------------");
         final Account assetAccount = this.accountHelper.createAssetAccount();

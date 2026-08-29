@@ -676,7 +676,7 @@ public class LoanInterestPauseApiTest extends BaseLoanIntegrationTest {
     private void createClientEntity() {
         this.clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getResourceId();
         Assertions.assertNotNull(clientId);
-        ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientId.intValue());
+        ClientHelper.verifyClientCreatedOnServer(clientId.intValue());
     }
 
     /**

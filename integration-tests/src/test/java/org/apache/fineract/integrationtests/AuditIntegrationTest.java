@@ -113,7 +113,7 @@ public class AuditIntegrationTest {
 
         // When Client is created: Count should be "1"
         final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         auditsRecieved = auditHelper.getAuditDetails(clientId, "CREATE", "CLIENT");
         auditHelper.verifyOneAuditOnly(auditsRecieved, clientId, "CREATE", "CLIENT");

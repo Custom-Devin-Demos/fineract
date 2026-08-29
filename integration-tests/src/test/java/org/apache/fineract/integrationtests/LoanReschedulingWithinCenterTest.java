@@ -194,7 +194,7 @@ public class LoanReschedulingWithinCenterTest extends BaseLoanIntegrationTest {
                 .createClient(
                         ClientHelper.defaultClientCreationRequest().activationDate(clientActivationDate).officeId(Long.valueOf(officeId)))
                 .getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        ClientHelper.verifyClientCreatedOnServer(clientId);
         return clientId;
     }
 

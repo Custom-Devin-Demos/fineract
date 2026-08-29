@@ -91,11 +91,11 @@ public class GuarantorTest {
         Float external1_hold_funds = Float.valueOf((float) 0);
         Float external2_hold_funds = Float.valueOf((float) 0);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final Integer clientID_external = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         final Integer clientID_external2 = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID_external);
+        ClientHelper.verifyClientCreatedOnServer(clientID_external);
 
         final Integer selfSavigsId = SavingsAccountHelper.openSavingsAccount(this.requestSpec, this.responseSpec, clientID,
                 String.valueOf(SELF1_BALANCE));
@@ -249,11 +249,11 @@ public class GuarantorTest {
         Float external1_hold_funds = Float.valueOf((float) 0);
         Float external2_hold_funds = Float.valueOf((float) 0);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final Integer clientID_external = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         final Integer clientID_external2 = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID_external);
+        ClientHelper.verifyClientCreatedOnServer(clientID_external);
 
         final Integer selfSavigsId = SavingsAccountHelper.openSavingsAccount(this.requestSpec, this.responseSpec, clientID,
                 String.valueOf(SELF1_BALANCE));
@@ -446,9 +446,9 @@ public class GuarantorTest {
         Float self1_hold_funds = Float.valueOf((float) 0);
         Float external1_hold_funds = Float.valueOf((float) 0);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final Integer clientID_external = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID_external);
+        ClientHelper.verifyClientCreatedOnServer(clientID_external);
 
         final Integer selfSavigsId = SavingsAccountHelper.openSavingsAccount(this.requestSpec, this.responseSpec, clientID,
                 String.valueOf(SELF1_BALANCE));
@@ -517,9 +517,9 @@ public class GuarantorTest {
         Float self1_hold_funds = Float.valueOf((float) 0);
         Float external1_hold_funds = Float.valueOf((float) 0);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final Integer clientID_external = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID_external);
+        ClientHelper.verifyClientCreatedOnServer(clientID_external);
 
         Float selfBalance = Float.valueOf((float) 10000);
         Float externalBalance = Float.valueOf((float) 10000);
@@ -594,9 +594,9 @@ public class GuarantorTest {
         Float self1_hold_funds = Float.valueOf((float) 0);
         Float external1_hold_funds = Float.valueOf((float) 0);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final Integer clientID_external = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID_external);
+        ClientHelper.verifyClientCreatedOnServer(clientID_external);
 
         final Integer selfSavigsId = SavingsAccountHelper.openSavingsAccount(this.requestSpec, this.responseSpec, clientID,
                 String.valueOf(SELF1_BALANCE));
@@ -747,7 +747,7 @@ public class GuarantorTest {
 
         // Create a client for the group
         final Integer clientInGroupID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientInGroupID);
+        ClientHelper.verifyClientCreatedOnServer(clientInGroupID);
         GroupHelper.associateClient(this.requestSpec, this.responseSpec, groupID.toString(), clientInGroupID.toString());
         LOG.info("Created and associated client with ID: {}", clientInGroupID);
 
@@ -785,7 +785,7 @@ public class GuarantorTest {
 
         // Create a client for the loan
         final Integer loanClientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, loanClientID);
+        ClientHelper.verifyClientCreatedOnServer(loanClientID);
         LOG.info("Created loan client with ID: {}", loanClientID);
 
         // Create a self savings account for the loan client (for self guarantee)
@@ -796,7 +796,7 @@ public class GuarantorTest {
 
         // Create another external client and savings account for additional external guarantee
         final Integer externalClientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, externalClientID);
+        ClientHelper.verifyClientCreatedOnServer(externalClientID);
         final Integer externalSavingsId = SavingsAccountHelper.openSavingsAccount(this.requestSpec, this.responseSpec, externalClientID,
                 String.valueOf(5000.0));
         Assertions.assertNotNull(externalSavingsId);

@@ -86,7 +86,7 @@ public class VariableInstallmentsIntegrationTest {
         final String loanProductJson = VariableInstallmentsDecliningBalanceHelper.createLoanProductWithVaribleConfig(false, NONE);
         Integer loanProductID = this.loanTransactionHelper.getLoanProductId(loanProductJson);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         List<HashMap> collaterals = new ArrayList<>();
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
@@ -155,7 +155,7 @@ public class VariableInstallmentsIntegrationTest {
         final String loanProductJson = VariableInstallmentsDecliningBalanceHelper.createLoanProductWithVaribleConfig(false, NONE);
         Integer loanProductID = this.loanTransactionHelper.getLoanProductId(loanProductJson);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
@@ -198,7 +198,7 @@ public class VariableInstallmentsIntegrationTest {
         final String loanProductJson = VariableInstallmentsDecliningBalanceHelper.createLoanProductWithVaribleConfig(false, NONE);
         Integer loanProductID = this.loanTransactionHelper.getLoanProductId(loanProductJson);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
@@ -247,7 +247,7 @@ public class VariableInstallmentsIntegrationTest {
         final String loanProductJson = VariableInstallmentsDecliningBalanceHelper.createLoanProductWithVaribleConfig(false, NONE);
         Integer loanProductID = this.loanTransactionHelper.getLoanProductId(loanProductJson);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
@@ -296,7 +296,7 @@ public class VariableInstallmentsIntegrationTest {
                 .createLoanProductWithVaribleConfigwithEqualPrincipal(false, NONE);
         Integer loanProductID = this.loanTransactionHelper.getLoanProductId(loanProductJson);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
@@ -344,7 +344,7 @@ public class VariableInstallmentsIntegrationTest {
         final String loanProductJson = VariableInstallmentsDecliningBalanceHelper.createLoanProductWithVaribleConfig(false, NONE);
         Integer loanProductID = this.loanTransactionHelper.getLoanProductId(loanProductJson);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
@@ -390,7 +390,7 @@ public class VariableInstallmentsIntegrationTest {
         final String loanProductJson = VariableInstallmentsFlatHelper.createLoanProductWithVaribleConfig(false, NONE);
         Integer loanProductID = this.loanTransactionHelper.getLoanProductId(loanProductJson);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
@@ -434,7 +434,7 @@ public class VariableInstallmentsIntegrationTest {
         final String loanProductJson = VariableInstallmentsFlatHelper.createLoanProductWithVaribleConfig(false, NONE);
         Integer loanProductID = this.loanTransactionHelper.getLoanProductId(loanProductJson);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
@@ -476,7 +476,7 @@ public class VariableInstallmentsIntegrationTest {
         final String loanProductJson = VariableInstallmentsFlatHelper.createLoanProductWithVaribleConfig(false, NONE);
         Integer loanProductID = this.loanTransactionHelper.getLoanProductId(loanProductJson);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
@@ -522,7 +522,7 @@ public class VariableInstallmentsIntegrationTest {
         final String loanProductJson = VariableInstallmentsFlatHelper.createLoanProductWithVaribleConfig(false, NONE);
         Integer loanProductID = this.loanTransactionHelper.getLoanProductId(loanProductJson);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
@@ -570,7 +570,7 @@ public class VariableInstallmentsIntegrationTest {
         final String loanProductJson = VariableInstallmentsFlatHelper.createLoanProductWithVaribleConfig(false, NONE);
         Integer loanProductID = this.loanTransactionHelper.getLoanProductId(loanProductJson);
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct();

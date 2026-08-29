@@ -111,7 +111,7 @@ public class GroupTest {
 
         // create client and add client to group
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         groupID = GroupHelper.associateClient(this.requestSpec, this.responseSpec, groupID.toString(), clientID.toString());
         GroupHelper.verifyGroupMembers(this.requestSpec, this.responseSpec, groupID, clientID);

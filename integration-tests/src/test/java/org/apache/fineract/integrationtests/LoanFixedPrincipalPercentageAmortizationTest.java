@@ -73,7 +73,7 @@ public class LoanFixedPrincipalPercentageAmortizationTest {
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
 
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final Integer loanProductID = createLoanProduct(ACCOUNTING_NONE);
         final Integer loanID = applyForLoanApplication(clientID, loanProductID, null, null, "100000.00");
         final ArrayList<HashMap> loanSchedule = this.loanTransactionHelper.getLoanRepaymentSchedule(this.requestSpec, this.responseSpec,
@@ -86,7 +86,7 @@ public class LoanFixedPrincipalPercentageAmortizationTest {
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
 
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final Integer loanProductID = createLoanProduct(ACCOUNTING_NONE);
         final Integer loanID = applyForLoanApplicationWithPrincipalGrace(clientID, loanProductID, null, null, "100000.00");
         final ArrayList<HashMap> loanSchedule = this.loanTransactionHelper.getLoanRepaymentSchedule(this.requestSpec, this.responseSpec,
@@ -99,7 +99,7 @@ public class LoanFixedPrincipalPercentageAmortizationTest {
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
 
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final Integer loanProductID = createLoanProductWithFlatInterest(ACCOUNTING_NONE);
         final Integer loanID = applyForLoanApplicationWithFlatInterest(clientID, loanProductID, null, null, "100000.00");
         final ArrayList<HashMap> loanSchedule = this.loanTransactionHelper.getLoanRepaymentSchedule(this.requestSpec, this.responseSpec,

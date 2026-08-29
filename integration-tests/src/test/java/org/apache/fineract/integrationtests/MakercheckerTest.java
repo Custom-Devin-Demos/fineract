@@ -120,7 +120,7 @@ public class MakercheckerTest {
             final FineractClient makerClient = FineractClientHelper.createNewFineractClient(maker, "A1b2c3d4e5f$");
             Integer clientId = createClientAs(makerClient);
             assertNotNull(clientId);
-            ClientHelper.verifyClientCreatedOnServer(requestSpec, this.responseSpec, clientId);
+            ClientHelper.verifyClientCreatedOnServer(clientId);
 
             final Integer savingsId = createApproveActivateSavingsAccountDailyPosting(clientId, START_DATE_STRING);
             assertNotNull(savingsId);
@@ -171,7 +171,7 @@ public class MakercheckerTest {
             assertNotNull(response);
             clientId = (Integer) response.get("clientId");
             assertNotNull(clientId);
-            ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+            ClientHelper.verifyClientCreatedOnServer(clientId);
 
             response = MakercheckersHelper.approveMakerCheckerEntry(checkerRequestSpec, responseSpec, savingCommandId);
             assertNotNull(response);
@@ -183,7 +183,7 @@ public class MakercheckerTest {
             RolesHelper.addPermissionsToRole(requestSpec, responseSpec, roleId, permissionMap);
             clientId = createClientAs(makerClient);
             assertNotNull(clientId);
-            ClientHelper.verifyClientCreatedOnServer(requestSpec, this.responseSpec, clientId);
+            ClientHelper.verifyClientCreatedOnServer(clientId);
 
             withdrawalId = (Integer) makerSavingsHelper.withdrawalFromSavingsAccount(savingsId, "100", TRANSACTION_DATE_STRING,
                     CommonConstants.RESPONSE_RESOURCE_ID);

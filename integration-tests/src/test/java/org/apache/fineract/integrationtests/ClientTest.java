@@ -79,7 +79,7 @@ public class ClientTest {
     @Test
     public void testClientStatus() {
         final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         HashMap<String, Object> status = ClientHelper.getClientStatus(requestSpec, responseSpec, String.valueOf(clientId));
         ClientStatusChecker.verifyClientIsActive(status);
@@ -110,7 +110,7 @@ public class ClientTest {
     @Test
     public void testClientAsPersonStatus() {
         final Integer clientId = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         HashMap<String, Object> status = ClientHelper.getClientStatus(requestSpec, responseSpec, String.valueOf(clientId));
         ClientStatusChecker.verifyClientIsActive(status);
@@ -141,7 +141,7 @@ public class ClientTest {
     @Test
     public void testClientAsEntityStatus() {
         final Integer clientId = ClientHelper.createClientAsEntity(requestSpec, responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         HashMap<String, Object> status = ClientHelper.getClientStatus(requestSpec, responseSpec, String.valueOf(clientId));
         ClientStatusChecker.verifyClientIsActive(status);
@@ -227,7 +227,7 @@ public class ClientTest {
         final Integer clientId = ClientHelper.createClient(request).getClientId().intValue();
 
         // then
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+        ClientHelper.verifyClientCreatedOnServer(clientId);
         List<AddressData> clientAddresses = ClientHelper.getClientAddresses(requestSpec, responseSpec, clientId);
         AddressData addressResponse = clientAddresses.get(0);
         assertThat(addressResponse.getCity()).isEqualTo(city);

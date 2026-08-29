@@ -76,7 +76,7 @@ public class BlockTransactionsOnClosedOverpaidLoansTest {
         this.globalConfigurationHelper.manageConfigurations("block-transactions-on-closed-overpaid-loans", true);
 
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer loanProductID = createLoanProduct();
         final Integer loanID = applyForLoanApplication(clientID, loanProductID, "1000", "01 January 2024");

@@ -75,7 +75,7 @@ public class ConcurrencyIntegrationTest {
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
 
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final Integer loanProductID = createLoanProduct(false, NO_ACCOUNTING);
         final Integer loanID = applyForLoanApplication(clientID, loanProductID, "12,000.00");
         this.loanTransactionHelper.approveLoan("20 September 2011", loanID);
