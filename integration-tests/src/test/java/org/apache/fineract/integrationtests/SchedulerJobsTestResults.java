@@ -1497,7 +1497,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
     }
 
     private Integer createFixedDepositProduct(final String validFrom, final String validTo) {
-        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper(requestSpec, responseSpec);
+        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper();
         final String fixedDepositProductJSON = fixedDepositProductHelper.withPeriodRangeChart().build(validFrom, validTo);
         return FixedDepositProductHelper.createFixedDepositProduct(fixedDepositProductJSON, requestSpec, responseSpec);
     }

@@ -35,17 +35,8 @@ import org.slf4j.LoggerFactory;
 public class FixedDepositProductHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(FixedDepositProductHelper.class);
-    private final RequestSpecification requestSpec;
-    private final ResponseSpecification responseSpec;
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public FixedDepositProductHelper(final RequestSpecification requestSpec, final ResponseSpecification responseSpec) {
-        this.requestSpec = requestSpec;
-        this.responseSpec = responseSpec;
-    }
+    public FixedDepositProductHelper() {}
 
     private static final String FIXED_DEPOSIT_PRODUCT_URL = "/fineract-provider/api/v1/fixeddepositproducts";
     private static final String INTEREST_CHART_URL = "/fineract-provider/api/v1/interestratecharts";
