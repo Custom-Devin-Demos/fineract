@@ -21,11 +21,13 @@ package org.apache.fineract.cob.loan;
 import org.apache.fineract.cob.domain.LoanAccountLock;
 import org.apache.fineract.cob.domain.LockOwner;
 import org.apache.fineract.cob.domain.LockingService;
+import org.apache.fineract.portfolio.loanaccount.domain.Loan;
+import org.springframework.data.repository.CrudRepository;
 
 public class InlineCOBLoanItemWriter extends AbstractLoanItemWriter {
 
-    public InlineCOBLoanItemWriter(LockingService<LoanAccountLock> loanLockingService) {
-        super(loanLockingService);
+    public InlineCOBLoanItemWriter(LockingService<LoanAccountLock> loanLockingService, CrudRepository<Loan, ?> repository) {
+        super(loanLockingService, repository);
     }
 
     @Override

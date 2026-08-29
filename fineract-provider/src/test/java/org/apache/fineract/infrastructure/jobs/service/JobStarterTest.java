@@ -55,16 +55,16 @@ import org.mockito.quality.Strictness;
 import org.quartz.JobExecutionException;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersIncrementer;
-import org.springframework.batch.core.JobParametersInvalidException;
-import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.job.parameters.JobParameters;
+import org.springframework.batch.core.job.parameters.JobParametersIncrementer;
+import org.springframework.batch.core.job.parameters.InvalidJobParametersException;
+import org.springframework.batch.core.repository.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
-import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
-import org.springframework.batch.core.repository.JobRestartException;
+import org.springframework.batch.core.launch.JobExecutionAlreadyRunningException;
+import org.springframework.batch.core.launch.JobInstanceAlreadyCompleteException;
+import org.springframework.batch.core.launch.JobRestartException;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -100,7 +100,7 @@ public class JobStarterTest {
         when(scheduledJobDetail.getId()).thenReturn(1L);
         when(jobParameterRepository.findJobParametersByJobId(1L))
                 .thenReturn(List.of(new JobParameter().setJobId(1L).setParameterName("testParamKey").setParameterValue("testParamValue")));
-        Map<String, org.springframework.batch.core.JobParameter<?>> result = underTest.getJobParameter(scheduledJobDetail);
+        Map<String, org.springframework.batch.core.job.parameters.JobParameter<?>> result = underTest.getJobParameter(scheduledJobDetail);
         Assertions.assertEquals("testParamValue", result.get("testParamKey").getValue());
     }
 
@@ -115,7 +115,7 @@ public class JobStarterTest {
 
     @Test
     public void runWithComplete() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException,
-            JobParametersInvalidException, JobRestartException, JobExecutionException {
+            InvalidJobParametersException, JobRestartException, JobExecutionException {
         JobExecution jobExecution = Mockito.mock(JobExecution.class);
         Job job = Mockito.mock(Job.class);
         ScheduledJobDetail scheduledJobDetail = Mockito.mock(ScheduledJobDetail.class);
@@ -127,7 +127,7 @@ public class JobStarterTest {
 
     @Test
     public void runWithFailed() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException,
-            JobParametersInvalidException, JobRestartException, JobExecutionException {
+            InvalidJobParametersException, JobRestartException, JobExecutionException {
         JobExecution jobExecution = Mockito.mock(JobExecution.class);
         Job job = Mockito.mock(Job.class);
         ScheduledJobDetail scheduledJobDetail = Mockito.mock(ScheduledJobDetail.class);
@@ -143,7 +143,7 @@ public class JobStarterTest {
         }
     }
 
-    private void setupMocks(JobExecution jobExecution, Job job, ScheduledJobDetail scheduledJobDetail) throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
+    private void setupMocks(JobExecution jobExecution, Job job, ScheduledJobDetail scheduledJobDetail) throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, InvalidJobParametersException, JobRestartException {
         when(scheduledJobDetail.getId()).thenReturn(1L);
         when(scheduledJobDetail.getJobName()).thenReturn("testJobName");
         when(jobParameterRepository.findJobParametersByJobId(1L)).thenReturn(List.of(new JobParameter().setJobId(1L).setParameterName("testParamKey").setParameterValue("testParamValue")));

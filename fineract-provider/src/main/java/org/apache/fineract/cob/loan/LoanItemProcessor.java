@@ -20,7 +20,7 @@ package org.apache.fineract.cob.loan;
 
 import org.apache.fineract.cob.COBBusinessStepService;
 import org.apache.fineract.portfolio.loanaccount.service.ProgressiveLoanModelProcessingService;
-import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
 
 public class LoanItemProcessor extends AbstractLoanItemProcessor {

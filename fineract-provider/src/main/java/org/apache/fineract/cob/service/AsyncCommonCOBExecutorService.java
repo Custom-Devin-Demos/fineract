@@ -40,13 +40,13 @@ import org.apache.fineract.infrastructure.jobs.exception.JobNotFoundException;
 import org.apache.fineract.infrastructure.jobs.service.JobStarter;
 import org.apache.fineract.infrastructure.jobs.service.SchedulerServiceConstants;
 import org.quartz.JobExecutionException;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParametersInvalidException;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.job.parameters.InvalidJobParametersException;
 import org.springframework.batch.core.configuration.JobLocator;
 import org.springframework.batch.core.launch.NoSuchJobException;
-import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
-import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
-import org.springframework.batch.core.repository.JobRestartException;
+import org.springframework.batch.core.launch.JobExecutionAlreadyRunningException;
+import org.springframework.batch.core.launch.JobInstanceAlreadyCompleteException;
+import org.springframework.batch.core.launch.JobRestartException;
 import org.springframework.scheduling.annotation.Async;
 
 @Slf4j
@@ -76,7 +76,7 @@ public abstract class AsyncCommonCOBExecutorService implements AsyncCOBExecutorS
         } catch (NoSuchJobException e) {
             // Throwing an error here is useless as it will be swallowed hence it is async method
             log.error("Job not found: {}", getJobName(), new JobNotFoundException(getJobName(), e));
-        } catch (JobInstanceAlreadyCompleteException | JobRestartException | JobParametersInvalidException
+        } catch (JobInstanceAlreadyCompleteException | JobRestartException | InvalidJobParametersException
                 | JobExecutionAlreadyRunningException | JobExecutionException e) {
             // Throwing an error here is useless as it will be swallowed hence it is async method
             log.error("Error executing job", e);
@@ -91,7 +91,7 @@ public abstract class AsyncCommonCOBExecutorService implements AsyncCOBExecutorS
 
     private void executeLoanCOBDayByDayUntilCOBBusinessDate(LocalDate oldestCOBProcessedDate, LocalDate cobBusinessDate)
             throws NoSuchJobException, JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException,
-            JobParametersInvalidException, JobRestartException, JobExecutionException {
+            InvalidJobParametersException, JobRestartException, JobExecutionException {
         Job job = jobLocator.getJob(getJobName());
         ScheduledJobDetail scheduledJobDetail = scheduledJobDetailRepository.findByJobName(getJobHumanReadableName());
         LocalDate executingBusinessDate = oldestCOBProcessedDate.plusDays(1);

@@ -23,7 +23,7 @@ import org.apache.fineract.cob.domain.LoanAccountLock;
 import org.apache.fineract.cob.service.BeforeStepLockingItemReaderHelper;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanRepository;
-import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.lang.NonNull;
 

@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanRepository;
-import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
-import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.lang.NonNull;
 
 public class InlineCOBLoanItemReader extends AbstractLoanItemReader<Loan> {
