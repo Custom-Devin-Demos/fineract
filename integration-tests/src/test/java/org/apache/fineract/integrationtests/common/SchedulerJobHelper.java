@@ -43,10 +43,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetJobsResponse;
 import org.apache.fineract.client.models.PutJobsJobIDRequest;
 import org.apache.fineract.client.util.Calls;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.hamcrest.MatcherAssert;
 import org.slf4j.Logger;
@@ -306,7 +306,8 @@ public class SchedulerJobHelper {
     public void fastForwardTime(LocalDate lastBusinessDateBeforeFastForward, LocalDate dateToFastForward, String jobName,
             ResponseSpecification responseSpec) {
         while (DateUtils.isBefore(lastBusinessDateBeforeFastForward, dateToFastForward)) {
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, lastBusinessDateBeforeFastForward);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(lastBusinessDateBeforeFastForward)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             executeAndAwaitJob(jobName);
             lastBusinessDateBeforeFastForward = lastBusinessDateBeforeFastForward.plusDays(1);
         }

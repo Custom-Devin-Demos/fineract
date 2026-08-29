@@ -30,9 +30,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
@@ -78,7 +78,8 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 3, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.PENALTY_WAIT_PERIOD,
                     new PutGlobalConfigurationsRequest().value(0L));
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
@@ -109,10 +110,12 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
                     JsonPath.from(loanDetails).get("netDisbursalAmount").toString());
             LoanStatusChecker.verifyLoanIsActive(loanStatusHashMap);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 3, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             loanAccountLockHelper.placeSoftLockOnLoanAccount(loanID, "LOAN_INLINE_COB_PROCESSING", "Sample error");
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 3, 5));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 5))).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
             loanCOBCatchUpHelper.executeLoanCOBCatchUp();
@@ -138,7 +141,8 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 3, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.PENALTY_WAIT_PERIOD,
                     new PutGlobalConfigurationsRequest().value(0L));
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
@@ -169,10 +173,12 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
                     JsonPath.from(loanDetails).get("netDisbursalAmount").toString());
             LoanStatusChecker.verifyLoanIsActive(loanStatusHashMap);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 3, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             loanAccountLockHelper.placeSoftLockOnLoanAccount(loanID, "LOAN_COB_CHUNK_PROCESSING", "Sample error");
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 3, 5));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 5))).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
@@ -197,7 +203,8 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 3, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.PENALTY_WAIT_PERIOD,
                     new PutGlobalConfigurationsRequest().value(0L));
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
@@ -234,7 +241,8 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
             LoanStatusChecker.verifyLoanIsActive(loanStatusHashMap);
 
             // update business date 2020-03-02
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 3, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // execute inline cob for the loan
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanID.longValue()));
@@ -242,7 +250,8 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
             Assertions.assertEquals(LocalDate.of(2020, 3, 2), loan.getLastClosedBusinessDate());
 
             // update business date to 2020-03-05
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 3, 5));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 5))).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // apply lock on the loan
             loanAccountLockHelper.placeSoftLockOnLoanAccount(loanID, "LOAN_INLINE_COB_PROCESSING", "Sample error");
@@ -276,7 +285,8 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 3, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.PENALTY_WAIT_PERIOD,
                     new PutGlobalConfigurationsRequest().value(0L));
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
@@ -307,14 +317,16 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
                     JsonPath.from(loanDetails).get("netDisbursalAmount").toString());
             LoanStatusChecker.verifyLoanIsActive(loanStatusHashMap);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 3, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanID.longValue()));
             GetLoansLoanIdResponse loan = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanID);
             Assertions.assertEquals(LocalDate.of(2020, 3, 2), loan.getLastClosedBusinessDate());
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 3, 5));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 5))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             loanAccountLockHelper.placeSoftLockOnLoanAccount(loanID, "LOAN_COB_CHUNK_PROCESSING", "Sample error");
 
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanID.longValue()));
@@ -338,7 +350,8 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 3, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.PENALTY_WAIT_PERIOD,
                     new PutGlobalConfigurationsRequest().value(0L));
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
@@ -370,7 +383,8 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
                     JsonPath.from(loanDetails).get("netDisbursalAmount").toString());
             LoanStatusChecker.verifyLoanIsActive(loanStatusHashMap);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 3, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             final String jobName = "Loan COB";
             schedulerJobHelper.executeAndAwaitJob(jobName);
@@ -397,7 +411,8 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 3, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.PENALTY_WAIT_PERIOD,
                     new PutGlobalConfigurationsRequest().value(0L));
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
@@ -429,7 +444,8 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
                     JsonPath.from(loanDetails).get("netDisbursalAmount").toString());
             LoanStatusChecker.verifyLoanIsActive(loanStatusHashMap);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 3, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 3, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             loanAccountLockHelper.placeSoftLockOnLoanAccount(loanID, "LOAN_INLINE_COB_PROCESSING");
 
             final String jobName = "Loan COB";

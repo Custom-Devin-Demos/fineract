@@ -32,13 +32,13 @@ import io.restassured.specification.ResponseSpecification;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.UUID;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.DelinquencyBucketResponse;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
@@ -75,7 +75,8 @@ public class LoanAccountOverpaidDateStatusTest extends BaseLoanIntegrationTest {
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, todaysDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(todaysDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();

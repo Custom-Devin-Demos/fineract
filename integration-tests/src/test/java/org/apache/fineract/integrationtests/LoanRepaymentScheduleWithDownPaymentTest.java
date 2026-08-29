@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.DelinquencyBucketResponse;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdRepaymentPeriod;
@@ -48,7 +49,6 @@ import org.apache.fineract.client.models.PostLoansResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.models.PutLoanProductsProductIdRequest;
 import org.apache.fineract.client.models.PutLoanProductsProductIdResponse;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
@@ -820,7 +820,8 @@ public class LoanRepaymentScheduleWithDownPaymentTest extends BaseLoanIntegratio
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
             LocalDate businessDate = LocalDate.of(2022, 9, 5);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             String loanExternalIdStr = UUID.randomUUID().toString();
 
             final Long delinquencyBucketId = DelinquencyBucketsHelper.createDefaultBucket();
@@ -871,7 +872,8 @@ public class LoanRepaymentScheduleWithDownPaymentTest extends BaseLoanIntegratio
             assertEquals(2, loanDetails.getDelinquent().getDelinquentDays());
         } finally {
             final LocalDate todaysDate = Utils.getLocalDateOfTenant();
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, todaysDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(todaysDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(false));
         }
@@ -993,7 +995,8 @@ public class LoanRepaymentScheduleWithDownPaymentTest extends BaseLoanIntegratio
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Accounts oof periodic accrual
             final Account assetAccount = accountHelper.createAssetAccount();
@@ -1070,7 +1073,8 @@ public class LoanRepaymentScheduleWithDownPaymentTest extends BaseLoanIntegratio
             // second disbursement
 
             disbursementDate = LocalDate.of(2023, 3, 5);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             loanTransactionHelper.disburseLoanWithTransactionAmount("05 March 2023", loanId, "200");
             checkDownPaymentTransaction(disbursementDate, 50.0f, 0.0f, 0.0f, 0.0f, loanId);
 
@@ -1121,7 +1125,8 @@ public class LoanRepaymentScheduleWithDownPaymentTest extends BaseLoanIntegratio
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Accounts oof periodic accrual
             final Account assetAccount = accountHelper.createAssetAccount();
@@ -1290,7 +1295,8 @@ public class LoanRepaymentScheduleWithDownPaymentTest extends BaseLoanIntegratio
 
             // second disbursement
             disbursementDate = LocalDate.of(2023, 3, 5);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             loanTransactionHelper.disburseLoan(loanResponse.getResourceId(),
                     new PostLoansLoanIdRequest().actualDisbursementDate("05 March 2023").dateFormat(DATETIME_PATTERN)
@@ -1505,7 +1511,8 @@ public class LoanRepaymentScheduleWithDownPaymentTest extends BaseLoanIntegratio
 
             // second disbursement
             disbursementDate = LocalDate.of(2023, 3, 5);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             loanTransactionHelper.disburseLoan(loanResponse.getResourceId(),
                     new PostLoansLoanIdRequest().actualDisbursementDate("05 March 2023").dateFormat(DATETIME_PATTERN)

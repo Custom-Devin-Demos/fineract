@@ -48,12 +48,12 @@ import java.util.Set;
 import java.util.TimeZone;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.accounting.common.AccountingConstants.FinancialActivity;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetFixedDepositAccountsAccountIdTransactionsResponse;
 import org.apache.fineract.client.models.PostTaxesComponentsRequest;
 import org.apache.fineract.client.models.PostTaxesGroupRequest;
 import org.apache.fineract.client.models.PostTaxesGroupTaxComponents;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.infrastructure.core.api.JsonQuery;
 import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
@@ -2648,7 +2648,8 @@ public class FixedDepositTest extends IntegrationTest {
                     new PutGlobalConfigurationsRequest().enabled(true));
 
             LocalDate marchDate = LocalDate.of(currentYear + 1, 3, 1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, marchDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(marchDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             log.info("Submitted Date: {}", SUBMITTED_ON_DATE);
 
@@ -2723,7 +2724,8 @@ public class FixedDepositTest extends IntegrationTest {
                     new PutGlobalConfigurationsRequest().enabled(true));
 
             LocalDate marchDate = LocalDate.of(currentYear + 1, 1, 1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, marchDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(marchDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             log.info("Submitted Date: {}", SUBMITTED_ON_DATE);
 

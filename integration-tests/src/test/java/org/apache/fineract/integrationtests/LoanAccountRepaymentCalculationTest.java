@@ -29,11 +29,11 @@ import io.restassured.specification.ResponseSpecification;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdRepaymentPeriod;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
@@ -70,7 +70,8 @@ public class LoanAccountRepaymentCalculationTest extends BaseLoanIntegrationTest
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
@@ -165,7 +166,8 @@ public class LoanAccountRepaymentCalculationTest extends BaseLoanIntegrationTest
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
@@ -260,7 +262,8 @@ public class LoanAccountRepaymentCalculationTest extends BaseLoanIntegrationTest
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
@@ -340,7 +343,8 @@ public class LoanAccountRepaymentCalculationTest extends BaseLoanIntegrationTest
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();

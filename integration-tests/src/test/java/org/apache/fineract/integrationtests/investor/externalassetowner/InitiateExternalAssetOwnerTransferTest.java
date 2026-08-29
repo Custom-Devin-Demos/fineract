@@ -26,7 +26,6 @@ import static org.apache.fineract.client.models.ExternalTransferData.StatusEnum.
 import static org.apache.fineract.client.models.ExternalTransferData.SubStatusEnum.BALANCE_ZERO;
 import static org.apache.fineract.client.models.ExternalTransferData.SubStatusEnum.SAMEDAY_TRANSFERS;
 import static org.apache.fineract.client.models.ExternalTransferData.SubStatusEnum.UNSOLD;
-import static org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType.BUSINESS_DATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -61,6 +60,7 @@ import lombok.RequiredArgsConstructor;
 import okhttp3.ResponseBody;
 import org.apache.fineract.accounting.common.AccountingConstants;
 import org.apache.fineract.accounting.journalentry.domain.JournalEntryType;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.ExternalAssetOwnerRequest;
 import org.apache.fineract.client.models.ExternalOwnerJournalEntryData;
 import org.apache.fineract.client.models.ExternalOwnerTransferJournalEntryData;
@@ -1445,7 +1445,8 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
     }
 
     private void updateBusinessDateAndExecuteCOBJob(String date) {
-        BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BUSINESS_DATE, LocalDate.parse(date));
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(LocalDate.parse(date))).dateFormat(Utils.DATE_FORMAT).locale("en"));
         SCHEDULER_JOB_HELPER.executeAndAwaitJob("Loan COB");
     }
 
@@ -1491,7 +1492,8 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
     private void setInitialBusinessDate(String date) {
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(true));
-        BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BUSINESS_DATE, LocalDate.parse(date));
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(LocalDate.parse(date))).dateFormat(Utils.DATE_FORMAT).locale("en"));
     }
 
     private void cleanUpAndRestoreBusinessDate() {
@@ -1499,7 +1501,8 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
         REQUEST_SPEC.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         REQUEST_SPEC.header("Fineract-Platform-TenantId", "default");
         RESPONSE_SPEC = new ResponseSpecBuilder().expectStatusCode(200).build();
-        BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BUSINESS_DATE, TODAYS_DATE);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(TODAYS_DATE)).dateFormat(Utils.DATE_FORMAT).locale("en"));
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(false));
         globalConfigurationHelper.manageConfigurations(GlobalConfigurationConstants.ENABLE_AUTO_GENERATED_EXTERNAL_ID, false);

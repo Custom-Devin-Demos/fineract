@@ -56,8 +56,8 @@ import java.util.stream.Collectors;
 import org.apache.fineract.batch.domain.BatchRequest;
 import org.apache.fineract.batch.domain.BatchResponse;
 import org.apache.fineract.batch.domain.Header;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.integrationtests.common.BatchHelper;
@@ -127,7 +127,8 @@ public class SavingsAccountTransactionTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, today);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(today)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             LocalDate depositDate = Utils.getDateAsLocalDate(depositDateString);
             LocalDate withdrawDate = Utils.getDateAsLocalDate(withdrawDateString);

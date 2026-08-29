@@ -32,6 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.FloatingRatePeriodRequest;
 import org.apache.fineract.client.models.FloatingRateRequest;
 import org.apache.fineract.client.models.GetLoansLoanIdRepaymentPeriod;
@@ -39,7 +40,6 @@ import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.PostFloatingRatesResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.util.Calls;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
@@ -103,7 +103,8 @@ public class FloatingRateInterestRecalculationTest extends BaseLoanIntegrationTe
 
     private void runFloatingRateRecalculationScenario(boolean overPayment) {
         LocalDate setupDate = LocalDate.of(2024, 2, 1);
-        BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, setupDate);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(setupDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
         Long floatingRateId = createFloatingRate();
 
@@ -119,7 +120,8 @@ public class FloatingRateInterestRecalculationTest extends BaseLoanIntegrationTe
         final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
         LocalDate disbursementDate = LocalDate.of(2024, 3, 15);
-        BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
         final Integer loanId = createAndDisburseLoan(clientId, loanProductId, disbursementDate);
         assertNotNull(loanId);
@@ -139,7 +141,8 @@ public class FloatingRateInterestRecalculationTest extends BaseLoanIntegrationTe
         assertTrue(initialEmi.compareTo(BigDecimal.ZERO) > 0, "Initial EMI should be greater than zero");
 
         LocalDate postRateChangeDate = LocalDate.of(2024, 4, 10);
-        BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, postRateChangeDate);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(postRateChangeDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
         String repaymentDate = dateFormatter.format(postRateChangeDate);
         float repaymentAmount = overPayment ? initialEmi.floatValue() + 0.01f : initialEmi.floatValue();

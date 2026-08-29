@@ -27,9 +27,9 @@ import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import java.time.LocalDate;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.util.CallFailedRuntimeException;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.SchedulerJobHelper;
@@ -65,7 +65,8 @@ public class LoanCOBCatchUpInstanceModeIntegrationTest extends BaseLoanIntegrati
         final LocalDate todaysDate = Utils.getLocalDateOfTenant();
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(true));
-        BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, todaysDate);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(todaysDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
     }
 
     @ConfigureInstanceMode(readEnabled = false, writeEnabled = false, batchWorkerEnabled = false, batchManagerEnabled = true)

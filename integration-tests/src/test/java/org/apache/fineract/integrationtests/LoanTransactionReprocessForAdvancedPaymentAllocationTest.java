@@ -34,11 +34,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 import org.apache.fineract.client.models.AdvancedPaymentData;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetLoansLoanIdTransactionsTransactionIdResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
@@ -81,7 +81,8 @@ public class LoanTransactionReprocessForAdvancedPaymentAllocationTest extends Ba
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Accounts oof periodic accrual
             final Account assetAccount = ACCOUNT_HELPER.createAssetAccount();

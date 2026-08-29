@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetJournalEntriesTransactionIdResponse;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
@@ -44,7 +45,6 @@ import org.apache.fineract.client.models.PostLoansLoanIdChargesResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
@@ -241,7 +241,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(true));
         final LocalDate todaysDate = Utils.getLocalDateOfTenant();
-        BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, todaysDate);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(todaysDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
         // Client and Loan account creation
         final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
@@ -316,7 +317,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(true));
         final LocalDate todaysDate = Utils.getLocalDateOfTenant();
-        BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, todaysDate);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(todaysDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
         // Client and Loan account creation
         final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
@@ -349,7 +351,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
         PostLoansLoanIdTransactionsResponse loanIdTransactionsResponse = loanTransactionHelper.makeLoanRepayment(operationDate, amount,
                 loanId);
         transactionDate = todaysDate.plusDays(32);
-        BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
         payloadJSON = LoanTransactionHelper.getSpecifiedInstallmentChargesForLoanAsJSON(chargeId.toString(), feeAmount);
         PostLoansLoanIdChargesResponse postLoansLoanIdChargesResponse = loanTransactionHelper.addChargeForLoan(loanId, payloadJSON,
@@ -459,7 +462,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
                     new PutGlobalConfigurationsRequest().enabled(true));
 
             final LocalDate todaysDate = Utils.getLocalDateOfTenant();
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, todaysDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(todaysDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Client and Loan account creation
             final Integer clientId = ClientHelper
@@ -490,7 +494,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
 
             // First Loan Charge
             transactionDate = transactionDate.plusDays(1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             operationDate = Utils.dateFormatter.format(transactionDate);
             log.info("Operation date {}", transactionDate);
             payloadJSON = LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(chargeId.toString(), operationDate, feeAmount);
@@ -510,7 +515,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
             // Repay the first charge fully, 10
             Float amount = Float.valueOf("10.00");
             transactionDate = transactionDate.plusDays(40);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             operationDate = Utils.dateFormatter.format(transactionDate);
             log.info("Operation date {}", transactionDate);
             PostLoansLoanIdTransactionsResponse loanIdTransactionsResponse = loanTransactionHelper.makeLoanRepayment(operationDate, amount,
@@ -521,7 +527,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
             // Second Loan Charge
             feeAmount = "15.00";
             transactionDate = transactionDate.plusDays(1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             operationDate = Utils.dateFormatter.format(transactionDate);
             log.info("Operation date {}", transactionDate);
             payloadJSON = LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(chargeId.toString(), operationDate, feeAmount);
@@ -543,7 +550,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
             // Third Loan Charge
             feeAmount = "25.00";
             transactionDate = transactionDate.plusDays(1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             operationDate = Utils.dateFormatter.format(transactionDate);
             log.info("Operation date {}", transactionDate);
             payloadJSON = LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(chargeId.toString(), operationDate, feeAmount);
@@ -595,7 +603,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
                     new PutGlobalConfigurationsRequest().enabled(true));
 
             final LocalDate todaysDate = Utils.getLocalDateOfTenant();
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, todaysDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(todaysDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Client and Loan account creation
             final Integer clientId = ClientHelper
@@ -626,7 +635,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
 
             // First Loan Charge
             transactionDate = transactionDate.plusDays(1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             operationDate = Utils.dateFormatter.format(transactionDate);
             log.info("Operation date {}", transactionDate);
             payloadJSON = LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(chargeId.toString(), operationDate, feeAmount);
@@ -638,7 +648,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
 
             Float amount = Float.valueOf("1020.00");
             transactionDate = transactionDate.plusDays(2);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             operationDate = Utils.dateFormatter.format(transactionDate);
             log.info("Operation date {}", transactionDate);
             PostLoansLoanIdTransactionsResponse loanIdTransactionsResponse = loanTransactionHelper.makeLoanRepayment(operationDate, amount,

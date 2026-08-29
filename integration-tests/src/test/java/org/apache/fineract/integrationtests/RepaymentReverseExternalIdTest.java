@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.apache.fineract.client.models.AllowAttributeOverrides;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetLoanPaymentChannelToFundSourceMappings;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdTransactions;
@@ -43,7 +44,6 @@ import org.apache.fineract.client.models.PostLoansLoanIdRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
@@ -91,7 +91,8 @@ public class RepaymentReverseExternalIdTest extends BaseLoanIntegrationTest {
             final LocalDate todaysDate = Utils.getLocalDateOfTenant();
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, todaysDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(todaysDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Create a client and a loan with externalId
             final Integer clientId = clientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();

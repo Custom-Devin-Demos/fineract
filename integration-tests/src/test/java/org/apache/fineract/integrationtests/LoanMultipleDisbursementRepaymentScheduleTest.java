@@ -34,13 +34,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdRepaymentPeriod;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
@@ -94,7 +94,8 @@ public class LoanMultipleDisbursementRepaymentScheduleTest extends BaseLoanInteg
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, currentDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(currentDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
@@ -125,7 +126,8 @@ public class LoanMultipleDisbursementRepaymentScheduleTest extends BaseLoanInteg
 
             currentDate = LocalDate.of(2023, 7, 12);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, currentDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(currentDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             final String jobName = "Loan COB";
             schedulerJobHelper.executeAndAwaitJob(jobName);
@@ -137,7 +139,8 @@ public class LoanMultipleDisbursementRepaymentScheduleTest extends BaseLoanInteg
 
             currentDate = LocalDate.of(2023, 7, 21);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, currentDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(currentDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             final PostLoansLoanIdTransactionsResponse merchantIssuedRefund_1 = loanTransactionHelper.makeMerchantIssuedRefund((long) loanId,
                     new PostLoansLoanIdTransactionsRequest().dateFormat("dd MMMM yyyy").transactionDate("21 July 2023").locale("en")
@@ -151,7 +154,8 @@ public class LoanMultipleDisbursementRepaymentScheduleTest extends BaseLoanInteg
             // make another disbursement
             currentDate = LocalDate.of(2023, 7, 24);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, currentDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(currentDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             loanTransactionHelper.disburseLoanWithTransactionAmount("24 July 2023", loanId, "18");
 

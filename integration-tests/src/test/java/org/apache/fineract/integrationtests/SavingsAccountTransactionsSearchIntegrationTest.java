@@ -35,10 +35,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetSavingsAccountTransactionsPageItem;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.models.SavingsAccountTransactionsSearchResponse;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
@@ -180,7 +180,8 @@ public class SavingsAccountTransactionsSearchIntegrationTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             this.savingsAccountHelper.depositToSavingsAccount(savingsId, "100", firstDepositDate, CommonConstants.RESPONSE_RESOURCE_ID);
             this.savingsAccountHelper.depositToSavingsAccount(savingsId, "300", secondDepositDate, CommonConstants.RESPONSE_RESOURCE_ID);

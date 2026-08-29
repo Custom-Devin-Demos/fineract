@@ -57,7 +57,6 @@ import org.apache.fineract.client.models.PostClientsResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.models.PutJobsJobIDRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.client.IntegrationTest;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
@@ -168,7 +167,8 @@ public class SchedulerJobsTestResults extends IntegrationTest {
 
             LocalDate submittedDate = LocalDate.of(2022, 9, 28);
             String submittedDateString = "28 September 2022";
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, submittedDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(submittedDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             this.savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
 
             final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
@@ -200,7 +200,8 @@ public class SchedulerJobsTestResults extends IntegrationTest {
             savingsStatusHashMap = this.savingsAccountHelper.activateSavings(savingsId, submittedDateString);
             SavingsStatusChecker.verifySavingsIsActive(savingsStatusHashMap);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2022, 11, 11));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2022, 11, 11))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             String JobName = "Apply Annual Fee For Savings";
 
             this.schedulerJobHelper.executeAndAwaitJob(JobName);
@@ -894,7 +895,8 @@ public class SchedulerJobsTestResults extends IntegrationTest {
                         LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(fee), "02 March 2020", "10", null));
             }
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 9, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 9, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             String jobName = "Loan COB";
             this.schedulerJobHelper.executeAndAwaitJob(jobName);
             for (Integer loanId : loanIDs) {
@@ -925,7 +927,8 @@ public class SchedulerJobsTestResults extends IntegrationTest {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 6, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 6, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             this.savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
             this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
@@ -1020,20 +1023,23 @@ public class SchedulerJobsTestResults extends IntegrationTest {
             loanStatusHashMap = loanTransactionHelper.disburseLoanWithNetDisbursalAmount("02 July 2020", loanID,
                     JsonPath.from(loanDetails).get("netDisbursalAmount").toString());
             LoanStatusChecker.verifyLoanIsActive(loanStatusHashMap);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 7, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 7, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             String jobName = "Loan COB";
 
             schedulerJobHelper.executeAndAwaitJob(jobName);
             GetLoansLoanIdResponse loan = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanID);
             Assertions.assertEquals(LocalDate.of(2020, 7, 2), loan.getLastClosedBusinessDate());
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 7, 3));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 7, 3))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             schedulerJobHelper.executeAndAwaitJob(jobName);
 
             loan = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanID);
             Assertions.assertEquals(LocalDate.of(2020, 7, 3), loan.getLastClosedBusinessDate());
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 7, 5));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 7, 5))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             schedulerJobHelper.executeAndAwaitJob(jobName);
 
             loan = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanID);
@@ -1049,7 +1055,8 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2019, 2, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2019, 2, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             // set penalty wait period to 0
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.PENALTY_WAIT_PERIOD,
                     new PutGlobalConfigurationsRequest().value(0L));
@@ -1080,7 +1087,8 @@ public class SchedulerJobsTestResults extends IntegrationTest {
             loanStatusHashMap = this.loanTransactionHelper.disburseLoanWithNetDisbursalAmount("02 March 2019", loanID,
                     JsonPath.from(loanDetails).get("netDisbursalAmount").toString());
             LoanStatusChecker.verifyLoanIsActive(loanStatusHashMap);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2019, 4, 1));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2019, 4, 1))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             String jobName = "Loan COB";
 
             this.schedulerJobHelper.executeAndAwaitJob(jobName);
@@ -1090,7 +1098,8 @@ public class SchedulerJobsTestResults extends IntegrationTest {
                     "Verifying From Penalty Charges due fot first Repayment after Successful completion of Scheduler Job");
 
             LocalDate lastBusinessDateBeforeFastForward = LocalDate.of(2019, 4, 2);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, lastBusinessDateBeforeFastForward);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(lastBusinessDateBeforeFastForward)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             this.schedulerJobHelper.executeAndAwaitJob(jobName);
             repaymentScheduleDataAfter = this.loanTransactionHelper.getLoanRepaymentSchedule(requestSpec, responseSpec, loanID);
             Assertions.assertEquals(39.39f, (Float) repaymentScheduleDataAfter.get(1).get("penaltyChargesDue"),
@@ -1109,7 +1118,8 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 2, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 2, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             // set penalty wait period to 0
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.PENALTY_WAIT_PERIOD,
                     new PutGlobalConfigurationsRequest().value(0L));
@@ -1145,14 +1155,16 @@ public class SchedulerJobsTestResults extends IntegrationTest {
                     new PutGlobalConfigurationsRequest().value(1L));
             LocalDate dateToFastForward = LocalDate.of(2020, 5, 2);
             String jobName = "Loan COB";
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, dateToFastForward);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(dateToFastForward)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             this.schedulerJobHelper.executeAndAwaitJob(jobName);
             List<HashMap> repaymentScheduleDataAfter = this.loanTransactionHelper.getLoanRepaymentSchedule(requestSpec, responseSpec,
                     loanID2);
             Assertions.assertEquals(0, repaymentScheduleDataAfter.get(1).get("penaltyChargesDue"),
                     "Verifying From Penalty Charges due fot first Repayment after Successful completion of Scheduler Job");
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 5, 3));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 5, 3))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             this.schedulerJobHelper.executeAndAwaitJob(jobName);
             repaymentScheduleDataAfter = this.loanTransactionHelper.getLoanRepaymentSchedule(requestSpec, responseSpec, loanID2);
             Assertions.assertEquals(39.39f, (Float) repaymentScheduleDataAfter.get(1).get("penaltyChargesDue"),

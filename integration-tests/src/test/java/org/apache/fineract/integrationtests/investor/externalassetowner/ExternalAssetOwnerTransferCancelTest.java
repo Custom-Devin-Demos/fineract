@@ -21,7 +21,6 @@ package org.apache.fineract.integrationtests.investor.externalassetowner;
 import static org.apache.fineract.client.models.ExternalTransferData.StatusEnum.BUYBACK;
 import static org.apache.fineract.client.models.ExternalTransferData.StatusEnum.CANCELLED;
 import static org.apache.fineract.client.models.ExternalTransferData.StatusEnum.PENDING;
-import static org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType.BUSINESS_DATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -45,6 +44,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.accounting.common.AccountingConstants;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.ExternalAssetOwnerRequest;
 import org.apache.fineract.client.models.ExternalOwnerTransferJournalEntryData;
 import org.apache.fineract.client.models.ExternalTransferData;
@@ -275,7 +275,8 @@ public class ExternalAssetOwnerTransferCancelTest extends BaseLoanIntegrationTes
     private void setInitialBusinessDate(String date) {
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(true));
-        BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BUSINESS_DATE, LocalDate.parse(date));
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(LocalDate.parse(date))).dateFormat(Utils.DATE_FORMAT).locale("en"));
     }
 
     private void cleanUpAndRestoreBusinessDate() {
@@ -283,7 +284,8 @@ public class ExternalAssetOwnerTransferCancelTest extends BaseLoanIntegrationTes
         REQUEST_SPEC.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         REQUEST_SPEC.header("Fineract-Platform-TenantId", "default");
         RESPONSE_SPEC = new ResponseSpecBuilder().expectStatusCode(200).build();
-        BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BUSINESS_DATE, TODAYS_DATE);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(TODAYS_DATE)).dateFormat(Utils.DATE_FORMAT).locale("en"));
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(false));
     }
