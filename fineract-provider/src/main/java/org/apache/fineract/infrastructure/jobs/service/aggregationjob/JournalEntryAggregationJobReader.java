@@ -25,9 +25,9 @@ import org.apache.fineract.infrastructure.core.domain.JdbcSupport;
 import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
 import org.apache.fineract.infrastructure.core.service.migration.TenantDataSourceFactory;
 import org.apache.fineract.infrastructure.jobs.service.aggregationjob.data.JournalEntryAggregationSummaryData;
-import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.batch.infrastructure.item.database.JdbcCursorItemReader;
 import org.springframework.stereotype.Component;
@@ -40,8 +40,8 @@ public class JournalEntryAggregationJobReader extends JdbcCursorItemReader<Journ
     private LocalDate aggregatedOnDateTo;
 
     public JournalEntryAggregationJobReader(TenantDataSourceFactory tenantDataSourceFactory) {
-        super(tenantDataSourceFactory.create(ThreadLocalContextUtil.getTenant()), buildAggregationQuery(), null);
-        setRowMapper(this::mapRow);
+        super(tenantDataSourceFactory.create(ThreadLocalContextUtil.getTenant()), buildAggregationQuery(),
+                JournalEntryAggregationJobReader::mapRow);
     }
 
     @BeforeStep
@@ -58,7 +58,7 @@ public class JournalEntryAggregationJobReader extends JdbcCursorItemReader<Journ
 
     }
 
-    private JournalEntryAggregationSummaryData mapRow(ResultSet rs, int rowNum) throws SQLException {
+    private static JournalEntryAggregationSummaryData mapRow(ResultSet rs, int rowNum) throws SQLException {
         return JournalEntryAggregationSummaryData.builder() //
                 .glAccountId(rs.getLong("glAccountId")) //
                 .productId(rs.getLong("productId")) //

@@ -35,8 +35,8 @@ import org.apache.fineract.portfolio.loanaccount.service.LoanChargeWritePlatform
 import org.apache.fineract.portfolio.loanaccount.service.LoanReadPlatformService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.batch.core.step.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.StepContribution;
 import org.springframework.batch.infrastructure.repeat.RepeatStatus;
 
 public class ApplyChargeToOverdueLoanInstallmentTaskletTest {

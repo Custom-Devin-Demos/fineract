@@ -39,8 +39,8 @@ dependencies {
 
     // Test dependencies
     testImplementation(
-            'org.junit.jupiter:junit-jupiter-api:5.14.4',
-            'org.junit.jupiter:junit-jupiter-engine:5.14.4',
+            'org.junit.jupiter:junit-jupiter-api',
+            'org.junit.jupiter:junit-jupiter-engine',
             'org.mockito:mockito-core:5.23.0',
             'org.assertj:assertj-core:3.27.7',
             'org.wiremock:wiremock-standalone'

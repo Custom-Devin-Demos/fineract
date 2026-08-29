@@ -73,6 +73,7 @@ public class JournalEntryAggregationJobReaderTest {
         ThreadLocalContextUtil.setTenant(tenant);
         ThreadLocalContextUtil
                 .setBusinessDates(new HashMap<>(Map.of(BusinessDateType.BUSINESS_DATE, LocalDate.now(ZoneId.systemDefault()))));
+        when(tenantDataSourceFactory.create(tenant)).thenReturn(dataSource);
     }
 
     @AfterEach

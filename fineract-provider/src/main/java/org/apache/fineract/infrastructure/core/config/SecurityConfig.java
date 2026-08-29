@@ -440,11 +440,11 @@ public class SecurityConfig {
         }
 
         if (serverProperties.getSsl().isEnabled()) {
-            http.requiresChannel(channel -> channel.requestMatchers(API_MATCHER.matcher("/api/**")).requiresSecure());
+            http.redirectToHttps(https -> https.requestMatchers(API_MATCHER.matcher("/api/**")));
         }
 
         if (fineractProperties.getSecurity().getHsts().isEnabled()) {
-            http.requiresChannel(channel -> channel.anyRequest().requiresSecure()).headers(
+            http.redirectToHttps(Customizer.withDefaults()).headers(
                     headers -> headers.httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000)));
         }
 

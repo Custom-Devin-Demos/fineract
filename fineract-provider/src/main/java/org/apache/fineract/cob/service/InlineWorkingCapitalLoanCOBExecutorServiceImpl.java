@@ -28,9 +28,9 @@ import org.apache.fineract.cob.workingcapitalloan.WorkingCapitalLoanRetrieveIdSe
 import org.apache.fineract.infrastructure.core.config.FineractProperties;
 import org.apache.fineract.infrastructure.jobs.domain.CustomJobParameterRepository;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
-import org.springframework.batch.core.configuration.JobLocator;
-import org.springframework.batch.core.repository.explore.JobExplorer;
+import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.repository.explore.JobExplorer;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -41,10 +41,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class InlineWorkingCapitalLoanCOBExecutorServiceImpl extends InlineCommonLockableCOBExecutorService<WorkingCapitalLoanAccountLock> {
 
     public InlineWorkingCapitalLoanCOBExecutorServiceImpl(WorkingCapitalAccountLockRepository loanAccountLockRepository,
-            InlineLoanCOBExecutionDataParser dataParser, JobLauncher jobLauncher, JobLocator jobLocator, JobExplorer jobExplorer,
+            InlineLoanCOBExecutionDataParser dataParser, JobLauncher jobLauncher, JobRegistry jobRegistry, JobExplorer jobExplorer,
             TransactionTemplate transactionTemplate, CustomJobParameterRepository customJobParameterRepository,
             PlatformSecurityContext context, WorkingCapitalLoanRetrieveIdService retrieveIdService, FineractProperties fineractProperties) {
-        super(loanAccountLockRepository, dataParser, jobLauncher, jobLocator, jobExplorer, transactionTemplate,
+        super(loanAccountLockRepository, dataParser, jobLauncher, jobRegistry, jobExplorer, transactionTemplate,
                 customJobParameterRepository, context, retrieveIdService, fineractProperties);
     }
 

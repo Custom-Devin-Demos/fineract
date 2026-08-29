@@ -27,8 +27,10 @@ dependencies {
             'org.springframework.boot:spring-boot-starter-data-jdbc',
             'io.github.resilience4j:resilience4j-spring-boot3',
 
+            'org.springframework.boot:spring-boot-jackson2',
             'com.fasterxml.jackson.core:jackson-databind',
 
+            'org.springframework.boot:spring-boot-liquibase',
             'org.liquibase:liquibase-core',
 
             'com.mysql:mysql-connector-j',

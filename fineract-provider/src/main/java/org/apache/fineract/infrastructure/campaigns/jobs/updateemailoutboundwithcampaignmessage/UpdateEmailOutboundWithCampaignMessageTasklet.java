@@ -47,8 +47,8 @@ import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.portfolio.calendar.service.CalendarUtils;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepositoryWrapper;
-import org.springframework.batch.core.step.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.StepContribution;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.infrastructure.repeat.RepeatStatus;
 

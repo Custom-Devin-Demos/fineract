@@ -19,8 +19,8 @@
 package com.acme.fineract.loan.job;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.step.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.StepContribution;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.infrastructure.repeat.RepeatStatus;
 import org.springframework.stereotype.Component;

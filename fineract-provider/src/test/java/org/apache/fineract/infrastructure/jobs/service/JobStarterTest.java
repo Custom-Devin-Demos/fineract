@@ -57,14 +57,14 @@ import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.job.parameters.InvalidJobParametersException;
 import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.batch.core.job.parameters.JobParametersIncrementer;
-import org.springframework.batch.core.job.parameters.InvalidJobParametersException;
-import org.springframework.batch.core.repository.explore.JobExplorer;
-import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.launch.JobInstanceAlreadyCompleteException;
+import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobRestartException;
+import org.springframework.batch.core.repository.explore.JobExplorer;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -138,7 +138,8 @@ public class JobStarterTest {
             when(jobExecution.getExitStatus()).thenReturn(new ExitStatus(failedStatus.name(), "testException"));
             JobExecutionException exception = Assertions.assertThrows(JobExecutionException.class,
                     () -> underTest.run(job, scheduledJobDetail, Set.of(), "default"));
-            Assertions.assertEquals(String.format("exitCode=%s;exitDescription=%s", failedStatus.name(), "testException"),
+            Assertions.assertEquals(
+                    String.format("exitCode=%s;exitDescription=%s;exitException=null", failedStatus.name(), "testException"),
                     exception.getMessage());
         }
     }

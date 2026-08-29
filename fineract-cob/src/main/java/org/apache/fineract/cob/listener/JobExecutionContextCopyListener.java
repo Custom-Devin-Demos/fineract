@@ -21,8 +21,8 @@ package org.apache.fineract.cob.listener;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
-import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.listener.StepExecutionListener;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
 
 /**

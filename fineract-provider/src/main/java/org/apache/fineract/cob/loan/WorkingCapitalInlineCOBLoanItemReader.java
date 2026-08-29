@@ -23,8 +23,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.fineract.cob.COBConstant;
 import org.apache.fineract.portfolio.workingcapitalloan.domain.WorkingCapitalLoan;
 import org.apache.fineract.portfolio.workingcapitalloan.repository.WorkingCapitalLoanRepository;
-import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.lang.NonNull;
 

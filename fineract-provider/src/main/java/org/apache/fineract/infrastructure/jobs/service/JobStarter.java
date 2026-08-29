@@ -45,14 +45,14 @@ import org.quartz.JobExecutionException;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.job.parameters.InvalidJobParametersException;
 import org.springframework.batch.core.job.parameters.JobParameter;
 import org.springframework.batch.core.job.parameters.JobParameters;
-import org.springframework.batch.core.job.parameters.InvalidJobParametersException;
-import org.springframework.batch.core.repository.explore.JobExplorer;
-import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.launch.JobInstanceAlreadyCompleteException;
+import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobRestartException;
+import org.springframework.batch.core.repository.explore.JobExplorer;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -114,7 +114,8 @@ public class JobStarter {
         }
     }
 
-    protected Map<String, org.springframework.batch.core.job.parameters.JobParameter<?>> getJobParameter(ScheduledJobDetail scheduledJobDetail) {
+    protected Map<String, org.springframework.batch.core.job.parameters.JobParameter<?>> getJobParameter(
+            ScheduledJobDetail scheduledJobDetail) {
         List<org.apache.fineract.infrastructure.jobs.domain.JobParameter> jobParameterList = jobParameterRepository
                 .findJobParametersByJobId(scheduledJobDetail.getId());
         Map<String, JobParameter<?>> jobParameterMap = new HashMap<>();

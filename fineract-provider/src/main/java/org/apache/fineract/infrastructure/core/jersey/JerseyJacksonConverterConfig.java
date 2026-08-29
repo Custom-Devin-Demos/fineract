@@ -33,6 +33,7 @@ import org.apache.fineract.infrastructure.core.jersey.serializer.legacy.JacksonL
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 @Configuration
 public class JerseyJacksonConverterConfig {
@@ -54,5 +55,14 @@ public class JerseyJacksonConverterConfig {
                 .build(); //
         objectMapper.registerModule(new JacksonLocalDateArrayModule());
         return objectMapper;
+    }
+
+    /**
+     * Spring Boot 4 defaults to Jackson 3 for the auto-configured HTTP message converters, so the Jackson 2 based
+     * converter the Jersey layer builds on has to be declared explicitly.
+     */
+    @Bean
+    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
+        return new MappingJackson2HttpMessageConverter(objectMapper);
     }
 }

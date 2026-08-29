@@ -33,11 +33,11 @@ import org.apache.fineract.infrastructure.core.service.database.RoutingDataSourc
 import org.eclipse.persistence.config.PersistenceUnitProperties;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.jpa.EntityManagerFactoryBuilder;
 import org.springframework.boot.jpa.autoconfigure.EntityManagerFactoryBuilderCustomizer;
 import org.springframework.boot.jpa.autoconfigure.JpaBaseConfiguration;
 import org.springframework.boot.jpa.autoconfigure.JpaProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;

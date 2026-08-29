@@ -23,8 +23,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-import org.apache.fineract.useradministration.domain.AppUser;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.fineract.useradministration.domain.AppUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.BadCredentialsException;

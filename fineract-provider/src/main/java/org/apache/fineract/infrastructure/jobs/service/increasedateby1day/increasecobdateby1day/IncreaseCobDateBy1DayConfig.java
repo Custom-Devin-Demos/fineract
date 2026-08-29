@@ -23,10 +23,10 @@ import org.apache.fineract.infrastructure.businessdate.service.BusinessDateWrite
 import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
 import org.apache.fineract.infrastructure.jobs.service.JobName;
 import org.springframework.batch.core.job.Job;
-import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.parameters.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

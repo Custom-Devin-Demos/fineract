@@ -34,9 +34,9 @@ import org.apache.fineract.infrastructure.jobs.domain.CustomJobParameter;
 import org.apache.fineract.infrastructure.jobs.domain.CustomJobParameterRepository;
 import org.apache.fineract.infrastructure.springbatch.SpringBatchJobConstants;
 import org.springframework.batch.core.job.parameters.JobParameter;
+import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.StepContribution;
 import org.springframework.batch.core.step.StepExecution;
-import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor

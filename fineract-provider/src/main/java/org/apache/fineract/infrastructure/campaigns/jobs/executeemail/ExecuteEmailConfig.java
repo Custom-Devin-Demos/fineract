@@ -28,10 +28,10 @@ import org.apache.fineract.infrastructure.reportmailingjob.validation.ReportMail
 import org.apache.fineract.portfolio.loanaccount.domain.LoanRepository;
 import org.apache.fineract.portfolio.savings.domain.SavingsAccountRepository;
 import org.springframework.batch.core.job.Job;
-import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.parameters.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

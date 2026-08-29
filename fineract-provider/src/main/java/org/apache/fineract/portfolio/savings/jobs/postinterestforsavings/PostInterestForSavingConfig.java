@@ -26,10 +26,10 @@ import org.apache.fineract.portfolio.savings.service.SavingsAccountReadPlatformS
 import org.apache.fineract.portfolio.savings.service.SavingsAccountWritePlatformService;
 import org.apache.fineract.portfolio.savings.service.SavingsSchedularInterestPosterTask;
 import org.springframework.batch.core.job.Job;
-import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.parameters.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

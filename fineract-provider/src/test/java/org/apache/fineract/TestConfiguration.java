@@ -46,20 +46,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.batch.core.configuration.JobRegistry;
-import org.springframework.batch.core.repository.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.repository.explore.JobExplorer;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.batch.autoconfigure.BatchAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.gson.autoconfigure.GsonAutoConfiguration;
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.jdbc.autoconfigure.JdbcTemplateAutoConfiguration;
 import org.springframework.boot.liquibase.autoconfigure.LiquibaseAutoConfiguration;
 import org.springframework.boot.liquibase.autoconfigure.LiquibaseProperties;
-import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -67,6 +67,8 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.data.jdbc.core.dialect.JdbcDialect;
+import org.springframework.data.jdbc.core.dialect.JdbcPostgresDialect;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -177,13 +179,19 @@ public class TestConfiguration {
         return mock(JdbcTemplate.class);
     }
 
-    @Primary
+    /**
+     * Spring Data JDBC resolves the dialect from the connection metadata, which the mocked JdbcTemplate cannot provide.
+     */
+    @Bean
+    public JdbcDialect jdbcDialect() {
+        return JdbcPostgresDialect.INSTANCE;
+    }
+
     @Bean
     public JobExplorer jobExplorer() {
         return mock(JobExplorer.class, RETURNS_MOCKS);
     }
 
-    @Primary
     @Bean
     public JobLauncher jobLauncher() {
         return mock(JobLauncher.class, RETURNS_MOCKS);

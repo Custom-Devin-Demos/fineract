@@ -24,8 +24,8 @@ import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.businessdate.service.BusinessDateWritePlatformService;
 import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
 import org.springframework.batch.core.ExitStatus;
-import org.springframework.batch.core.step.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.StepContribution;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.infrastructure.repeat.RepeatStatus;
 

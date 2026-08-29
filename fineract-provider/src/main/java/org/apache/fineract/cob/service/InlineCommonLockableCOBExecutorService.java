@@ -60,14 +60,14 @@ import org.apache.fineract.infrastructure.jobs.service.JobParametersUtil;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.infrastructure.springbatch.SpringBatchJobConstants;
 import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.job.parameters.JobParameter;
 import org.springframework.batch.core.job.parameters.JobParameters;
-import org.springframework.batch.core.configuration.JobLocator;
-import org.springframework.batch.core.repository.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.NoSuchJobException;
+import org.springframework.batch.core.repository.explore.JobExplorer;
 import org.springframework.lang.NonNull;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
@@ -83,7 +83,7 @@ public abstract class InlineCommonLockableCOBExecutorService<T extends AccountLo
     private final AccountLockRepository<T> loanAccountLockRepository;
     private final InlineLoanCOBExecutionDataParser dataParser;
     private final JobLauncher jobLauncher;
-    private final JobLocator jobLocator;
+    private final JobRegistry jobRegistry;
     private final JobExplorer jobExplorer;
     private final TransactionTemplate transactionTemplate;
     private final CustomJobParameterRepository customJobParameterRepository;
@@ -136,11 +136,9 @@ public abstract class InlineCommonLockableCOBExecutorService<T extends AccountLo
     @SuppressFBWarnings("SLF4J_SIGN_ONLY_FORMAT")
     private void execute(List<Long> loanIds, String jobName, LocalDate businessDate) {
         lockLoanAccounts(loanIds, businessDate);
-        Job inlineLoanCOBJob;
-        try {
-            inlineLoanCOBJob = jobLocator.getJob(jobName);
-        } catch (NoSuchJobException e) {
-            throw new JobNotFoundException(jobName, e);
+        Job inlineLoanCOBJob = jobRegistry.getJob(jobName);
+        if (inlineLoanCOBJob == null) {
+            throw new JobNotFoundException(jobName, new NoSuchJobException(jobName));
         }
         JobParameters jobParameters = JobParametersUtil.nextJobParameters(inlineLoanCOBJob, jobExplorer)
                 .addJobParameters(JobParametersUtil.toJobParameters(getJobParametersMap(loanIds, businessDate))).toJobParameters();

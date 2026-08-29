@@ -40,20 +40,20 @@ import org.apache.fineract.infrastructure.jobs.exception.JobNotFoundException;
 import org.apache.fineract.infrastructure.jobs.service.JobStarter;
 import org.apache.fineract.infrastructure.jobs.service.SchedulerServiceConstants;
 import org.quartz.JobExecutionException;
+import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.parameters.InvalidJobParametersException;
-import org.springframework.batch.core.configuration.JobLocator;
-import org.springframework.batch.core.launch.NoSuchJobException;
 import org.springframework.batch.core.launch.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.launch.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.launch.JobRestartException;
+import org.springframework.batch.core.launch.NoSuchJobException;
 import org.springframework.scheduling.annotation.Async;
 
 @Slf4j
 @RequiredArgsConstructor
 public abstract class AsyncCommonCOBExecutorService implements AsyncCOBExecutorService {
 
-    private final JobLocator jobLocator;
+    private final JobRegistry jobRegistry;
     private final ScheduledJobDetailRepository scheduledJobDetailRepository;
     private final JobStarter jobStarter;
     private final RetrieveIdService retrieveIdService;
@@ -92,7 +92,7 @@ public abstract class AsyncCommonCOBExecutorService implements AsyncCOBExecutorS
     private void executeLoanCOBDayByDayUntilCOBBusinessDate(LocalDate oldestCOBProcessedDate, LocalDate cobBusinessDate)
             throws NoSuchJobException, JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException,
             InvalidJobParametersException, JobRestartException, JobExecutionException {
-        Job job = jobLocator.getJob(getJobName());
+        Job job = jobRegistry.getJob(getJobName());
         ScheduledJobDetail scheduledJobDetail = scheduledJobDetailRepository.findByJobName(getJobHumanReadableName());
         LocalDate executingBusinessDate = oldestCOBProcessedDate.plusDays(1);
         String tenantIdentifier = ThreadLocalContextUtil.getTenant().getTenantIdentifier();

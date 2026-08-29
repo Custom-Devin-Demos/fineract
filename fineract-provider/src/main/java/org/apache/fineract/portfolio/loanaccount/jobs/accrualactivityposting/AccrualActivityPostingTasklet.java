@@ -30,8 +30,8 @@ import org.apache.fineract.portfolio.loanaccount.domain.LoanAccrualActivityRepos
 import org.apache.fineract.portfolio.loanaccount.domain.LoanStatus;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransactionType;
 import org.apache.fineract.portfolio.loanaccount.service.LoanAccrualActivityProcessingService;
-import org.springframework.batch.core.step.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.StepContribution;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.infrastructure.repeat.RepeatStatus;
 import org.springframework.stereotype.Component;

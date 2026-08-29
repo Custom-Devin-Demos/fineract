@@ -39,10 +39,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.core.job.JobExecution;
-import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.launch.JobExecutionNotRunningException;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.launch.NoSuchJobExecutionException;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
 
 @ExtendWith(MockitoExtension.class)

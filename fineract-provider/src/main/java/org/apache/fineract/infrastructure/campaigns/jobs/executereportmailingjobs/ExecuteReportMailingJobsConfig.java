@@ -27,10 +27,10 @@ import org.apache.fineract.infrastructure.reportmailingjob.domain.ReportMailingJ
 import org.apache.fineract.infrastructure.reportmailingjob.service.ReportMailingJobEmailService;
 import org.apache.fineract.infrastructure.reportmailingjob.validation.ReportMailingJobValidator;
 import org.springframework.batch.core.job.Job;
-import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.parameters.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
