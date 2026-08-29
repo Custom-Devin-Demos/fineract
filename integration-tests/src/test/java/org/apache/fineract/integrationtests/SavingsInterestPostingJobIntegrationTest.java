@@ -114,7 +114,7 @@ public class SavingsInterestPostingJobIntegrationTest {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
                 .getClientId().intValue();
         Assertions.assertNotNull(clientID);
-        this.accountHelper = new AccountHelper(requestSpec, responseSpec);
+        this.accountHelper = new AccountHelper();
         this.journalEntryHelper = new JournalEntryHelper(requestSpec, responseSpec);
 
         final Integer savingsId = createSavingsAccountDailyPostingWithAccounting(clientID, startDate);

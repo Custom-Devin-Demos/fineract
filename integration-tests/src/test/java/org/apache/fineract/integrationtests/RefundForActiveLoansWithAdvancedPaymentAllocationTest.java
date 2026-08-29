@@ -78,7 +78,7 @@ public class RefundForActiveLoansWithAdvancedPaymentAllocationTest extends BaseL
         loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
         client = clientHelper.createClient(ClientHelper.defaultClientCreationRequest());
         businessDateHelper = new BusinessDateHelper();
-        accountHelper = new AccountHelper(requestSpec, responseSpec);
+        accountHelper = new AccountHelper();
     }
 
     @Test

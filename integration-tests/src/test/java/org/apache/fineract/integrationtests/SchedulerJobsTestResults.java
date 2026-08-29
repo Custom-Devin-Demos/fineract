@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
 import org.apache.fineract.client.models.BusinessDateUpdateRequest;
+import org.apache.fineract.client.models.GetGLAccountsResponse;
 import org.apache.fineract.client.models.GetJournalEntriesTransactionIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.JournalEntryTransactionItem;
@@ -143,7 +144,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         requestSpec.header("Fineract-Platform-TenantId", "default");
         responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        this.accountHelper = new AccountHelper(requestSpec, responseSpec);
+        this.accountHelper = new AccountHelper();
         this.journalEntryHelper = new JournalEntryHelper(requestSpec, responseSpec);
         schedulerJobHelper = new SchedulerJobHelper(requestSpec);
         clientHelper = new ClientHelper(requestSpec, responseSpec);
@@ -629,11 +630,11 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         String JobName = "Update Accounting Running Balances";
 
         this.schedulerJobHelper.executeAndAwaitJob(JobName);
-        final HashMap runningBalanceAfter = this.accountHelper.getAccountingWithRunningBalanceById(accountID.toString());
+        final GetGLAccountsResponse runningBalanceAfter = this.accountHelper.getAccountingWithRunningBalanceById(accountID.longValue());
 
-        final Integer INT_BALANCE = Integer.valueOf(MINIMUM_OPENING_BALANCE);
+        final Long INT_BALANCE = Long.valueOf(MINIMUM_OPENING_BALANCE);
 
-        Assertions.assertEquals(INT_BALANCE, runningBalanceAfter.get("organizationRunningBalance"),
+        Assertions.assertEquals(INT_BALANCE, runningBalanceAfter.getOrganizationRunningBalance(),
                 "Verifying Account Running Balance after running Update Accounting Running Balances Scheduler Job");
     }
 

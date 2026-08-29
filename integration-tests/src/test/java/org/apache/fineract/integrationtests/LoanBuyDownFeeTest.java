@@ -951,7 +951,7 @@ public class LoanBuyDownFeeTest extends BaseLoanIntegrationTest {
         runAt("10 September 2024", () -> {
             deleteAllExternalEvents();
 
-            final AccountHelper accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+            final AccountHelper accountHelper = new AccountHelper();
             final Account classificationIncomeAccount = accountHelper
                     .createIncomeAccount(Utils.uniqueRandomStringGenerator("buydownfee_class_income_", 6));
             classificationIncomeAccountRef.set(classificationIncomeAccount);

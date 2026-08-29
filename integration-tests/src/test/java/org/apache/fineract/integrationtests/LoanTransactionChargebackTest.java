@@ -103,7 +103,7 @@ public class LoanTransactionChargebackTest extends BaseLoanIntegrationTest {
         this.responseSpecErr503 = new ResponseSpecBuilder().expectStatusCode(503).build();
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
         this.journalEntryHelper = new JournalEntryHelper(requestSpec, responseSpec);
-        this.accountHelper = new AccountHelper(requestSpec, responseSpec);
+        this.accountHelper = new AccountHelper();
         PostClientsResponse client = new ClientHelper(requestSpec, responseSpec).createClient(ClientHelper.defaultClientCreationRequest());
         clientId = client.getResourceId();
 

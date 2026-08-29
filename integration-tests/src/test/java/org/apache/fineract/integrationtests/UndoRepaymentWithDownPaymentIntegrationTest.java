@@ -106,7 +106,7 @@ public class UndoRepaymentWithDownPaymentIntegrationTest extends BaseLoanIntegra
         this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.loanProductHelper = new LoanProductHelper();
         this.paymentTypeHelper = new PaymentTypeHelper();
 

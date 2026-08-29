@@ -110,7 +110,7 @@ public class LoanTransactionInterestPaymentWaiverTest extends BaseLoanIntegratio
         responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
         businessDateHelper = new BusinessDateHelper();
-        accountHelper = new AccountHelper(requestSpec, responseSpec);
+        accountHelper = new AccountHelper();
         ClientHelper clientHelper = new ClientHelper(requestSpec, responseSpec);
         loanRescheduleRequestHelper = new LoanRescheduleRequestHelper(requestSpec, responseSpec);
         chargesHelper = new ChargesHelper();

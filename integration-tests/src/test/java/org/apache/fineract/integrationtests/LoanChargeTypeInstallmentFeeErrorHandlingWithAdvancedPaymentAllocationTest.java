@@ -65,7 +65,7 @@ public class LoanChargeTypeInstallmentFeeErrorHandlingWithAdvancedPaymentAllocat
         RESPONSE_SPEC = new ResponseSpecBuilder().expectStatusCode(200).build();
         LOAN_TRANSACTION_HELPER = new LoanTransactionHelper(REQUEST_SPEC, RESPONSE_SPEC);
         CLIENT_HELPER = new ClientHelper(REQUEST_SPEC, RESPONSE_SPEC);
-        ACCOUNT_HELPER = new AccountHelper(REQUEST_SPEC, RESPONSE_SPEC);
+        ACCOUNT_HELPER = new AccountHelper();
     }
 
     @Disabled

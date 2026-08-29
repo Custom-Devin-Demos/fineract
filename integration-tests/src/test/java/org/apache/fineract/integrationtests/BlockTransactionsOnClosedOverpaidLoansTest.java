@@ -63,7 +63,7 @@ public class BlockTransactionsOnClosedOverpaidLoansTest {
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
         this.loanTransactionHelperForError = new LoanTransactionHelper(this.requestSpec, this.responseSpecForError);
         this.globalConfigurationHelper = new GlobalConfigurationHelper();
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
     }
 
     @AfterEach

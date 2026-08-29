@@ -82,7 +82,7 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
 
         loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
         periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(this.requestSpec, this.responseSpec);
-        accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        accountHelper = new AccountHelper();
         journalEntryHelper = new JournalEntryHelper(this.requestSpec, this.responseSpec);
     }
 

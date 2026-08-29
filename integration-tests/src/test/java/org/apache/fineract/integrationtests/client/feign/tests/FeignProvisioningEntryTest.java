@@ -60,7 +60,7 @@ public class FeignProvisioningEntryTest extends FeignLoanTestBase {
         loanProducts.add(loanProductId.intValue());
 
         ProvisioningTransactionHelper transactionHelper = new ProvisioningTransactionHelper(requestSpec, responseSpec);
-        AccountHelper accountHelper = new AccountHelper(requestSpec, responseSpec);
+        AccountHelper accountHelper = new AccountHelper();
         ArrayList categories = transactionHelper.retrieveAllProvisioningCategories();
         Account liability = accountHelper.createLiabilityAccount();
         Account expense = accountHelper.createExpenseAccount();

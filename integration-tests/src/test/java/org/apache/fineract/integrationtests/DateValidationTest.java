@@ -84,7 +84,7 @@ public class DateValidationTest {
         this.clientHelper = new ClientHelper(this.requestSpec, this.responseSpec);
         this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
         this.interopHelper = new InteropHelper(requestSpec, errorResponseSpec);
-        this.accountHelper = new AccountHelper(requestSpec, responseSpec);
+        this.accountHelper = new AccountHelper();
     }
 
     @Test

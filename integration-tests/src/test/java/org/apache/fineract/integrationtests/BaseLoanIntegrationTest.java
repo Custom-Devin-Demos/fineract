@@ -144,7 +144,7 @@ public abstract class BaseLoanIntegrationTest extends IntegrationTest {
     private final String fullAdminAuthKey = getFullAdminAuthKey();
     protected final RequestSpecification requestSpec = createRequestSpecification(fullAdminAuthKey);
     private final String nonByPassUserAuthKey = getNonByPassUserAuthKey(requestSpec, responseSpec);
-    protected final AccountHelper accountHelper = new AccountHelper(requestSpec, responseSpec);
+    protected final AccountHelper accountHelper = new AccountHelper();
     // asset
     protected final Account loansReceivableAccount = accountHelper.createAssetAccount("loanPortfolio");
     protected final Account interestReceivableAccount = accountHelper.createAssetAccount("interestReceivable");

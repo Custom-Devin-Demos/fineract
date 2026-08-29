@@ -81,7 +81,7 @@ public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
         clientHelper = new ClientHelper(requestSpec, responseSpec);
         inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
         journalEntryHelper = new JournalEntryHelper(requestSpec, responseSpec);
-        accountHelper = new AccountHelper(requestSpec, responseSpec);
+        accountHelper = new AccountHelper();
     }
 
     /**

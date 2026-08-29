@@ -143,7 +143,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     private static final RequestSpecification REQUEST_SPEC = createRequestSpecification();
     private static final LoanTransactionHelper LOAN_TRANSACTION_HELPER = new LoanTransactionHelper(REQUEST_SPEC, RESPONSE_SPEC);
     private static final JournalEntryHelper JOURNAL_ENTRY_HELPER = new JournalEntryHelper(REQUEST_SPEC, RESPONSE_SPEC);
-    private static final AccountHelper ACCOUNT_HELPER = new AccountHelper(REQUEST_SPEC, RESPONSE_SPEC);
+    private static final AccountHelper ACCOUNT_HELPER = new AccountHelper();
     // asset
     private static final Account LOANS_RECEIVABLE_ACCOUNT = ACCOUNT_HELPER.createAssetAccount();
     private static final Account INTEREST_FEE_RECEIVABLE_ACCOUNT = ACCOUNT_HELPER.createAssetAccount();

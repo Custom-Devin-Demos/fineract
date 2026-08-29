@@ -55,7 +55,7 @@ public class AccountingRuleIntegrationTest {
         responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
 
         accountRuleHelper = new AccountRuleHelper(requestSpec, responseSpec);
-        accountHelper = new AccountHelper(requestSpec, responseSpec);
+        accountHelper = new AccountHelper();
     }
 
     @Test
