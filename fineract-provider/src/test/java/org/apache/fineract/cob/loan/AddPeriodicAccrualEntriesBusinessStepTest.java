@@ -86,7 +86,7 @@ public class AddPeriodicAccrualEntriesBusinessStepTest {
     @Test
     public void givenLoanWithAccrualThrowException() throws MultiException {
         // given
-        final Long loanId = RandomUtils.nextLong();
+        final Long loanId = RandomUtils.insecure().randomLong();
         final Loan loanForProcessing = Mockito.mock(Loan.class);
         when(loanForProcessing.getId()).thenReturn(loanId);
         doThrow(new MultiException(Collections.singletonList(new RuntimeException()))).when(loanAccrualsProcessingService)

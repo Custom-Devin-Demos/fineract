@@ -35,6 +35,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.fineract.infrastructure.core.config.FineractProperties;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.dataqueries.domain.Report;
@@ -99,7 +100,7 @@ public class ExecuteReportMailingJobsTasklet implements Tasklet {
                             String key = validateStretchyReportParamMapEntry.getKey();
                             String value = validateStretchyReportParamMapEntry.getValue();
 
-                            if (StringUtils.containsIgnoreCase(key, "date")) {
+                            if (Strings.CI.contains(key, "date")) {
                                 ReportMailingJobStretchyReportParamDateOption reportMailingJobStretchyReportParamDateOption = ReportMailingJobStretchyReportParamDateOption
                                         .newInstance(value);
 

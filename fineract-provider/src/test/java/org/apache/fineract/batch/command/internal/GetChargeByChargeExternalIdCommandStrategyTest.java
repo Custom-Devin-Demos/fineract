@@ -104,10 +104,10 @@ public class GetChargeByChargeExternalIdCommandStrategyTest {
             relativeUrl = relativeUrl + "?" + queryParameter;
         }
 
-        br.setRequestId(Long.valueOf(RandomStringUtils.randomNumeric(5)));
+        br.setRequestId(Long.valueOf(RandomStringUtils.insecure().nextNumeric(5)));
         br.setRelativeUrl(relativeUrl);
         br.setMethod(HttpMethod.GET);
-        br.setReference(Long.valueOf(RandomStringUtils.randomNumeric(5)));
+        br.setReference(Long.valueOf(RandomStringUtils.insecure().nextNumeric(5)));
         br.setBody("{}");
 
         return br;

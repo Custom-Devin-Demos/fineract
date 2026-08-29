@@ -18,7 +18,7 @@
  */
 package org.apache.fineract.infrastructure.reportmailingjob.data;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 public enum ReportMailingJobPreviousRunStatus {
 
@@ -46,9 +46,9 @@ public enum ReportMailingJobPreviousRunStatus {
     public static ReportMailingJobPreviousRunStatus newInstance(final String value) {
         ReportMailingJobPreviousRunStatus previousRunStatus = INVALID;
 
-        if (StringUtils.equalsIgnoreCase(value, SUCCESS.value)) {
+        if (Strings.CI.equals(value, SUCCESS.value)) {
             previousRunStatus = SUCCESS;
-        } else if (StringUtils.equalsIgnoreCase(value, ERROR.value)) {
+        } else if (Strings.CI.equals(value, ERROR.value)) {
             previousRunStatus = ERROR;
         }
 

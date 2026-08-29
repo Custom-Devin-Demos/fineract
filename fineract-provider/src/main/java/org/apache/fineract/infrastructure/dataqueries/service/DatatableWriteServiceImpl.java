@@ -70,6 +70,7 @@ import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.fineract.infrastructure.codes.service.CodeReadPlatformService;
 import org.apache.fineract.infrastructure.configuration.domain.ConfigurationDomainService;
@@ -794,8 +795,8 @@ public class DatatableWriteServiceImpl implements DatatableWriteService {
             }
             String fkName = "fk_" + dataTableNameAlias + "_" + oldName;
             String newFkName = "fk_" + dataTableNameAlias + "_" + newName;
-            if (!StringUtils.equalsIgnoreCase(code, newCode) || !StringUtils.equalsIgnoreCase(oldName, newName)) {
-                if (StringUtils.equalsIgnoreCase(code, newCode)) {
+            if (!Strings.CI.equals(code, newCode) || !Strings.CI.equals(oldName, newName)) {
+                if (Strings.CI.equals(code, newCode)) {
                     final int codeId = getCodeIdForColumn(dataTableNameAlias, oldName);
                     if (codeId > 0) {
                         removeMappings.add(dataTableNameAlias + "_" + oldName);
@@ -809,13 +810,13 @@ public class DatatableWriteServiceImpl implements DatatableWriteService {
                 } else {
                     if (code != null) {
                         removeMappings.add(dataTableNameAlias + "_" + oldName);
-                        if (newCode == null || !StringUtils.equalsIgnoreCase(oldName, newName)) {
+                        if (newCode == null || !Strings.CI.equals(oldName, newName)) {
                             constrainBuilder.append(", DROP CONSTRAINT ").append(sqlGenerator.escape(fkName)).append(" ");
                         }
                     }
                     if (newCode != null) {
                         codeMappings.put(dataTableNameAlias + "_" + newName, this.codeReadPlatformService.retrieveCode(newCode).getId());
-                        if (code == null || !StringUtils.equalsIgnoreCase(oldName, newName)) {
+                        if (code == null || !Strings.CI.equals(oldName, newName)) {
                             constrainBuilder.append(", ADD CONSTRAINT  ").append(sqlGenerator.escape(newFkName)).append(" ")
                                     .append("FOREIGN KEY (").append(sqlGenerator.escape(newName)).append(") ").append(REFERENCES_CLAUSE)
                                     .append(sqlGenerator.escape(CODE_VALUES_TABLE)).append(" (").append(TABLE_FIELD_ID).append(")");
