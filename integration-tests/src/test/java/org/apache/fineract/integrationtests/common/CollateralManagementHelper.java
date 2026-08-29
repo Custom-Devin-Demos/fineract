@@ -18,190 +18,68 @@
  */
 package org.apache.fineract.integrationtests.common;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
 import java.math.BigDecimal;
-import java.util.HashMap;
+import org.apache.fineract.client.models.ClientCollateralCreateRequest;
+import org.apache.fineract.client.models.ClientCollateralManagementData;
+import org.apache.fineract.client.models.ClientCollateralUpdateRequest;
+import org.apache.fineract.client.models.ClientCollateralUpdateResponse;
+import org.apache.fineract.client.models.CollateralProductCreateRequest;
+import org.apache.fineract.client.models.CollateralProductUpdateRequest;
+import org.apache.fineract.client.models.CollateralProductUpdateResponse;
+import org.apache.fineract.client.services.ClientCollateralManagementApi;
+import org.apache.fineract.client.services.CollateralManagementApi;
+import org.apache.fineract.client.util.Calls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CollateralManagementHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(CollateralManagementHelper.class);
-    private final RequestSpecification requestSpec;
-    private final ResponseSpecification responseSpec;
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public CollateralManagementHelper(final RequestSpecification requestSpec, final ResponseSpecification responseSpec) {
-        this.requestSpec = requestSpec;
-        this.responseSpec = responseSpec;
-    }
+    public CollateralManagementHelper() {}
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static Integer createClientCollateral(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            final String clientId, final Integer collateralId) {
+    public static Integer createClientCollateral(final String clientId, final Integer collateralId) {
         LOG.info("---------------------------------CREATING A CLIENT_COLLATERAL---------------------------------------------");
-        final String CLIENT_COLLATERAL_URL = "/fineract-provider/api/v1/clients/" + clientId + "/collaterals" + "?"
-                + Utils.TENANT_IDENTIFIER;
-        return Utils.performServerPost(requestSpec, responseSpec, CLIENT_COLLATERAL_URL,
-                clientCollateralAsJson(collateralId, BigDecimal.valueOf(100)), "resourceId");
+        final ClientCollateralCreateRequest request = new ClientCollateralCreateRequest().collateralId(collateralId.longValue())
+                .quantity(BigDecimal.valueOf(100)).locale("en");
+        return Calls.ok(clientCollateralApi().addClientCollateral(Long.valueOf(clientId), request)).getResourceId().intValue();
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static Object getClientCollateralData(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            final Integer collateralId, final String clientId) {
-        final String CLIENT_COLLATERAL_URL = "/fineract-provider/api/v1/clients" + clientId + "/collaterals/" + collateralId + "?"
-                + Utils.TENANT_IDENTIFIER;
-        return Utils.performServerGet(requestSpec, responseSpec, CLIENT_COLLATERAL_URL, "quantity");
+    public static BigDecimal getClientCollateralData(final Integer collateralId, final String clientId) {
+        final ClientCollateralManagementData data = Calls
+                .ok(clientCollateralApi().getClientCollateralData(Long.valueOf(clientId), collateralId.longValue()));
+        return data.getQuantity();
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static String clientCollateralAsJson(final Integer collateralId, final BigDecimal quantity) {
-        final HashMap<String, String> map = new HashMap<>();
-        map.put("collateralId", collateralId.toString());
-        map.put("quantity", quantity.toString());
-        map.put("locale", "en");
-        LOG.info("map :  {}", map);
-        return new Gson().toJson(map);
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static Integer createCollateralProduct(final RequestSpecification requestSpec, final ResponseSpecification responseSpec) {
+    public static Integer createCollateralProduct() {
         LOG.info("---------------------------------CREATING A COLLATERAL_PRODUCT---------------------------------------------");
-        final String COLLATERAL_PRODUCT_URL = "/fineract-provider/api/v1/collateral-management" + "?" + Utils.TENANT_IDENTIFIER;
-        return Utils.performServerPost(requestSpec, responseSpec, COLLATERAL_PRODUCT_URL,
-                collateralProductAsJson(Utils.randomStringGenerator("COLLATERAL_PRODUCT", 5), "USD", "acre", "agriculture",
-                        BigDecimal.valueOf(40), BigDecimal.valueOf(100000000), "en"),
-                "resourceId");
+        final CollateralProductCreateRequest request = new CollateralProductCreateRequest()
+                .name(Utils.randomStringGenerator("COLLATERAL_PRODUCT", 5)).currency("USD").unitType("acre").quality("agriculture")
+                .pctToBase(BigDecimal.valueOf(40)).basePrice(BigDecimal.valueOf(100000000)).locale("en");
+        return Calls.ok(collateralApi().createCollateral1(request)).getResourceId().intValue();
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static String collateralProductAsJson(final String name, final String currency, final String unitType, final String quality,
-            final BigDecimal pctToBase, final BigDecimal baseAmount, final String locale) {
-        final HashMap<String, String> map = new HashMap<>();
-        map.put("name", name);
-        map.put("currency", currency);
-        map.put("unitType", unitType);
-        map.put("quality", quality);
-        map.put("pctToBase", pctToBase.toString());
-        map.put("basePrice", baseAmount.toString());
-        map.put("locale", locale);
-        LOG.info("map :  {}", map);
-        return new Gson().toJson(map);
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static Integer updateCollateralProduct(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            final Integer collateralId) {
+    public static Integer updateCollateralProduct(final Integer collateralId) {
         LOG.info("---------------------------------UPDATING A COLLATERAL_PRODUCT---------------------------------------------");
-        final String COLLATERAL_PRODUCT_URL = "/fineract-provider/api/v1/collateral-management/" + collateralId + "?"
-                + Utils.TENANT_IDENTIFIER;
-        return Utils.performServerPut(requestSpec, responseSpec, COLLATERAL_PRODUCT_URL,
-                updateCollateralProductAsJson(Utils.randomStringGenerator("COLLATERAL_PRODUCT", 5), "USD", "acre", "agriculture",
-                        BigDecimal.valueOf(30), BigDecimal.valueOf(100000), "en"),
-                "resourceId");
+        final CollateralProductUpdateRequest request = new CollateralProductUpdateRequest()
+                .name(Utils.randomStringGenerator("COLLATERAL_PRODUCT", 5)).currency("USD").unitType("acre").quality("agriculture")
+                .pctToBase(BigDecimal.valueOf(30)).basePrice(BigDecimal.valueOf(100000)).locale("en");
+        final CollateralProductUpdateResponse response = Calls.ok(collateralApi().updateCollateral1(collateralId.longValue(), request));
+        return response.getResourceId().intValue();
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static String updateCollateralProductAsString(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            final Integer collateralId) {
-
-        Object updateCollateralObject = updateCollateralProduct(requestSpec, responseSpec, collateralId);
-        // Convert the Object to String and fetch updated value
-        Gson gson = new Gson();
-        String result = gson.toJson(updateCollateralObject);
-        JsonObject reportObject = JsonParser.parseString(result).getAsJsonObject();
-        String value = reportObject.get("pctToBase").getAsString();
-
-        return value;
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static String updateCollateralProductAsJson(final String name, final String currency, final String unitType,
-            final String quality, final BigDecimal pctToBase, final BigDecimal baseAmount, final String locale) {
-        final HashMap<String, String> map = new HashMap<>();
-        map.put("name", name);
-        map.put("currency", currency);
-        map.put("unitType", unitType);
-        map.put("quality", quality);
-        map.put("pctToBase", pctToBase.toString());
-        map.put("basePrice", baseAmount.toString());
-        map.put("locale", locale);
-        return new Gson().toJson(map);
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static HashMap updateClientCollateral(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            final Integer collateralId) {
+    public static ClientCollateralUpdateResponse updateClientCollateral(final Integer collateralId) {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientID);
         LOG.info("---------------------------------UPDATING A CLIENT COLLATERAL---------------------------------------------");
-        final String CLIENT_COLLATERAL_URL = "/fineract-provider/api/v1/clients/" + clientID + "/collaterals/" + collateralId + "?"
-                + Utils.TENANT_IDENTIFIER;
-        return Utils.performServerPut(requestSpec, responseSpec, CLIENT_COLLATERAL_URL, updateClientCollateralAsJson(BigDecimal.valueOf(1)),
-                "changes");
+        final ClientCollateralUpdateRequest request = new ClientCollateralUpdateRequest().quantity(BigDecimal.valueOf(1)).locale("en");
+        return Calls.ok(clientCollateralApi().updateClientCollateral(clientID.longValue(), collateralId.longValue(), request));
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static String updateClientCollateralAsString(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            final Integer collateralId) {
-
-        Object clientCollateralObject = updateClientCollateral(requestSpec, responseSpec, collateralId);
-        // Convert the Object to String and fetch updated value
-        Gson gson = new Gson();
-        String result = gson.toJson(clientCollateralObject);
-        JsonObject reportObject = JsonParser.parseString(result).getAsJsonObject();
-        String value = reportObject.get("quantity").getAsString();
-
-        return value;
+    private static CollateralManagementApi collateralApi() {
+        return FineractClientHelper.getFineractClient().createService(CollateralManagementApi.class);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static String updateClientCollateralAsJson(final BigDecimal quantity) {
-        final HashMap<String, String> map = new HashMap<>();
-        map.put("quantity", quantity.toString());
-        map.put("locale", "en");
-        LOG.info("map :  {}", map);
-        return new Gson().toJson(map);
+    private static ClientCollateralManagementApi clientCollateralApi() {
+        return FineractClientHelper.getFineractClient().createService(ClientCollateralManagementApi.class);
     }
-
 }

@@ -169,10 +169,9 @@ public class LoanCatchUpIntegrationTest extends BaseLoanIntegrationTest {
     private Integer applyForLoanApplication(final String clientID, final String loanProductID, final String savingsID, final String date) {
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec, clientID,
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID, collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 

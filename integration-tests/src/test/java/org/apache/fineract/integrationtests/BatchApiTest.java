@@ -262,10 +262,9 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -363,10 +362,9 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -663,10 +661,9 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -735,10 +732,9 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -805,10 +801,9 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -872,10 +867,9 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -970,10 +964,9 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -1033,10 +1026,9 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -2635,10 +2627,9 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);

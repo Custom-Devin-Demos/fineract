@@ -143,10 +143,9 @@ public class LoanRescheduleRequestTest extends BaseLoanIntegrationTest {
     private void createLoanEntity() {
         LOG.info("---------------------------------NEW LOAN APPLICATION------------------------------------------");
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                this.clientId.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.clientId.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String loanApplicationJSON = new LoanApplicationTestBuilder().withPrincipal(loanPrincipalAmount)

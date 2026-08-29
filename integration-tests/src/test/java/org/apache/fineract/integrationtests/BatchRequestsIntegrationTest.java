@@ -127,9 +127,9 @@ public class BatchRequestsIntegrationTest {
         Integer selClientsCount = (int) Math.ceil(secureRandom.nextDouble() * clientsCount) + 2;
         for (int i = 0; i < selClientsCount; i++) {
 
-            final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+            final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
             Assertions.assertNotNull(collateralId);
-            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
+            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(
                     String.valueOf(clientIDs[(int) Math.floor(secureRandom.nextDouble() * (clientsCount - 1))]), collateralId);
             Assertions.assertNotNull(clientCollateralId);
 
@@ -198,9 +198,9 @@ public class BatchRequestsIntegrationTest {
         Integer selClientsCount = (int) Math.ceil(secureRandom.nextDouble() * clientsCount) + 2;
         for (int i = 0; i < selClientsCount; i++) {
 
-            final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+            final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
             Assertions.assertNotNull(collateralId);
-            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
+            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(
                     String.valueOf(clientIDs[(int) Math.floor(secureRandom.nextDouble() * (clientsCount - 1))]), collateralId);
             Assertions.assertNotNull(clientCollateralId);
 

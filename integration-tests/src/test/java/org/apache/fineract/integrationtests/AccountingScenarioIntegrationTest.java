@@ -162,10 +162,9 @@ public class AccountingScenarioIntegrationTest {
                 .getClientId().intValue();
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -704,10 +703,9 @@ public class AccountingScenarioIntegrationTest {
                 .getClientId().intValue();
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -829,10 +827,9 @@ public class AccountingScenarioIntegrationTest {
                 .getClientId().intValue();
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -907,10 +904,9 @@ public class AccountingScenarioIntegrationTest {
                 .getClientId().intValue();
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -1002,10 +998,9 @@ public class AccountingScenarioIntegrationTest {
                 .getClientId().intValue();
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -1133,10 +1128,9 @@ public class AccountingScenarioIntegrationTest {
                 .getClientId().intValue();
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 

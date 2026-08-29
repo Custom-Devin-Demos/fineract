@@ -110,10 +110,9 @@ public class LoanDisbursalDateValidationTest {
 
     private Integer applyForLoanApplication(final Integer clientID, final Integer loanProductID, final String proposedAmount) {
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String loanApplication = new LoanApplicationTestBuilder().withPrincipal(proposedAmount).withLoanTermFrequency("5")

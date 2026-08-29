@@ -226,9 +226,9 @@ public class ExternalAssetOwnerTransferTest extends BaseLoanIntegrationTest {
 
     protected Integer applyForLoanApplication(final String clientID, final String loanProductID, final String date) {
         List<HashMap> collaterals = new ArrayList<>();
-        Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC, clientID, collateralId);
+        Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID, collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 

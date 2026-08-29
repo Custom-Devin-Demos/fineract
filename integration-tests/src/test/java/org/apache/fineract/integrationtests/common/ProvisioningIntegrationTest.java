@@ -87,10 +87,9 @@ public class ProvisioningIntegrationTest {
             loanProducts.add(loanProductID);
             Assertions.assertNotNull(loanProductID);
             List<HashMap> collaterals = new ArrayList<>();
-            final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+            final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
             Assertions.assertNotNull(collateralId);
-            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                    String.valueOf(clientID), collateralId);
+            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
             Assertions.assertNotNull(clientCollateralId);
             addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
             final Integer loanID = applyForLoanApplication(clientID, loanProductID, null, null, "1,00,000.00", collaterals);

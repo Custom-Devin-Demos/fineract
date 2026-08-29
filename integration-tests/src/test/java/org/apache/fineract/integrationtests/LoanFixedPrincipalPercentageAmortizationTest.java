@@ -131,10 +131,9 @@ public class LoanFixedPrincipalPercentageAmortizationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -174,10 +173,9 @@ public class LoanFixedPrincipalPercentageAmortizationTest {
             final String savingsId, String principal) {
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         LOG.info("--------------------------------APPLYING FOR LOAN APPLICATION--------------------------------");

@@ -798,10 +798,9 @@ public class LoanTransactionInterestPaymentWaiverTest extends BaseLoanIntegratio
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(requestSpec, responseSpec).getLoanProductId(loanProductJSON);

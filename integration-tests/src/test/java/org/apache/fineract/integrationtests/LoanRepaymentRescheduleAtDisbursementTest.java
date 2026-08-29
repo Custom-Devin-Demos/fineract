@@ -103,10 +103,9 @@ public class LoanRepaymentRescheduleAtDisbursementTest {
         approveTranches.add(this.loanApplicationApprovalTest.createTrancheDetail("01 May 2015", "5000"));
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 

@@ -89,10 +89,9 @@ public class VariableInstallmentsIntegrationTest {
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -159,10 +158,9 @@ public class VariableInstallmentsIntegrationTest {
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -203,10 +201,9 @@ public class VariableInstallmentsIntegrationTest {
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -253,10 +250,9 @@ public class VariableInstallmentsIntegrationTest {
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String json = VariableInstallmentsDecliningBalanceHelper.applyForLoanApplication(clientID, loanProductID, null, null,
@@ -303,10 +299,9 @@ public class VariableInstallmentsIntegrationTest {
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String json = VariableInstallmentsDecliningBalanceHelper.applyForLoanApplicationWithEqualPrincipal(clientID, loanProductID,
@@ -352,10 +347,9 @@ public class VariableInstallmentsIntegrationTest {
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String json = VariableInstallmentsDecliningBalanceHelper.applyForLoanApplication(clientID, loanProductID, null, null,
@@ -399,10 +393,9 @@ public class VariableInstallmentsIntegrationTest {
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String json = VariableInstallmentsFlatHelper.applyForLoanApplication(clientID, loanProductID, null, null, "1,00,000.00",
@@ -444,10 +437,9 @@ public class VariableInstallmentsIntegrationTest {
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String json = VariableInstallmentsFlatHelper.applyForLoanApplication(clientID, loanProductID, null, null, "1,00,000.00",
@@ -487,10 +479,9 @@ public class VariableInstallmentsIntegrationTest {
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String json = VariableInstallmentsFlatHelper.applyForLoanApplication(clientID, loanProductID, null, null, "1,00,000.00",
                 collaterals);
@@ -534,10 +525,9 @@ public class VariableInstallmentsIntegrationTest {
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String json = VariableInstallmentsFlatHelper.applyForLoanApplication(clientID, loanProductID, null, null, "1,00,000.00",
@@ -583,10 +573,9 @@ public class VariableInstallmentsIntegrationTest {
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String json = VariableInstallmentsFlatHelper.applyForLoanApplication(clientID, loanProductID, null, null, "1,00,000.00",

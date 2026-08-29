@@ -190,15 +190,14 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
     @Test
     public void checkClientLoanCreateAndDisburseFlow() {
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         List<HashMap> collaterals = new ArrayList<>();
 
         final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
         final Integer loanProductID = createLoanProduct(false, NONE);
@@ -231,9 +230,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         // given
         Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Integer loanProductId = createLoanProduct(false, NONE);
-        Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
-        Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientId), collateralId);
+        Integer collateralId = CollateralManagementHelper.createCollateralProduct();
+        Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientId), collateralId);
         List<HashMap> collaterals = List.of(collaterals(clientCollateralId, BigDecimal.ONE));
 
         Integer chargeId = ChargesHelper.createCharges(REQUEST_SPEC, RESPONSE_SPEC,
@@ -254,11 +252,10 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProduct(false, NONE);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -381,10 +378,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -488,10 +484,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -656,10 +651,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
         final Integer loanID = applyForLoanApplication(clientID, loanProductID, charges, null, "12,000.00", collaterals);
@@ -1001,10 +995,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         final Integer savingsId = SavingsAccountHelper.openSavingsAccount(REQUEST_SPEC, RESPONSE_SPEC, clientID, MINIMUM_OPENING_BALANCE);
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -1094,10 +1087,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -1145,10 +1137,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -1226,10 +1217,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
         final Integer loanProductID = createLoanProduct(false, CASH_BASED, assetAccount, incomeAccount, expenseAccount, overpaymentAccount);
@@ -1416,10 +1406,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -1606,11 +1595,10 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
 
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(collateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -1794,10 +1782,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -2001,10 +1988,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -2200,10 +2186,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
         final Integer loanProductID = createLoanProduct(false, ACCRUAL_UPFRONT, assetAccount, incomeAccount, expenseAccount,
@@ -2403,10 +2388,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
         final Integer loanProductID = createLoanProduct(false, ACCRUAL_PERIODIC, assetAccount, incomeAccount, expenseAccount,
@@ -2605,10 +2589,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
             List<HashMap> collaterals = new ArrayList<>();
 
-            final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+            final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
 
-            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                    String.valueOf(clientID), collateralId);
+            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
             addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
             final Integer loanProductID = createLoanProduct(false, ACCRUAL_PERIODIC, assetAccount, incomeAccount, expenseAccount,
@@ -2813,10 +2796,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -2994,10 +2976,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
         final Integer loanProductID = createLoanProduct("100", "0", LoanProductTestBuilder.DEFAULT_STRATEGY);
@@ -3015,10 +2996,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
         final Integer loanProductID = createLoanProduct("100", "0", LoanProductTestBuilder.DEFAULT_STRATEGY);
@@ -3051,10 +3031,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
         final Integer loanID = applyForLoanApplicationWithPaymentStrategy(clientID, loanProductID, null, savingsId, principal,
@@ -3160,9 +3139,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         // Create a loan product
         Integer loanProductId = createLoanProduct(false, NONE);
-        Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
-        Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        Integer collateralId = CollateralManagementHelper.createCollateralProduct();
+        Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         List<HashMap> collaterals = List.of(collaterals(clientCollateralId, BigDecimal.ONE));
 
         // Apply for a loan
@@ -4201,10 +4179,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
         final Integer loanID = applyForLoanApplicationWithPaymentStrategyAndPastMonth(clientID, loanProductID, charges, savingsId,
@@ -4381,10 +4358,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -4571,10 +4547,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -4786,10 +4761,9 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         addCharges(charges, flatAmountChargeTwo, "100", "15 December 2011");
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -5204,13 +5178,12 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     public void testCollateralDataIsAvailableWhenRequested() {
         // given
 
-        Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         List<HashMap> collaterals = new ArrayList<>();
         Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientId);
 
-        Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientId), collateralId);
+        Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientId), collateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
         Integer loanProductId = createLoanProduct(false, NONE);
@@ -7203,12 +7176,11 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     private Integer applyForLoanApplicationWithProductConfigurationAsTrue(final Integer clientID, final Integer loanProductID,
             String principal) {
         LOG.info("--------------------------------APPLYING FOR LOAN APPLICATION--------------------------------");
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String loanApplicationJSON = new LoanApplicationTestBuilder() //
@@ -7229,12 +7201,11 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     private Integer applyForLoanApplicationWithProductConfigurationAsFalse(final Integer clientID, final Integer loanProductID,
             String principal) {
         LOG.info("--------------------------------APPLYING FOR LOAN APPLICATION--------------------------------");
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String loanApplicationJSON = new LoanApplicationTestBuilder()
@@ -7948,12 +7919,11 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     private Integer applyForLoanApplicationForInterestRecalculation(final Integer clientID, final Integer loanProductID,
             final String disbursementDate, final String repaymentStrategy, final String firstRepaymentDate) {
         LOG.info("--------------------------------APPLYING FOR LOAN APPLICATION--------------------------------");
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -7999,12 +7969,11 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
             final String disbursementDate, final String repaymentStrategy, final List<HashMap> charges, final String graceOnInterestPayment,
             final String graceOnPrincipalPayment) {
         LOG.info("--------------------------------APPLYING FOR LOAN APPLICATION--------------------------------");
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
