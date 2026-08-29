@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -32,8 +33,8 @@ import org.junit.jupiter.api.Test;
 
 class BusinessDateSerializationTest {
 
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule())
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    private final ObjectMapper mapper = JsonMapper.builder().addModule(new JavaTimeModule())
+            .defaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL)).build();
 
     @Test
     void serializeBusinessDateData() throws JsonProcessingException {
