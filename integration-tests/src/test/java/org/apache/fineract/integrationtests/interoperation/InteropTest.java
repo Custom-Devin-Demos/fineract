@@ -124,7 +124,7 @@ public class InteropTest {
     }
 
     private void createClient() {
-        clientId = ClientHelper.createClient(requestSpec, responseSpec);
+        clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
     }
 

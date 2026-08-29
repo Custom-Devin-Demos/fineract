@@ -433,7 +433,7 @@ public class ClientLoanChargeRefundIntegrationTest {
     private Integer fromStartToDisburseLoan(String submitApproveDisburseDate, String principal, final boolean penalty,
             final String accountingRule, final Account... accounts) {
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         boolean allowMultipleDisbursals = false;

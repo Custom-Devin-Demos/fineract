@@ -116,7 +116,8 @@ public class LoanApplicationScheduleMonthlyTest {
     }
 
     private Integer createClient(String activationDate) {
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, activationDate);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(activationDate))
+                .getClientId().intValue();
         return clientId;
     }
 

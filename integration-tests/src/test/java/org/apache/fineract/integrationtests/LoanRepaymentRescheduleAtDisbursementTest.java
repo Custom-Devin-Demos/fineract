@@ -81,7 +81,8 @@ public class LoanRepaymentRescheduleAtDisbursementTest {
         final String adjustRepaymentDate = "16 March 2015";
 
         // CREATE CLIENT
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2014");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2014"))
+                .getClientId().intValue();
         LOG.info("---------------------------------CLIENT CREATED WITH ID--------------------------------------------------- {}", clientID);
 
         // CREATE LOAN MULTIDISBURSAL PRODUCT WITH INTEREST RECALCULATION

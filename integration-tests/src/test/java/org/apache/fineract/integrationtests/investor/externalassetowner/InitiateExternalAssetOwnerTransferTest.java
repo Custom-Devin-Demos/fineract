@@ -964,7 +964,10 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
             ExternalEventHelper.changeEventState(REQUEST_SPEC, RESPONSE_SPEC, "LoanOwnershipTransferBusinessEvent", true);
 
             final Integer officeId = OFFICE_HELPER.createOffice(LocalDate.of(2020, 1, 1)).getResourceId().intValue();
-            final var clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "1 January 2020", officeId.toString());
+            final var clientID = ClientHelper
+                    .createClient(
+                            ClientHelper.defaultClientCreationRequest().activationDate("1 January 2020").officeId(Long.valueOf(officeId)))
+                    .getClientId().intValue();
             final var loanID = createLoanForClient(clientID);
             addPenaltyForLoan(loanID, "10");
 
@@ -1219,7 +1222,10 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
             ExternalEventHelper.changeEventState(REQUEST_SPEC, RESPONSE_SPEC, "LoanOwnershipTransferBusinessEvent", true);
 
             final Integer officeId = OFFICE_HELPER.createOffice(LocalDate.of(2020, 1, 1)).getResourceId().intValue();
-            final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "1 January 2020", officeId.toString());
+            final Integer clientID = ClientHelper
+                    .createClient(
+                            ClientHelper.defaultClientCreationRequest().activationDate("1 January 2020").officeId(Long.valueOf(officeId)))
+                    .getClientId().intValue();
             final Integer loanID = createLoanForClient(clientID);
 
             // Create first sale transfer
@@ -1321,7 +1327,7 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
                             .externalAssetOwner(externalAssetOwner)));
             Assertions.assertTrue(callFailedRuntimeException.getMessage().contains("External asset owner with external id:"));
 
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             final String operationDate = "10 April 2025";
 
             PostLoanProductsResponse loanProductResponse = loanProductHelper.createLoanProduct(
@@ -1501,7 +1507,7 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
 
     @NonNull
     private Integer createClient() {
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
         return clientID;
     }

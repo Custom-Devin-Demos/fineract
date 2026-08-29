@@ -92,7 +92,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
         final LocalDate todaysDate = Utils.getLocalDateOfTenant();
 
         // Client and Loan account creation
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProductWithPeriodicAccrual(loanTransactionHelper,
                 null);
         assertNotNull(getLoanProductsProductResponse);
@@ -165,7 +166,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
         final LocalDate todaysDate = Utils.getLocalDateOfTenant();
 
         // Client and Loan account creation
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProductWithPeriodicAccrual(loanTransactionHelper,
                 null);
         assertNotNull(getLoanProductsProductResponse);
@@ -242,7 +244,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
         BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, todaysDate);
 
         // Client and Loan account creation
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper, null);
         assertNotNull(getLoanProductsProductResponse);
 
@@ -316,7 +319,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
         BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, todaysDate);
 
         // Client and Loan account creation
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper, null);
         assertNotNull(getLoanProductsProductResponse);
 
@@ -390,7 +394,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
         final LocalDate todaysDate = Utils.getLocalDateOfTenant();
 
         // Client and Loan account creation
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper, null);
         assertNotNull(getLoanProductsProductResponse);
 
@@ -457,7 +462,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
             BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, todaysDate);
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProductWithPeriodicAccrual(
                     loanTransactionHelper, null);
             assertNotNull(getLoanProductsProductResponse);
@@ -592,7 +598,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
             BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, todaysDate);
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProductWithPeriodicAccrual(
                     loanTransactionHelper, null);
             assertNotNull(getLoanProductsProductResponse);
@@ -668,7 +675,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
         final LocalDate todaysDate = Utils.getLocalDateOfTenant();
 
         // Client and Loan account creation
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProductWithPeriodicAccrual(loanTransactionHelper,
                 null);
         assertNotNull(getLoanProductsProductResponse);
@@ -728,7 +736,8 @@ public class LoanChargeSpecificDueDateTest extends BaseLoanIntegrationTest {
         final LocalDate todaysDate = Utils.getLocalDateOfTenant();
 
         // Client and Loan account creation
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProductWithPeriodicAccrual(loanTransactionHelper,
                 null);
         assertNotNull(getLoanProductsProductResponse);

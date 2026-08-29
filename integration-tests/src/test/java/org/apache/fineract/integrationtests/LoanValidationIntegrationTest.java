@@ -72,7 +72,7 @@ public class LoanValidationIntegrationTest {
         UserHelper.createUser(this.requestSpec, this.responseSpec, 1, staffId, username, "A1b2c3d4e5f$", "resourceId");
 
         LOG.info("-------------------------Creating Client---------------------------");
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientID);
 
         LOG.info("-------------------------Creating Loan---------------------------");

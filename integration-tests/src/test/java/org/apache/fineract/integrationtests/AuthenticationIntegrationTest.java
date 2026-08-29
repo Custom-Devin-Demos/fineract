@@ -65,7 +65,7 @@ public class AuthenticationIntegrationTest {
         Integer staffId = StaffHelper.createStaff(this.requestSpec, this.responseSpec);
         String username = Utils.uniqueRandomStringGenerator("user", 8);
         UserHelper.createUser(this.requestSpec, this.responseSpec, 1, staffId, username, "A1b2c3d4e5f$", "resourceId");
-        Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
         Integer loanProductID = setupLoanProduct(accountHelper);
         this.loanID = loanTransactionHelper.applyForLoanApplicationWithPaymentStrategyAndPastMonth(clientID, loanProductID,

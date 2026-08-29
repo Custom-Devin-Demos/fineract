@@ -68,7 +68,7 @@ public class LoanWorkbookPopulatorTest {
         Assertions.assertNotNull(outcome_office_creation, "Could not create office");
 
         // in order to populate helper sheets
-        Integer outcome_client_creation = ClientHelper.createClient(requestSpec, responseSpec);
+        Integer outcome_client_creation = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(outcome_client_creation, "Could not create client");
 
         // in order to populate helper sheets

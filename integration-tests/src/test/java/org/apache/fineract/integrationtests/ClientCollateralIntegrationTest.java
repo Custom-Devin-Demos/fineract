@@ -50,7 +50,7 @@ public class ClientCollateralIntegrationTest {
     @Test
     public void createClientCollateralTest() {
         LOG.info("-------------------------Creating Client Collateral---------------------------");
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientID);
 
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
@@ -63,7 +63,7 @@ public class ClientCollateralIntegrationTest {
     @Test
     public void updateClientCollateral() {
         LOG.info("-------------------------Updating Client Collateral---------------------------");
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientID);
 
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);

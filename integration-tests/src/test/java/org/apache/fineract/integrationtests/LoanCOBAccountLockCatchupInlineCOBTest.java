@@ -84,7 +84,7 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
             loanAccountLockHelper = new LoanAccountLockHelper(requestSpec, new ResponseSpecBuilder().expectStatusCode(202).build());
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -144,7 +144,7 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
             loanAccountLockHelper = new LoanAccountLockHelper(requestSpec, new ResponseSpecBuilder().expectStatusCode(202).build());
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -204,7 +204,7 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
             loanAccountLockHelper = new LoanAccountLockHelper(requestSpec, new ResponseSpecBuilder().expectStatusCode(202).build());
 
             // create client
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -282,7 +282,7 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
             loanAccountLockHelper = new LoanAccountLockHelper(requestSpec, new ResponseSpecBuilder().expectStatusCode(202).build());
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -345,7 +345,7 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
             loanAccountLockHelper = new LoanAccountLockHelper(requestSpec, new ResponseSpecBuilder().expectStatusCode(202).build());
             final SchedulerJobHelper schedulerJobHelper = new SchedulerJobHelper(requestSpec);
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -404,7 +404,7 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
             loanAccountLockHelper = new LoanAccountLockHelper(requestSpec, new ResponseSpecBuilder().expectStatusCode(202).build());
             final SchedulerJobHelper schedulerJobHelper = new SchedulerJobHelper(requestSpec);
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,

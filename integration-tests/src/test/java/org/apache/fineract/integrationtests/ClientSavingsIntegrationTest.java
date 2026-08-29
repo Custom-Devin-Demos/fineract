@@ -110,7 +110,7 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsAccount() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -154,7 +154,7 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsLastTransactionAndRunningBalanceUpdate() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -198,7 +198,7 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsBackedDatedTransactionsNotAllowed() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -267,7 +267,7 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsAccountWithMinBalanceForInterestCalculation() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = "5000";
@@ -319,7 +319,7 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(400).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -363,7 +363,7 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -431,7 +431,7 @@ public class ClientSavingsIntegrationTest {
         SavingsAccountHelper savingsAccountHelperValidationError = new SavingsAccountHelper(this.requestSpec,
                 new ResponseSpecBuilder().build());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -475,7 +475,7 @@ public class ClientSavingsIntegrationTest {
         SavingsAccountHelper savingsAccountHelperValidationError = new SavingsAccountHelper(this.requestSpec,
                 new ResponseSpecBuilder().build());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -521,7 +521,7 @@ public class ClientSavingsIntegrationTest {
 
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -550,7 +550,7 @@ public class ClientSavingsIntegrationTest {
         SavingsAccountHelper savingsAccountHelperValidationError = new SavingsAccountHelper(this.requestSpec,
                 new ResponseSpecBuilder().build());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -660,7 +660,7 @@ public class ClientSavingsIntegrationTest {
             this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
             final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, erroResponseSpec);
 
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
             // Assertions.assertNotNull(clientID);
             final String minBalanceForInterestCalculation = null;
@@ -829,7 +829,7 @@ public class ClientSavingsIntegrationTest {
         /***
          * Create a client to apply for savings account (overdraft account).
          */
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -967,7 +967,7 @@ public class ClientSavingsIntegrationTest {
             /***
              * Create a client to apply for savings account (overdraft account).
              */
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
             // Assertions.assertNotNull(clientID);
             final String minBalanceForInterestCalculation = null;
@@ -1232,7 +1232,7 @@ public class ClientSavingsIntegrationTest {
             /***
              * Create a client to apply for savings account (overdraft account).
              */
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
             // Assertions.assertNotNull(clientID);
             final String minBalanceForInterestCalculation = null;
@@ -1509,7 +1509,7 @@ public class ClientSavingsIntegrationTest {
             /***
              * Create a client to apply for savings account (overdraft account).
              */
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
             // Assertions.assertNotNull(clientID);
             final String minBalanceForInterestCalculation = null;
@@ -1684,7 +1684,7 @@ public class ClientSavingsIntegrationTest {
         /***
          * Create a client to apply for savings account (overdraft account).
          */
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -1838,7 +1838,7 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsAccount_WITH_WITHHOLD_TAX() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -1888,7 +1888,7 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsAccount_WITH_WITHHOLD_TAX_DISABLE_AT_ACCOUNT_LEVEL() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -1940,7 +1940,7 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsAccount_DormancyTracking() throws InterruptedException {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -2208,7 +2208,7 @@ public class ClientSavingsIntegrationTest {
         SavingsAccountHelper savingsAccountHelperValidationError = new SavingsAccountHelper(this.requestSpec,
                 new ResponseSpecBuilder().build());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -2326,7 +2326,7 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         final String minBalanceForInterestCalculation = null;
@@ -2389,7 +2389,7 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         final String minBalanceForInterestCalculation = null;
@@ -2453,7 +2453,7 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         final String minBalanceForInterestCalculation = null;
@@ -2518,7 +2518,7 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         final String minBalanceForInterestCalculation = null;
@@ -2592,7 +2592,7 @@ public class ClientSavingsIntegrationTest {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(400).build();
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         final String minBalanceForInterestCalculation = null;
@@ -2620,7 +2620,7 @@ public class ClientSavingsIntegrationTest {
         // SavingsAccountHelper(this.requestSpec,new
         // ResponseSpecBuilder().build());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
@@ -2681,7 +2681,7 @@ public class ClientSavingsIntegrationTest {
 
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         final String minBalanceForInterestCalculation = null;
@@ -2767,7 +2767,7 @@ public class ClientSavingsIntegrationTest {
     public void testAccountBalanceAfterSavingsTransactionReversalPosting() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -2816,7 +2816,7 @@ public class ClientSavingsIntegrationTest {
     public void testReversalWhenIsBulkIsTrue() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = "0";
@@ -2858,7 +2858,7 @@ public class ClientSavingsIntegrationTest {
     public void testReversalWhenIsBulkIsFalse() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = "0";
@@ -2901,7 +2901,7 @@ public class ClientSavingsIntegrationTest {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         configurationForBackdatedTransaction();
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = "0";
@@ -2951,7 +2951,7 @@ public class ClientSavingsIntegrationTest {
         SavingsAccountHelper savingsAccountHelperValidationError = new SavingsAccountHelper(this.requestSpec,
                 new ResponseSpecBuilder().build());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         final String minBalanceForInterestCalculation = null;
@@ -3017,7 +3017,7 @@ public class ClientSavingsIntegrationTest {
 
             this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
             final String minBalanceForInterestCalculation = null;
@@ -3088,7 +3088,8 @@ public class ClientSavingsIntegrationTest {
         String startDate = formatter.format(transactionDate);
         String secondTrx = formatter.format(transactionDate.plusDays(1));
         final String jobName = "Post Interest For Savings";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3111,7 +3112,8 @@ public class ClientSavingsIntegrationTest {
         String startDate = formatter.format(transactionDate);
         String secondTrx = formatter.format(transactionDate.plusDays(1));
         final String jobName = "Post Interest For Savings";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3133,7 +3135,8 @@ public class ClientSavingsIntegrationTest {
         String startDate = formatter.format(transactionDate);
         String secondTrx = formatter.format(transactionDate.plusDays(1));
         final String jobName = "Post Interest For Savings";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3159,7 +3162,8 @@ public class ClientSavingsIntegrationTest {
         String startDate = formatter.format(transactionDate);
         String secondTrx = formatter.format(transactionDate.plusDays(1));
         final String jobName = "Post Interest For Savings";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3185,7 +3189,8 @@ public class ClientSavingsIntegrationTest {
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy");
         String startDate = formatter.format(transactionDate);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3213,7 +3218,8 @@ public class ClientSavingsIntegrationTest {
         String startDate = formatter.format(transactionDate);
         String nxtTransaction = formatter.format(nextTransactionDate);
         final String jobName = "Post Interest For Savings";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3246,7 +3252,8 @@ public class ClientSavingsIntegrationTest {
         String startDate = formatter.format(transactionDate);
         String nxtTransaction = formatter.format(nextTransactionDate);
         final String jobName = "Post Interest For Savings";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3272,7 +3279,7 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         final String minBalanceForInterestCalculation = null;
@@ -3321,7 +3328,7 @@ public class ClientSavingsIntegrationTest {
         /***
          * Create a client to apply for savings account (overdraft account).
          */
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -3396,7 +3403,7 @@ public class ClientSavingsIntegrationTest {
         /***
          * Create a client to apply for savings account (overdraft account).
          */
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -3477,7 +3484,7 @@ public class ClientSavingsIntegrationTest {
         /***
          * Create a client to apply for savings account (overdraft account).
          */
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
@@ -3556,7 +3563,7 @@ public class ClientSavingsIntegrationTest {
         /***
          * Create a client to apply for savings account (overdraft account).
          */
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;

@@ -84,7 +84,7 @@ public class LoanAuditingIntegrationTest {
 
         LOG.info("-------------------------Creating Client---------------------------");
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientID);
         LOG.info("-------------------------Creating Loan---------------------------");
         final Account assetAccount = this.accountHelper.createAssetAccount();

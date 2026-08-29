@@ -164,8 +164,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(toOfficeId);
 
         // Creating Savings Account to which fund to be Transferred
-        final Integer toClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(toOfficeId));
+        final Integer toClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(toOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(toClientID);
 
         final Integer toSavingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, MINIMUM_OPENING_BALANCE, assetAccount,
@@ -191,8 +193,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(fromOfficeId);
 
         // Creating Savings Account from which the Fund has to be Transferred
-        final Integer fromClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(fromOfficeId));
+        final Integer fromClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(fromOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(fromClientID);
 
         final Integer fromSavingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, MINIMUM_OPENING_BALANCE,
@@ -263,8 +267,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(toOfficeId);
 
         // Creating Loan Account to which fund to be Transferred
-        final Integer toClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(toOfficeId));
+        final Integer toClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(toOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(toClientID);
 
         Account toTransferAccount = accountHelper.createLiabilityAccount();
@@ -291,8 +297,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(fromOfficeId);
 
         // Creating Savings Account from which the Fund has to be Transferred
-        final Integer fromClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(fromOfficeId));
+        final Integer fromClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(fromOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(fromClientID);
 
         final Integer fromSavingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, MINIMUM_OPENING_BALANCE,
@@ -361,8 +369,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(toOfficeId);
 
         // Creating Loan Account to which fund to be Transferred
-        final Integer toClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(toOfficeId));
+        final Integer toClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(toOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(toClientID);
 
         final Integer toSavingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, MINIMUM_OPENING_BALANCE, assetAccount,
@@ -386,8 +396,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(fromOfficeId);
 
         // Creating Savings Account from which the Fund has to be Transferred
-        final Integer fromClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(fromOfficeId));
+        final Integer fromClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(fromOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(fromClientID);
 
         final Integer loanProductID = createLoanProduct(loanAssetAccount, loanIncomeAccount, loanExpenseAccount, overpaymentAccount);
@@ -485,8 +497,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(toOfficeId);
 
         // Creating Loan Account to which fund to be Transferred
-        final Integer toClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(toOfficeId));
+        final Integer toClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(toOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(toClientID);
 
         final Integer toSavingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, MINIMUM_OPENING_BALANCE, assetAccount,
@@ -510,8 +524,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(fromOfficeId);
 
         // Creating Savings Account from which the Fund has to be Transferred
-        final Integer fromClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(fromOfficeId));
+        final Integer fromClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(fromOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(fromClientID);
 
         final Integer loanProductID = createLoanProduct(loanAssetAccount, loanIncomeAccount, loanExpenseAccount, overpaymentAccount);
@@ -577,8 +593,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(toOfficeId);
 
         // Creating Loan Account to which fund to be Transferred
-        final Integer toClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(toOfficeId));
+        final Integer toClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(toOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(toClientID);
 
         final Integer toSavingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, MINIMUM_OPENING_BALANCE, assetAccount,
@@ -602,8 +620,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(fromOfficeId);
 
         // Creating Savings Account from which the Fund has to be Transferred
-        final Integer fromClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(fromOfficeId));
+        final Integer fromClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(fromOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(fromClientID);
 
         final Integer loanProductID = createLoanProduct(loanAssetAccount, loanIncomeAccount, loanExpenseAccount, overpaymentAccount);
@@ -670,8 +690,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(toOfficeId);
 
         // Creating Loan Account to which fund to be Transferred
-        final Integer toClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(toOfficeId));
+        final Integer toClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(toOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(toClientID);
 
         final Integer toSavingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, MINIMUM_OPENING_BALANCE, assetAccount,
@@ -695,8 +717,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(fromOfficeId);
 
         // Creating Savings Account from which the Fund has to be Transferred
-        final Integer fromClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(fromOfficeId));
+        final Integer fromClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(fromOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(fromClientID);
 
         final Integer loanProductID = createLoanProduct(loanAssetAccount, loanIncomeAccount, loanExpenseAccount, overpaymentAccount);
@@ -763,8 +787,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(toOfficeId);
 
         // Creating Loan Account to which fund to be Transferred
-        final Integer toClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(toOfficeId));
+        final Integer toClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(toOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(toClientID);
 
         final Integer toSavingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, MINIMUM_OPENING_BALANCE, assetAccount,
@@ -788,8 +814,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(fromOfficeId);
 
         // Creating Savings Account from which the Fund has to be Transferred
-        final Integer fromClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(fromOfficeId));
+        final Integer fromClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(fromOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(fromClientID);
 
         final Integer loanProductID = createLoanProduct(loanAssetAccount, loanIncomeAccount, loanExpenseAccount, overpaymentAccount);
@@ -849,8 +877,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(toOfficeId);
 
         // Creating Savings Account to which fund to be Transferred
-        final Integer toClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(toOfficeId));
+        final Integer toClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(toOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(toClientID);
 
         final Integer toSavingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, MINIMUM_OPENING_BALANCE, assetAccount,
@@ -876,8 +906,10 @@ public class AccountTransferTest {
         Assertions.assertNotNull(fromOfficeId);
 
         // Creating Savings Account from which the Fund has to be Transferred
-        final Integer fromClientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2011",
-                String.valueOf(fromOfficeId));
+        final Integer fromClientID = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011").officeId(Long.valueOf(fromOfficeId)))
+                .getClientId().intValue();
         Assertions.assertNotNull(fromClientID);
 
         final Integer fromSavingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, MINIMUM_OPENING_BALANCE,

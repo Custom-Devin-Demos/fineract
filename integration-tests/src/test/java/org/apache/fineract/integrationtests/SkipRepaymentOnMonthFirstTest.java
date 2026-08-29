@@ -90,7 +90,7 @@ public class SkipRepaymentOnMonthFirstTest {
         testSkippingRepaymentOnFirstDayOfMonth();
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Integer groupID = GroupHelper.createGroup(this.requestSpec, this.responseSpec, true);
         groupID = GroupHelper.associateClient(this.requestSpec, this.responseSpec, groupID.toString(), clientID.toString());
         final String startDate = "15 September 2011";

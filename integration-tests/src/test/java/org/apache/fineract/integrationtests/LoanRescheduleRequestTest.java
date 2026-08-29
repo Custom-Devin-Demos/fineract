@@ -118,7 +118,7 @@ public class LoanRescheduleRequestTest extends BaseLoanIntegrationTest {
      * create a new client
      **/
     private void createClientEntity() {
-        this.clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        this.clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, this.clientId);
     }

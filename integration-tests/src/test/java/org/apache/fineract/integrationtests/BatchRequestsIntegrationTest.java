@@ -93,7 +93,7 @@ public class BatchRequestsIntegrationTest {
 
         // Create new clients and add those to this group
         for (Integer i = 0; i < clientsCount; i++) {
-            clientIDs[i] = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+            clientIDs[i] = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             groupID = GroupHelper.associateClient(this.requestSpec, this.responseSpec, groupID.toString(), clientIDs[i].toString());
             LOG.info("client {} has been added to the group {}", clientIDs[i], groupID);
         }
@@ -163,7 +163,7 @@ public class BatchRequestsIntegrationTest {
 
         // Create new clients and add those to this group
         for (Integer i = 0; i < clientsCount; i++) {
-            clientIDs[i] = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+            clientIDs[i] = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             groupID = GroupHelper.associateClient(this.requestSpec, this.responseSpec, groupID.toString(), clientIDs[i].toString());
             LOG.info("client {} has been added to the group {}", clientIDs[i], groupID);
         }

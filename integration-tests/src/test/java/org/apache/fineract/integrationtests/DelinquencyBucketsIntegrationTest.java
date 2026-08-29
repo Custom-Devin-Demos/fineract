@@ -331,7 +331,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), null);
             assertNotNull(getLoanProductsProductResponse);
@@ -426,7 +427,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), null);
             assertNotNull(getLoanProductsProductResponse);
@@ -520,7 +522,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
         final DelinquencyBucketResponse delinquencyBucket = DelinquencyBucketsHelper.getBucket(delinquencyBucketResponse.getResourceId());
 
         // Client and Loan account creation
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                 delinquencyBucket.getId(), null);
         assertNotNull(getLoanProductsProductResponse);
@@ -609,7 +612,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
         final DelinquencyBucketResponse delinquencyBucket = DelinquencyBucketsHelper.getBucket(delinquencyBucketResponse.getResourceId());
 
         // Client and Loan account creation
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                 delinquencyBucket.getId(), null);
         assertNotNull(getLoanProductsProductResponse);
@@ -719,7 +723,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), null);
             assertNotNull(getLoanProductsProductResponse);
@@ -810,7 +815,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), null);
             assertNotNull(getLoanProductsProductResponse);
@@ -911,7 +917,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), "3");
             assertNotNull(getLoanProductsProductResponse);
@@ -988,7 +995,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), "3");
             assertNotNull(getLoanProductsProductResponse);
@@ -1047,7 +1055,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
 
             LocalDate bussinesLocalDate = Utils.getDateAsLocalDate("01 January 2012");
 
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucketId, "3");
             assertNotNull(getLoanProductsProductResponse);
@@ -1093,7 +1102,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
             Long delinquencyBucketId = DelinquencyBucketsHelper.createDefaultBucket();
             LocalDate bussinesLocalDate = Utils.getDateAsLocalDate("01 January 2012");
 
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucketId, "3");
             assertNotNull(getLoanProductsProductResponse);
@@ -1143,7 +1153,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
 
             Long delinquencyBucketId = DelinquencyBucketsHelper.createDefaultBucket();
 
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucketId, "3");
             assertNotNull(getLoanProductsProductResponse);
@@ -1220,7 +1231,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
         runAt("01 January 2012", () -> {
             Long delinquencyBucketId = DelinquencyBucketsHelper.createDefaultBucket();
 
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProductWithInstallmentLevelDelinquency(
                     loanTransactionHelper, delinquencyBucketId, "3");
             assertNotNull(getLoanProductsProductResponse);
@@ -1322,7 +1334,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
         final DelinquencyBucketResponse delinquencyBucket = DelinquencyBucketsHelper.getBucket(delinquencyBucketResponse.getResourceId());
 
         // Client and Loan account creation
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                 delinquencyBucket.getId(), null);
         assertNotNull(getLoanProductsProductResponse);
@@ -1381,7 +1394,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, operationDate);
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(operationDate))
+                    .getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), null);
             assertNotNull(getLoanProductsProductResponse);

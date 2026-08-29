@@ -97,7 +97,7 @@ public class InlineLoanCOBTest extends BaseLoanIntegrationTest {
                     new PutGlobalConfigurationsRequest().value(0L));
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -157,7 +157,7 @@ public class InlineLoanCOBTest extends BaseLoanIntegrationTest {
 
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -255,7 +255,7 @@ public class InlineLoanCOBTest extends BaseLoanIntegrationTest {
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
             loanAccountLockHelper = new LoanAccountLockHelper(requestSpec, new ResponseSpecBuilder().expectStatusCode(202).build());
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -316,7 +316,7 @@ public class InlineLoanCOBTest extends BaseLoanIntegrationTest {
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
             loanAccountLockHelper = new LoanAccountLockHelper(requestSpec, new ResponseSpecBuilder().expectStatusCode(202).build());
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -376,7 +376,7 @@ public class InlineLoanCOBTest extends BaseLoanIntegrationTest {
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
             loanAccountLockHelper = new LoanAccountLockHelper(requestSpec, new ResponseSpecBuilder().expectStatusCode(202).build());
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -446,7 +446,7 @@ public class InlineLoanCOBTest extends BaseLoanIntegrationTest {
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
             loanAccountLockHelper = new LoanAccountLockHelper(requestSpec, new ResponseSpecBuilder().expectStatusCode(202).build());
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,

@@ -82,7 +82,8 @@ public class LoanWithWaiveInterestAndWriteOffIntegrationTest {
     @Test
     public void checkClientLoanCreateAndDisburseFlow() {
         // CREATE CLIENT
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         // CREATE LOAN PRODUCT
@@ -153,7 +154,8 @@ public class LoanWithWaiveInterestAndWriteOffIntegrationTest {
     @Test
     public void checkClientLoan_WRITTEN_OFF() {
         // CREATE CLIENT
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         // CREATE LOAN PRODUCT

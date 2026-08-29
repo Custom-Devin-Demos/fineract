@@ -111,7 +111,8 @@ public class SavingsInterestPostingTest {
                     interestPayableAccount.getAccountID().toString(), savingsControlAccount.getAccountID().toString(),
                     interestReceivableAccount.getAccountID().toString(), assetAccount, incomeAccount, expenseAccount, liabilityAccount);
 
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, "01 January 2025");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2025")).getClientId().intValue();
             final LocalDate startDate = LocalDate.of(2025, 2, 1);
             final String startDateString = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.US).format(startDate);
 
@@ -157,7 +158,8 @@ public class SavingsInterestPostingTest {
                     interestPayableAccount.getAccountID().toString(), savingsControlAccount.getAccountID().toString(),
                     interestReceivableAccount.getAccountID().toString(), assetAccount, incomeAccount, expenseAccount, liabilityAccount);
 
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, "01 January 2025");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2025")).getClientId().intValue();
             final LocalDate startDate = LocalDate.of(2025, 2, 1);
             final String startDateString = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.US).format(startDate);
 
@@ -207,7 +209,8 @@ public class SavingsInterestPostingTest {
                     interestPayableAccount.getAccountID().toString(), savingsControlAccount.getAccountID().toString(),
                     interestReceivableAccount.getAccountID().toString(), assetAccount, incomeAccount, expenseAccount, liabilityAccount);
 
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, "01 January 2025");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2025")).getClientId().intValue();
             final LocalDate startDate = LocalDate.of(2025, 2, 1);
             final String startStr = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.US).format(startDate);
 
@@ -272,7 +275,8 @@ public class SavingsInterestPostingTest {
                     interestPayableAccount.getAccountID().toString(), savingsControlAccount.getAccountID().toString(),
                     interestReceivableAccount.getAccountID().toString(), assetAccount, incomeAccount, expenseAccount, liabilityAccount);
 
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, "01 January 2025");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2025")).getClientId().intValue();
             final LocalDate startDate = LocalDate.of(2025, 2, 1);
             final String startStr = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.US).format(startDate);
 
@@ -336,7 +340,8 @@ public class SavingsInterestPostingTest {
                     interestPayableAccount.getAccountID().toString(), savingsControlAccount.getAccountID().toString(),
                     interestReceivableAccount.getAccountID().toString(), assetAccount, incomeAccount, expenseAccount, liabilityAccount);
 
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, "01 January 2025");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2025")).getClientId().intValue();
             final LocalDate startDate = LocalDate.of(2025, 1, 1);
             final String startStr = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.US).format(startDate);
 
@@ -418,7 +423,9 @@ public class SavingsInterestPostingTest {
             final String startDateString = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.US).format(startDate);
             List<Integer> accountIdList = new CopyOnWriteArrayList<>();
             ParallelExecutionHelper.runInParallel(IntStream.range(0, 200).boxed().toList(), (i) -> {
-                final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, "01 January 2025");
+                final Integer clientId = ClientHelper
+                        .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2025")).getClientId()
+                        .intValue();
                 final Integer accountId = createTrackedSavingsAccount(clientId, productId, startDateString);
 
                 savingsAccountHelper.approveSavingsOnDate(accountId, startDateString);
@@ -450,7 +457,8 @@ public class SavingsInterestPostingTest {
         final String depositAmount = "10000";
 
         runAt(accountOpeningDate, () -> {
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, accountOpeningDate);
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate(accountOpeningDate)).getClientId().intValue();
 
             final String savingsProductJSON = new SavingsProductHelper() //
                     .withInterestCompoundingPeriodTypeAsAnnually() //

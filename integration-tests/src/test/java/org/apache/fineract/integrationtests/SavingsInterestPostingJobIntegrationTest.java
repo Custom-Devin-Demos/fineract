@@ -90,7 +90,8 @@ public class SavingsInterestPostingJobIntegrationTest {
     @Test
     public void testSavingsBalanceCheckAfterDailyInterestPostingJob() {
         final String startDate = "10 April 2022";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
@@ -110,7 +111,8 @@ public class SavingsInterestPostingJobIntegrationTest {
     @Test
     public void testSavingsDailyInterestPostingJobWithAccountingNone() {
         final String startDate = "10 April 2022";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         this.accountHelper = new AccountHelper(requestSpec, responseSpec);
         this.journalEntryHelper = new JournalEntryHelper(requestSpec, responseSpec);
@@ -126,7 +128,8 @@ public class SavingsInterestPostingJobIntegrationTest {
     @Test
     public void testDuplicateOverdraftInterestPostingJob() {
         final String startDate = "01 July 2022";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -154,7 +157,8 @@ public class SavingsInterestPostingJobIntegrationTest {
                     new PutGlobalConfigurationsRequest().enabled(true));
             BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, today);
             final String startDate = "10 April 2022";
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                    .getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
@@ -183,7 +187,8 @@ public class SavingsInterestPostingJobIntegrationTest {
     @Test
     public void testSavingsDailyOverdraftInterestPostingJob() {
         final String startDate = "10 April 2022";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -205,7 +210,8 @@ public class SavingsInterestPostingJobIntegrationTest {
     @Test
     public void testAccountBalanceWithWithdrawalFeeAfterInterestPostingJob() {
         final String startDate = "21 June 2022";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingWithCharge(clientID, startDate);
@@ -235,7 +241,8 @@ public class SavingsInterestPostingJobIntegrationTest {
             BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
 
             final String startDate = "10 April 2022";
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                    .getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
@@ -266,7 +273,8 @@ public class SavingsInterestPostingJobIntegrationTest {
             BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
 
             final String startDate = "10 April 2022";
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                    .getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);

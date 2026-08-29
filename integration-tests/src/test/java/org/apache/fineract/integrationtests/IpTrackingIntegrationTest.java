@@ -59,7 +59,7 @@ public class IpTrackingIntegrationTest {
                 "Saltando test porque el tracking de IP está deshabilitado");
 
         // given
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
         List<HashMap<String, Object>> auditsRecieved = auditHelper.getAuditDetails(clientId, "CREATE", "CLIENT");
 

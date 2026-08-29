@@ -179,7 +179,7 @@ public class ExternalAssetOwnerTransferTest extends BaseLoanIntegrationTest {
 
     @NonNull
     protected Integer createClient() {
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
         return clientID;
     }

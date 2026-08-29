@@ -194,7 +194,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         final Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
@@ -213,7 +213,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         // Given
         final ResponseSpecification responseSpec403 = new ResponseSpecBuilder().expectStatusCode(403).build();
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         final Integer loanProductID = createLoanProduct(false, NONE);
 
         final String externalId = UUID.randomUUID().toString();
@@ -230,7 +230,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void testAddingLoanChargeIncludesLoanIdInTheResponse() {
         // given
-        Integer clientId = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Integer loanProductId = createLoanProduct(false, NONE);
         Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
         Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
@@ -251,7 +251,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
     @Test
     public void testLoanCharges_DISBURSEMENT_FEE() {
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProduct(false, NONE);
 
@@ -365,7 +365,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void testLoanCharges_DISBURSEMENT_FEE_WITH_AMOUNT_CHANGE() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProduct(false, NONE);
 
@@ -431,7 +431,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void testLoanDisbursedTodayIsRetrieved() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProduct(false, NONE);
 
@@ -467,7 +467,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void testLoanCharges_SPECIFIED_DUE_DATE_FEE() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProduct(false, NONE);
 
@@ -635,7 +635,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
     @Test
     public void testLoanCharges_INSTALMENT_FEE() {
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProduct(false, NONE);
 
@@ -995,7 +995,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void testLoanCharges_DISBURSEMENT_TO_SAVINGS() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProduct(false, NONE);
 
@@ -1055,7 +1055,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         }
 
         String fourMonthsfromNow = Utils.convertDateToURLFormat(fourMonthsfromNowCalendar);
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProduct(false, NONE);
 
@@ -1085,7 +1085,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
     @Test
     public void testLoanCharges_DISBURSEMENT_WITH_TRANCHES() {
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProduct(true, NONE);
 
@@ -1134,7 +1134,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
     @Test
     public void testLoanCharges_DISBURSEMENT_TO_SAVINGS_WITH_TRANCHES() {
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProduct(true, NONE);
 
@@ -1206,7 +1206,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void loanWithFlatCahargesAndCashBasedAccountingEnabled() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         // Add charges with payment mode regular
@@ -1393,7 +1393,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void loanWithChargesOfTypeAmountPercentageAndCashBasedAccountingEnabled() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         // Add charges with payment mode regular
@@ -1583,7 +1583,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void loanWithChargesOfTypeAmountPlusInterestPercentageAndCashBasedAccountingEnabled() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         // Add charges with payment mode regular
@@ -1774,7 +1774,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void loanWithFlatCahargesAndUpfrontAccrualAccountingEnabled() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         // Add charges with payment mode regular
@@ -1978,7 +1978,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void loanWithCahargesAndUpfrontAccrualAccountingEnabled() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         // Add charges with payment mode regular
@@ -2178,7 +2178,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void loanWithCahargesOfTypeAmountPlusInterestPercentageAndUpfrontAccrualAccountingEnabled() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         // Add charges with payment mode regular
@@ -2383,7 +2383,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void loanWithFlatChargesAndPeriodicAccrualAccountingEnabled() throws InterruptedException {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         // Add charges with payment mode regular
@@ -2582,7 +2582,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     public void loanWithChargesOfTypeAmountPercentageAndPeriodicAccrualAccountingEnabled() throws InterruptedException {
         try {
             globalConfigurationHelper.manageConfigurations(GlobalConfigurationConstants.ENABLE_AUTO_GENERATED_EXTERNAL_ID, true);
-            final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
             // Add charges with payment mode regular
@@ -2790,7 +2790,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void loanWithChargesOfTypeAmountPlusInterestPercentageAndPeriodicAccrualAccountingEnabled() throws InterruptedException {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         // Add charges with payment mode regular
@@ -2990,7 +2990,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void testClientLoanScheduleWithCurrencyDetails() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         List<HashMap> collaterals = new ArrayList<>();
@@ -3011,7 +3011,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void testClientLoanScheduleWithCurrencyDetails_with_grace() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         List<HashMap> collaterals = new ArrayList<>();
@@ -3035,7 +3035,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void testRBIPaymentStrategy() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         /***
@@ -3156,7 +3156,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
     @Test
     public void testLoanPrePaymentWithMultiplePayments() {
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         // Create a loan product
@@ -3252,7 +3252,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         todaysDate.add(Calendar.DAY_OF_MONTH, -14);
         final String LOAN_DISBURSEMENT_DATE = dateFormat.format(todaysDate.getTime());
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProductWithInterestRecalculation(LoanProductTestBuilder.DEFAULT_STRATEGY,
                 LoanProductTestBuilder.RECALCULATION_COMPOUNDING_METHOD_NONE,
@@ -3362,7 +3362,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         todaysDate.add(Calendar.DAY_OF_MONTH, -14);
         final String LOAN_DISBURSEMENT_DATE = dateFormat.format(todaysDate.getTime());
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProductWithInterestRecalculation(LoanProductTestBuilder.DEFAULT_STRATEGY,
                 LoanProductTestBuilder.RECALCULATION_COMPOUNDING_METHOD_NONE,
@@ -3460,7 +3460,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         final String LOAN_DISBURSEMENT_DATE = dateFormat.format(todaysDate.getTime());
         Integer dayOfWeek = getDayOfWeek(todaysDate);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProductWithInterestRecalculationAndCompoundingDetails(
                 LoanProductTestBuilder.RBI_INDIA_STRATEGY, LoanProductTestBuilder.RECALCULATION_COMPOUNDING_METHOD_INTEREST,
@@ -3580,7 +3580,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
             String firstRepayment = dateFormat.format(firstRepaymentDate.getTime());
 
             final String loanDisbursementDate = dateFormat.format(startDate.getTime());
-            final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
             final Integer loanProductID = createLoanProductWithInterestRecalculationAndCompoundingDetails(
                     LoanProductTestBuilder.INTEREST_PRINCIPAL_PENALTIES_FEES_ORDER_STRATEGY,
@@ -3655,7 +3655,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         addCharges(charges, flat, "100", LOAN_FLAT_CHARGE_DATE);
         addCharges(charges, principalPercentage, "2", LOAN_INTEREST_CHARGE_DATE);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProductWithInterestRecalculationAndCompoundingDetails(
                 LoanProductTestBuilder.DEFAULT_STRATEGY, LoanProductTestBuilder.RECALCULATION_COMPOUNDING_METHOD_INTEREST_AND_FEE,
@@ -3777,7 +3777,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
                 ChargesHelper.getLoanOverdueFeeJSONWithCalculationTypePercentage("10"));
         Assertions.assertNotNull(overdueFeeChargeId);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final String recalculationCompoundingFrequencyInterval = null;
         final String recalculationCompoundingFrequencyDate = null;
@@ -3888,7 +3888,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         todaysDate.add(Calendar.DAY_OF_MONTH, -14);
         final String LOAN_DISBURSEMENT_DATE = dateFormat.format(todaysDate.getTime());
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         Account[] accounts = { assetAccount, incomeAccount, expenseAccount, overpaymentAccount };
         final Integer loanProductID = createLoanProductWithInterestRecalculation(LoanProductTestBuilder.DEFAULT_STRATEGY,
@@ -3987,7 +3987,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         todaysDate.add(Calendar.DAY_OF_MONTH, -14);
         final String LOAN_DISBURSEMENT_DATE = dateFormat.format(todaysDate.getTime());
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProductWithInterestRecalculationAndCompoundingDetails(
                 LoanProductTestBuilder.RBI_INDIA_STRATEGY, LoanProductTestBuilder.RECALCULATION_COMPOUNDING_METHOD_INTEREST,
@@ -4069,7 +4069,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         todaysDate.add(Calendar.DAY_OF_MONTH, -14);
         final String LOAN_DISBURSEMENT_DATE = dateFormat.format(todaysDate.getTime());
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final String recalculationCompoundingFrequencyInterval = null;
         final String recalculationCompoundingFrequencyDate = null;
@@ -4171,7 +4171,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         String fourMonthsfromNow = Utils.convertDateToURLFormat(fourMonthsfromNowCalendar);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         /***
@@ -4349,7 +4349,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         String fourMonthsfromNow = Utils.convertDateToURLFormat(fourMonthsfromNowCalendar);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         /***
@@ -4523,7 +4523,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         String fourMonthsfromNow = Utils.convertDateToURLFormat(fourMonthsfromNowCalendar);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
 
         final Integer savingsProductID = createSavingsProduct(MINIMUM_OPENING_BALANCE);
@@ -4741,7 +4741,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         JsonObject loanProductConfigurationAsFalse = new JsonObject();
         loanProductConfigurationAsFalse = createLoanProductConfigurationDetail(loanProductConfigurationAsFalse, false);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "01 January 2012");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         Integer loanProductID = LOAN_TRANSACTION_HELPER
                 .getLoanProductId(new LoanProductTestBuilder().withAmortizationTypeAsEqualInstallments().withRepaymentTypeAsMonth()
                         .withRepaymentAfterEvery("1").withRepaymentStrategy(LoanProductTestBuilder.DEFAULT_STRATEGY)
@@ -4772,7 +4773,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     @Test
     public void testLoanForeclosure() {
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProduct(false, NONE);
 
@@ -4839,7 +4840,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         final String LOAN_DISBURSEMENT_DATE = dateFormat.format(todaysDate.getTime());
         Integer dayOfWeek = getDayOfWeek(todaysDate);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProductWithInterestRecalculationAndCompoundingDetails(
                 LoanProductTestBuilder.INTEREST_PRINCIPAL_PENALTIES_FEES_ORDER_STRATEGY,
@@ -4953,7 +4954,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         final String LOAN_DISBURSEMENT_DATE = dateFormat.format(todaysDate.getTime());
         Integer dayOfWeek = getDayOfWeek(todaysDate);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProductWithInterestRecalculationAndCompoundingDetails(
                 LoanProductTestBuilder.INTEREST_PRINCIPAL_PENALTIES_FEES_ORDER_STRATEGY,
@@ -5072,7 +5073,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
             String firstRepayment = dateFormat.format(firstRepaymentDate.getTime());
 
             final String loanDisbursementDate = dateFormat.format(startDate.getTime());
-            final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
             final Integer loanProductID = createLoanProductWithInterestRecalculationAndCompoundingDetails(
                     LoanProductTestBuilder.INTEREST_PRINCIPAL_PENALTIES_FEES_ORDER_STRATEGY,
@@ -5141,7 +5142,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
             String firstRepayment = dateFormat.format(firstRepaymentDate.getTime());
 
             final String loanDisbursementDate = dateFormat.format(startDate.getTime());
-            final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
             final Integer loanProductID = createLoanProductWithInterestRecalculationAndCompoundingDetails(
                     LoanProductTestBuilder.INTEREST_PRINCIPAL_PENALTIES_FEES_ORDER_STRATEGY,
@@ -5206,7 +5207,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
 
         Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
         List<HashMap> collaterals = new ArrayList<>();
-        Integer clientId = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientId);
 
         Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC,
@@ -5264,7 +5265,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingNoInterest(assetAccount, incomeAccount, expenseAccount,
                 overpaymentAccount);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "01 January 2011");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011"))
+                .getClientId().intValue();
 
         final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -5284,7 +5286,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingNoInterest(assetAccount, incomeAccount, expenseAccount,
                 overpaymentAccount);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "01 January 2011");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011"))
+                .getClientId().intValue();
 
         final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -5330,7 +5333,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
             final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingNoInterest(assetAccount, incomeAccount,
                     expenseAccount, overpaymentAccount);
 
-            final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "01 January 2011");
+            final Integer clientID = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011")).getClientId().intValue();
 
             final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -5893,7 +5897,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingNoInterest(assetAccount, incomeAccount, expenseAccount,
                 overpaymentAccount);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "01 January 2011");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011"))
+                .getClientId().intValue();
 
         final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -5927,7 +5932,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingNoInterest(assetAccount, incomeAccount, expenseAccount,
                 overpaymentAccount);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "01 January 2011");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011"))
+                .getClientId().intValue();
 
         final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -6191,7 +6197,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
             final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingNoInterestMultiDisbursement(assetAccount,
                     incomeAccount, expenseAccount, overpaymentAccount);
 
-            final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "01 January 2011");
+            final Integer clientID = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011")).getClientId().intValue();
 
             final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -6455,7 +6462,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
             final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingNoInterest(assetAccount, incomeAccount,
                     expenseAccount, overpaymentAccount);
 
-            final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "01 January 2011");
+            final Integer clientID = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011")).getClientId().intValue();
 
             final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -6518,7 +6526,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
             final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingNoInterest(assetAccount, incomeAccount,
                     expenseAccount, overpaymentAccount);
 
-            final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "01 January 2011");
+            final Integer clientID = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011")).getClientId().intValue();
 
             final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -6662,7 +6671,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
             final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingNoInterest(assetAccount, incomeAccount,
                     expenseAccount, overpaymentAccount);
 
-            final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "01 January 2011");
+            final Integer clientID = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011")).getClientId().intValue();
 
             final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -6798,7 +6808,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
             final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingNoInterest(assetAccount, incomeAccount,
                     expenseAccount, overpaymentAccount);
 
-            final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "01 January 2011");
+            final Integer clientID = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011")).getClientId().intValue();
 
             final Integer loanID = applyForLoanApplication(clientID, loanProductID);
 
@@ -6930,7 +6941,8 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
             final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingNoInterest(assetAccount, incomeAccount,
                     expenseAccount, overpaymentAccount);
 
-            final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "01 January 2011");
+            final Integer clientID = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2011")).getClientId().intValue();
             List<HashMap> charges = new ArrayList<>();
             Integer installmentFee = ChargesHelper.createCharges(REQUEST_SPEC, RESPONSE_SPEC,
                     ChargesHelper.getLoanInstallmentJSON(ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT, "10", false));
@@ -7080,7 +7092,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         }
 
         String fourMonthsfromNow = Utils.convertDateToURLFormat(fourMonthsfromNowCalendar);
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProduct(false, NONE);
 
@@ -7738,7 +7750,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         todaysDate.add(Calendar.DAY_OF_MONTH, -1);
         final String LOAN_DISBURSEMENT_DATE = dateFormat.format(todaysDate.getTime());
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProductWithInterestRecalculation(LoanProductTestBuilder.DEFAULT_STRATEGY,
                 LoanProductTestBuilder.RECALCULATION_COMPOUNDING_METHOD_NONE,
@@ -8076,7 +8088,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         todaysDate.add(Calendar.DAY_OF_MONTH, -16);
         final String LOAN_DISBURSEMENT_DATE = dateFormat.format(todaysDate.getTime());
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProductWithInterestRecalculation(LoanProductTestBuilder.DEFAULT_STRATEGY,
                 LoanProductTestBuilder.RECALCULATION_COMPOUNDING_METHOD_NONE,
@@ -8175,7 +8187,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
         addCharges(charges, flat, "100", LOAN_FLAT_CHARGE_DATE);
         addCharges(charges, principalPercentage, "2", LOAN_INTEREST_CHARGE_DATE);
 
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientID);
         final Integer loanProductID = createLoanProductWithInterestRecalculationAndCompoundingDetails(
                 LoanProductTestBuilder.DEFAULT_STRATEGY, LoanProductTestBuilder.RECALCULATION_COMPOUNDING_METHOD_INTEREST_AND_FEE,

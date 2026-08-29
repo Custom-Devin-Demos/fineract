@@ -335,7 +335,7 @@ public class AccountNumberPreferencesTest {
     }
 
     private void createAndValidateClientWithoutAccountPreference() {
-        this.clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        this.clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(this.clientId);
         String clientAccountNo = (String) ClientHelper.getClient(requestSpec, responseSpec, this.clientId.toString(), "accountNo");
         validateAccountNumberLengthAndStartsWithPrefix(clientAccountNo, null);
@@ -370,7 +370,7 @@ public class AccountNumberPreferencesTest {
             this.validateAccountNumberLengthAndStartsWithPrefix(clientAccountNo, this.clientCodeValueName);
 
         } else if (clientPrefixName.equals(this.officeName)) {
-            this.clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+            this.clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, this.clientId);
             // Assertions.assertNotNull(clientId);
             clientAccountNo = (String) ClientHelper.getClient(requestSpec, responseSpec, this.clientId.toString(), "accountNo");

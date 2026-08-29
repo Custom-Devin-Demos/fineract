@@ -79,7 +79,7 @@ public class ProvisioningIntegrationTest {
     public void testCreateProvisioningCriteria() {
         ProvisioningTransactionHelper transactionHelper = new ProvisioningTransactionHelper(requestSpec, responseSpec);
         ArrayList<Integer> loanProducts = new ArrayList<>(LOANPRODUCTS_SIZE);
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         for (int i = 0; i < LOANPRODUCTS_SIZE; i++) {

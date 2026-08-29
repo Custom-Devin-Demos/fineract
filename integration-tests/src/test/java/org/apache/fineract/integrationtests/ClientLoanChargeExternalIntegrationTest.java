@@ -69,7 +69,7 @@ public class ClientLoanChargeExternalIntegrationTest {
     @Test
     public void checkNewClientLoanChargeSavesExternalId() {
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         final Integer loanProductID = createLoanProduct(false, NONE);
@@ -99,7 +99,7 @@ public class ClientLoanChargeExternalIntegrationTest {
     @Test
     public void checkNewClientLoanChargeFindsDuplicateExternalId() {
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         final Integer loanProductID = createLoanProduct(false, NONE);

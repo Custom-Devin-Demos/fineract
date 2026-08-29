@@ -72,7 +72,8 @@ public class LoanDisbursalDateValidationTest {
         final String disbursalDate = "02 March 2014";
 
         // CREATE CLIENT
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2014");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2014"))
+                .getClientId().intValue();
         LOG.info("---------------------------------CLIENT CREATED WITH ID--------------------------------------------------- {}", clientID);
 
         // CREATE LOAN PRODUCT

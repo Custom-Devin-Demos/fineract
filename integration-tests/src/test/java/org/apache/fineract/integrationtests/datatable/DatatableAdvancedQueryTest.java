@@ -134,7 +134,8 @@ public class DatatableAdvancedQueryTest {
                     new PutGlobalConfigurationsRequest().enabled(true));
             BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, today);
 
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, yesterdayS);
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(yesterdayS))
+                    .getClientId().intValue();
             assertNotNull(clientId);
             final Integer savingsId = createSavingsAccountDailyPosting(clientId, yesterdayS);
             assertNotNull(savingsId);
@@ -220,7 +221,8 @@ public class DatatableAdvancedQueryTest {
                     new PutGlobalConfigurationsRequest().enabled(true));
             BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, today);
 
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, yesterdayS);
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(yesterdayS))
+                    .getClientId().intValue();
             assertNotNull(clientId);
             final Integer savingsId = createSavingsAccountDailyPosting(clientId, yesterdayS);
             assertNotNull(savingsId);

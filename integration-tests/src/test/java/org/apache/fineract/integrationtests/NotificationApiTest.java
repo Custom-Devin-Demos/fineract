@@ -91,7 +91,7 @@ public class NotificationApiTest {
     public void testNotificationRetrievalWorksWhenOneNotificationIsAvailable() {
         // given (still using RestAssured-based ClientHelper - to be migrated separately)
         PostClientsRequest clientRequest = ClientHelper.defaultClientCreationRequest();
-        Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, clientRequest);
+        Integer clientId = ClientHelper.createClient(clientRequest).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         // when

@@ -97,7 +97,8 @@ public class SavingsAccrualIntegrationTest {
                     this.responseSpec);
             Assertions.assertNotNull(savingsProductId, "Error creating savings product.");
 
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2020");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2020")).getClientId().intValue();
             Assertions.assertNotNull(clientId, "Error creating client.");
 
             final LocalDate startDate = LocalDate.of(2021, 8, 12).minusDays(daysToTest);
@@ -173,7 +174,8 @@ public class SavingsAccrualIntegrationTest {
                     this.responseSpec);
             Assertions.assertNotNull(savingsProductId);
 
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2020");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2020")).getClientId().intValue();
             Assertions.assertNotNull(clientId);
 
             final LocalDate today = LocalDate.of(2021, 8, 12);

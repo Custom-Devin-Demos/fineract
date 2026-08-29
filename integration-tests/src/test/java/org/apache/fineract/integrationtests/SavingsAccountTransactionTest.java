@@ -132,7 +132,8 @@ public class SavingsAccountTransactionTest {
             LocalDate depositDate = Utils.getDateAsLocalDate(depositDateString);
             LocalDate withdrawDate = Utils.getDateAsLocalDate(withdrawDateString);
 
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDateString);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDateString))
+                    .getClientId().intValue();
             assertNotNull(clientID);
 
             final Integer savingsId = createApproveActivateSavingsAccountDailyPosting(clientID, startDateString);
@@ -148,7 +149,7 @@ public class SavingsAccountTransactionTest {
 
     @Test
     public void testConcurrentSavingsTransactions() {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         final Integer savingsProductId = createSavingsProductDailyPosting();
@@ -164,7 +165,7 @@ public class SavingsAccountTransactionTest {
 
     @Test
     public void testConcurrentSavingsBatchTransactions() {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         final Integer savingsProductId = createSavingsProductDailyPosting();
@@ -201,7 +202,7 @@ public class SavingsAccountTransactionTest {
 
     @Test
     public void testDeadlockSavingsBatchTransactions() {
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientID);
 
         final Integer savingsProductId = createSavingsProductDailyPosting();

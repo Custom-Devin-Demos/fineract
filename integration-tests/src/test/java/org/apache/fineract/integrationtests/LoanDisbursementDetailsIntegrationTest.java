@@ -97,7 +97,8 @@ public class LoanDisbursementDetailsIntegrationTest {
         createTranches.add(this.loanTransactionHelper.createTrancheDetail(id, "01 June 2015", "5000"));
         createTranches.add(this.loanTransactionHelper.createTrancheDetail(id, "01 September 2015", "5000"));
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2014");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2014"))
+                .getClientId().intValue();
         log.info("---------------------------------CLIENT CREATED WITH ID---------------------------------------------------{}", clientID);
 
         final Integer loanProductID = this.loanTransactionHelper.getLoanProductId(new LoanProductTestBuilder()
@@ -289,7 +290,8 @@ public class LoanDisbursementDetailsIntegrationTest {
         final String principal = "1000";
         final String disbursedPrincipal = "900";
 
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, operationDate);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(operationDate))
+                .getClientId().intValue();
         log.info("-----------------CLIENT CREATED WITH ID------------------- {}", clientId);
 
         final String loanProductJSON = new LoanProductTestBuilder().withAmortizationTypeAsEqualInstallments() //
@@ -331,7 +333,8 @@ public class LoanDisbursementDetailsIntegrationTest {
         final String firstDisbursedPrincipal = "900";
         final String secondDisbursedPrincipal = "1101";
 
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, operationDate);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(operationDate))
+                .getClientId().intValue();
         log.info("-----------------CLIENT CREATED WITH ID------------------- {}", clientId);
 
         final String loanProductJSON = new LoanProductTestBuilder().withAmortizationTypeAsEqualInstallments() //
@@ -371,7 +374,8 @@ public class LoanDisbursementDetailsIntegrationTest {
         final String firstDisbursedPrincipal = "900";
         final String secondDisbursedPrincipal = "1100";
 
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, operationDate);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(operationDate))
+                .getClientId().intValue();
         log.info("-----------------CLIENT CREATED WITH ID------------------- {}", clientId);
 
         final String loanProductJSON = new LoanProductTestBuilder().withAmortizationTypeAsEqualInstallments() //
@@ -414,7 +418,8 @@ public class LoanDisbursementDetailsIntegrationTest {
         String id = null;
         createTranches.add(this.loanTransactionHelper.createTrancheDetail(id, "01 March 2014", "1000"));
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2014");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2014"))
+                .getClientId().intValue();
         log.info("---------------------------------CLIENT CREATED WITH ID--------------------------------------------------- {}", clientID);
 
         final Integer loanProductID = this.loanTransactionHelper
@@ -449,7 +454,8 @@ public class LoanDisbursementDetailsIntegrationTest {
         String principal = "1000";
         final List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, operationDate);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(operationDate))
+                .getClientId().intValue();
         log.info("---------------------------------CLIENT CREATED WITH ID--------------------------------------------------- {}", clientId);
 
         final Integer loanProductId = this.loanTransactionHelper
@@ -822,7 +828,7 @@ public class LoanDisbursementDetailsIntegrationTest {
         final Integer loanProductId = this.loanTransactionHelper.getLoanProductId(loanProductJSON);
         log.info("------------------LOAN PRODUCT CREATED WITH ID----------- {}", loanProductId);
 
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         log.info("------------------CLIENT CREATED WITH ID----------- {}", clientId);
 
         List<HashMap> createTranches = new ArrayList<>();
@@ -857,7 +863,7 @@ public class LoanDisbursementDetailsIntegrationTest {
         final Integer loanProductId = this.loanTransactionHelper.getLoanProductId(loanProductJSON);
         log.info("------------------LOAN PRODUCT CREATED WITH ID----------- {}", loanProductId);
 
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         log.info("------------------CLIENT CREATED WITH ID----------- {}", clientId);
 
         List<HashMap> createTranches = new ArrayList<>();
@@ -893,7 +899,8 @@ public class LoanDisbursementDetailsIntegrationTest {
         final Integer loanProductId = this.loanTransactionHelper.getLoanProductId(loanProductJSON);
         log.info("------------------LOAN PRODUCT CREATED WITH ID----------- {}", loanProductId);
 
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2024");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2024"))
+                .getClientId().intValue();
         log.info("------------------CLIENT CREATED WITH ID----------- {}", clientId);
 
         List<HashMap> createTranches = new ArrayList<>();
@@ -955,7 +962,8 @@ public class LoanDisbursementDetailsIntegrationTest {
         final Integer loanProductId = this.loanTransactionHelper.getLoanProductId(loanProductJSON);
         log.info("------------------LOAN PRODUCT CREATED WITH ID----------- {}", loanProductId);
 
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2024");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2024"))
+                .getClientId().intValue();
         log.info("------------------CLIENT CREATED WITH ID----------- {}", clientId);
 
         List<HashMap> createTranches = new ArrayList<>();
@@ -1017,7 +1025,8 @@ public class LoanDisbursementDetailsIntegrationTest {
         final Integer loanProductId = this.loanTransactionHelper.getLoanProductId(loanProductJSON);
         log.info("------------------LOAN PRODUCT CREATED WITH ID----------- {}", loanProductId);
 
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2024");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2024"))
+                .getClientId().intValue();
         log.info("------------------CLIENT CREATED WITH ID----------- {}", clientId);
 
         List<HashMap> createTranches = new ArrayList<>();
@@ -1080,7 +1089,8 @@ public class LoanDisbursementDetailsIntegrationTest {
         final Integer loanProductId = this.loanTransactionHelper.getLoanProductId(loanProductWithoutFlag);
         log.info("------------------LOAN PRODUCT CREATED WITH allowFullTermForTranche=false ID----------- {}", loanProductId);
 
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2024");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2024"))
+                .getClientId().intValue();
         log.info("------------------CLIENT CREATED WITH ID----------- {}", clientId);
 
         List<HashMap> createTranches = new ArrayList<>();

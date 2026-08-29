@@ -73,7 +73,7 @@ public class GroupTest {
 
     @Test
     public void checkGroupFunctions() {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Integer groupID = GroupHelper.createGroup(this.requestSpec, this.responseSpec);
         GroupHelper.verifyGroupCreatedOnServer(this.requestSpec, this.responseSpec, groupID);
 
@@ -110,7 +110,7 @@ public class GroupTest {
         Integer updateGroupId = GroupHelper.updateGroup(this.requestSpec, this.responseSpec, updateGroupName, groupID.toString());
 
         // create client and add client to group
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 
         groupID = GroupHelper.associateClient(this.requestSpec, this.responseSpec, groupID.toString(), clientID.toString());

@@ -77,7 +77,7 @@ public class RepaymentWithPostDatedChecksTest {
 
         final String disbursalDate = this.dateFormatterStandard.format(meetingCalendar.getTime());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
         ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
 

@@ -63,7 +63,8 @@ public class ClientChargesTest {
         Assertions.assertNotNull(chargeId);
 
         // creates client with activation date
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 October 2011");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 October 2011"))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /**
