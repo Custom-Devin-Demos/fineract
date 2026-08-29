@@ -18,46 +18,17 @@
  */
 package org.apache.fineract.integrationtests.common.accounting;
 
-import com.google.gson.Gson;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
-import java.util.HashMap;
-import org.apache.fineract.integrationtests.common.Utils;
+import org.apache.fineract.client.models.PostRunaccrualsRequest;
+import org.apache.fineract.client.util.Calls;
+import org.apache.fineract.integrationtests.common.FineractClientHelper;
 
 public class PeriodicAccrualAccountingHelper {
 
-    private static final String PERIODIC_ACCRUAL_URL = "/fineract-provider/api/v1/runaccruals";
-    private final RequestSpecification requestSpec;
-    private final ResponseSpecification responseSpec;
+    public PeriodicAccrualAccountingHelper() {}
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public PeriodicAccrualAccountingHelper(final RequestSpecification requestSpec, final ResponseSpecification responseSpec) {
-        this.requestSpec = requestSpec;
-        this.responseSpec = responseSpec;
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public Object runPeriodicAccrualAccounting(String date) {
-        String json = getRunPeriodicAccrual(date);
-        return Utils.performServerPost(this.requestSpec, this.responseSpec, PERIODIC_ACCRUAL_URL + "?" + Utils.TENANT_IDENTIFIER, json, "");
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    private String getRunPeriodicAccrual(String date) {
-        final HashMap<String, String> map = new HashMap<>();
-        map.put("dateFormat", "dd MMMM yyyy");
-        map.put("locale", "en_GB");
-        map.put("tillDate", date);
-        return new Gson().toJson(map);
+    public void runPeriodicAccrualAccounting(String date) {
+        Calls.ok(FineractClientHelper.getFineractClient().periodicAccrualAccounting
+                .executePeriodicAccrualAccounting(new PostRunaccrualsRequest().dateFormat("dd MMMM yyyy").locale("en_GB").tillDate(date)));
     }
 
 }

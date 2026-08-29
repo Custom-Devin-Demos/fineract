@@ -117,7 +117,7 @@ public class LoanSpecificDueDateChargeAfterMaturityTest extends BaseLoanIntegrat
 
         loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
         accountHelper = new AccountHelper();
-        periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(requestSpec, responseSpec);
+        periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper();
         final Account assetAccount = accountHelper.createAssetAccount();
         final Account incomeAccount = accountHelper.createIncomeAccount();
         final Account expenseAccount = accountHelper.createExpenseAccount();

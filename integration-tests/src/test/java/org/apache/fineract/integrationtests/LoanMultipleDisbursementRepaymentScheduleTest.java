@@ -75,7 +75,7 @@ public class LoanMultipleDisbursementRepaymentScheduleTest extends BaseLoanInteg
         this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
         this.clientHelper = new ClientHelper(this.requestSpec, this.responseSpec);
-        this.periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(this.requestSpec, this.responseSpec);
+        this.periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper();
         this.accountHelper = new AccountHelper();
     }
 

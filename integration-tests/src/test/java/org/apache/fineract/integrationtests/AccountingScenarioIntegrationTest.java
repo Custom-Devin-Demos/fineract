@@ -142,7 +142,7 @@ public class AccountingScenarioIntegrationTest {
         this.accountHelper = new AccountHelper();
         this.journalEntryHelper = new JournalEntryHelper(requestSpec, responseSpec);
         this.schedulerJobHelper = new SchedulerJobHelper(requestSpec);
-        this.periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(requestSpec, responseSpec);
+        this.periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
 
         this.tenantTimeZone = TimeZone.getTimeZone(Utils.TENANT_TIME_ZONE);

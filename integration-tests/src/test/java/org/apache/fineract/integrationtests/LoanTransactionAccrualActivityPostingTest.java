@@ -95,7 +95,7 @@ public class LoanTransactionAccrualActivityPostingTest extends BaseLoanIntegrati
         ClientHelper clientHelper = new ClientHelper(requestSpec, responseSpec);
         chargesHelper = new ChargesHelper();
         client = clientHelper.createClient(ClientHelper.defaultClientCreationRequest());
-        inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+        inlineLoanCOBHelper = new InlineLoanCOBHelper();
         businessStepHelper = new BusinessStepHelper();
         // setup COB Business Steps to prevent test failing due other integration test configurations
         businessStepHelper.updateSteps("LOAN_CLOSE_OF_BUSINESS", "APPLY_CHARGE_TO_OVERDUE_LOANS", "LOAN_DELINQUENCY_CLASSIFICATION",

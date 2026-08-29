@@ -70,7 +70,7 @@ public class LoanCOBAccountLockCatchupInlineCOBTest extends BaseLoanIntegrationT
         responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         loanCOBCatchUpHelper = new LoanCOBCatchUpHelper();
-        inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+        inlineLoanCOBHelper = new InlineLoanCOBHelper();
     }
 
     @Test

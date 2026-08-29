@@ -82,10 +82,10 @@ public class LoanAccrualTransactionOnChargeSubmittedDateTest extends BaseLoanInt
         this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
         this.clientHelper = new ClientHelper(this.requestSpec, this.responseSpec);
-        this.periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(this.requestSpec, this.responseSpec);
+        this.periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper();
         this.accountHelper = new AccountHelper();
         this.loanRescheduleRequestHelper = new LoanRescheduleRequestHelper(this.requestSpec, this.responseSpec);
-        this.inlineLoanCOBHelper = new InlineLoanCOBHelper(this.requestSpec, this.responseSpec);
+        this.inlineLoanCOBHelper = new InlineLoanCOBHelper();
     }
 
     @Test

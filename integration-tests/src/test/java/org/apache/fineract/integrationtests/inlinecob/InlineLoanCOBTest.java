@@ -18,8 +18,9 @@
  */
 package org.apache.fineract.integrationtests.inlinecob;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
@@ -46,6 +47,7 @@ import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.PostDelinquencyBucketResponse;
 import org.apache.fineract.client.models.PostDelinquencyRangeResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
+import org.apache.fineract.client.util.CallFailedRuntimeException;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.BaseLoanIntegrationTest;
 import org.apache.fineract.integrationtests.common.BatchHelper;
@@ -83,7 +85,7 @@ public class InlineLoanCOBTest extends BaseLoanIntegrationTest {
         requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         requestSpec.header("Fineract-Platform-TenantId", "default");
         responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+        inlineLoanCOBHelper = new InlineLoanCOBHelper();
     }
 
     @Test
@@ -526,11 +528,10 @@ public class InlineLoanCOBTest extends BaseLoanIntegrationTest {
 
     @Test
     public void testInlineCOBRequestBodyItemLimitValidation() {
-        responseSpec = new ResponseSpecBuilder().expectStatusCode(400).build();
-        inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+        final InlineLoanCOBHelper helper = new InlineLoanCOBHelper();
         List<Long> loanIds = LongStream.rangeClosed(1, 1001).boxed().toList();
-        String responseUserMessage = inlineLoanCOBHelper.executeInlineCOB(loanIds, "defaultUserMessage");
-        assertEquals("Size of the loan IDs list cannot be over 1000", responseUserMessage);
+        CallFailedRuntimeException exception = assertThrows(CallFailedRuntimeException.class, () -> helper.executeInlineCOB(loanIds));
+        assertTrue(exception.getMessage().contains("Size of the loan IDs list cannot be over 1000"));
     }
 
     private Integer createLoanProduct(final String chargeId) {

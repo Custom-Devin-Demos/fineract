@@ -99,8 +99,8 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
         this.overpaymentAccount = this.accountHelper.createLiabilityAccount();
         this.journalEntryHelper = new JournalEntryHelper(this.requestSpec, this.responseSpec);
         this.clientHelper = new ClientHelper(this.requestSpec, this.responseSpec);
-        this.inlineLoanCOBHelper = new InlineLoanCOBHelper(this.requestSpec, this.responseSpec);
-        this.periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(this.requestSpec, this.responseSpec);
+        this.inlineLoanCOBHelper = new InlineLoanCOBHelper();
+        this.periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper();
     }
 
     @Test

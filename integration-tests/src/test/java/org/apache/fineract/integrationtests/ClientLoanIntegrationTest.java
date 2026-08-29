@@ -163,8 +163,7 @@ public class ClientLoanIntegrationTest extends BaseLoanIntegrationTest {
     private static final Account WRITTEN_OFF_ACCOUNT = ACCOUNT_HELPER.createExpenseAccount();
     private static final Account GOODWILL_EXPENSE_ACCOUNT = ACCOUNT_HELPER.createExpenseAccount();
     private static final SchedulerJobHelper SCHEDULER_JOB_HELPER = new SchedulerJobHelper(REQUEST_SPEC);
-    private static final PeriodicAccrualAccountingHelper PERIODIC_ACCRUAL_ACCOUNTING_HELPER = new PeriodicAccrualAccountingHelper(
-            REQUEST_SPEC, RESPONSE_SPEC);
+    private static final PeriodicAccrualAccountingHelper PERIODIC_ACCRUAL_ACCOUNTING_HELPER = new PeriodicAccrualAccountingHelper();
     private static final SavingsAccountHelper SAVINGS_ACCOUNT_HELPER = new SavingsAccountHelper(REQUEST_SPEC, RESPONSE_SPEC);
     private static final AccountTransferHelper ACCOUNT_TRANSFER_HELPER = new AccountTransferHelper(REQUEST_SPEC, RESPONSE_SPEC);
     private static final LoanProductHelper LOAN_PRODUCT_HELPER = new LoanProductHelper();

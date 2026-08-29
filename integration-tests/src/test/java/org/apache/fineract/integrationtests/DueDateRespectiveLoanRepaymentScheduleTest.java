@@ -77,7 +77,7 @@ public class DueDateRespectiveLoanRepaymentScheduleTest extends BaseLoanIntegrat
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
         this.loanRescheduleRequestHelper = new LoanRescheduleRequestHelper(this.requestSpec, this.responseSpec);
         this.businessDateHelper = new BusinessDateHelper();
-        inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+        inlineLoanCOBHelper = new InlineLoanCOBHelper();
     }
 
     // Scenario1:

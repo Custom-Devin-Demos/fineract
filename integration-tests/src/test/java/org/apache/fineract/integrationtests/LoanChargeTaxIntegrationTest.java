@@ -493,7 +493,7 @@ public class LoanChargeTaxIntegrationTest extends BaseLoanIntegrationTest {
             loanTransactionHelper.addChargesForLoan(loanId, new PostLoansLoanIdChargesRequest().chargeId(chargeResponse.getResourceId())
                     .amount(100.0).dueDate(LOAN_DATE).dateFormat(DATE_FORMAT).locale(LOCALE));
 
-            PeriodicAccrualAccountingHelper accrualHelper = new PeriodicAccrualAccountingHelper(requestSpec, responseSpec);
+            PeriodicAccrualAccountingHelper accrualHelper = new PeriodicAccrualAccountingHelper();
             accrualHelper.runPeriodicAccrualAccounting(LOAN_DATE);
 
             // Make a full repayment (principal 1000 + fee 100 = 1100)
