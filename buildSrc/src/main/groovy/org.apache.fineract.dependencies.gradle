@@ -194,11 +194,11 @@ dependencyManagement {
             exclude 'javax.annotation:javax.annotation-api'
         }
 
-        dependency 'io.swagger.core.v3:swagger-annotations-jakarta:2.2.49'
-        dependency ('io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.49') {
+        dependency 'io.swagger.core.v3:swagger-annotations-jakarta:2.2.54'
+        dependency ('io.swagger.core.v3:swagger-jaxrs2-jakarta:2.2.54') {
             exclude 'jakarta.activation:jakarta.activation-api'
         }
-        dependency ('io.swagger.core.v3:swagger-core-jakarta:2.2.49') {
+        dependency ('io.swagger.core.v3:swagger-core-jakarta:2.2.54') {
             exclude 'jakarta.activation:jakarta.activation-api'
         }
 
