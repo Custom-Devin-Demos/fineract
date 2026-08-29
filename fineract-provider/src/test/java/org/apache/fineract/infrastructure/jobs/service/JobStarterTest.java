@@ -101,7 +101,7 @@ public class JobStarterTest {
         when(jobParameterRepository.findJobParametersByJobId(1L))
                 .thenReturn(List.of(new JobParameter().setJobId(1L).setParameterName("testParamKey").setParameterValue("testParamValue")));
         Map<String, org.springframework.batch.core.job.parameters.JobParameter<?>> result = underTest.getJobParameter(scheduledJobDetail);
-        Assertions.assertEquals("testParamValue", result.get("testParamKey").getValue());
+        Assertions.assertEquals("testParamValue", result.get("testParamKey").value());
     }
 
     @Test

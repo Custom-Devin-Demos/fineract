@@ -44,6 +44,8 @@ import org.apache.fineract.infrastructure.core.service.ThreadLocalContextUtil;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.job.parameters.JobParameters;
+import org.springframework.batch.core.job.JobInstance;
 import org.springframework.batch.core.step.StepContribution;
 import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
@@ -72,7 +74,7 @@ public class ApplyLoanLockTaskletStepDefinitions implements En {
             HashMap<BusinessDateType, LocalDate> businessDateMap = new HashMap<>();
             businessDateMap.put(BusinessDateType.COB_DATE, LocalDate.now(ZoneId.systemDefault()));
             ThreadLocalContextUtil.setBusinessDates(businessDateMap);
-            JobExecution jobExecution = new JobExecution(1L, null);
+            JobExecution jobExecution = new JobExecution(1L, new JobInstance(1L, "test"), new JobParameters());
             StepExecution stepExecution = new StepExecution("test", jobExecution);
             ExecutionContext executionContext = new ExecutionContext();
             COBParameter loanCOBParameter = new COBParameter(1L, 4L);
