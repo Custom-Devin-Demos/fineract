@@ -60,6 +60,7 @@ public final class ChargesHelper {
     public static final Integer CHARGE_INSTALLMENT_FEE = 8;
     public static final Integer CHARGE_OVERDUE_INSTALLMENT_FEE = 9;
     public static final Integer CHARGE_OVERDRAFT_FEE = 10;
+    public static final Integer CHARGE_LATE_FEE = 17;
     public static final Integer WEEKLY_FEE = 11;
     public static final Integer SHAREACCOUNT_ACTIVATION = 13;
     public static final Integer SHARE_PURCHASE = 14;
@@ -499,6 +500,78 @@ public final class ChargesHelper {
         map.put("amount", penaltyPercentageAmount);
         map.put("chargePaymentMode", ChargesHelper.CHARGE_PAYMENT_MODE_REGULAR);
         map.put("chargeTimeType", CHARGE_OVERDUE_INSTALLMENT_FEE);
+        map.put("chargeCalculationType", ChargesHelper.CHARGE_CALCULATION_TYPE_PERCENTAGE_AMOUNT_AND_INTEREST);
+        map.put("feeFrequency", feeFrequency);
+        map.put("feeInterval", feeInterval);
+        String chargesCreateJson = new Gson().toJson(map);
+        LOG.info("{}", chargesCreateJson);
+        return chargesCreateJson;
+    }
+
+    // TODO: Rewrite to use fineract-client instead!
+    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
+    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
+    @Deprecated(forRemoval = true)
+    public static String getLoanLateFeeJSON() {
+        final HashMap<String, Object> map = populateDefaultsForLoan();
+        map.put("penalty", ChargesHelper.PENALTY);
+        map.put("chargePaymentMode", ChargesHelper.CHARGE_PAYMENT_MODE_REGULAR);
+        map.put("chargeTimeType", CHARGE_LATE_FEE);
+        map.put("feeFrequency", ChargesHelper.CHARGE_FEE_FREQUENCY_MONTHS);
+        map.put("feeOnMonthDay", ChargesHelper.FEE_ON_MONTH_DAY);
+        map.put("feeInterval", 2);
+        String chargesCreateJson = new Gson().toJson(map);
+        LOG.info("{}", chargesCreateJson);
+        return chargesCreateJson;
+    }
+
+    // TODO: Rewrite to use fineract-client instead!
+    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
+    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
+    @Deprecated(forRemoval = true)
+    public static String getLoanLateFeeJSONWithFlatAmountWithFeeInterval(String penaltyAmount, Integer feeFrequency, int feeInterval) {
+        final HashMap<String, Object> map = populateDefaultsForLoan();
+        map.put("penalty", ChargesHelper.PENALTY);
+        map.put("amount", penaltyAmount);
+        map.put("chargePaymentMode", ChargesHelper.CHARGE_PAYMENT_MODE_REGULAR);
+        map.put("chargeTimeType", CHARGE_LATE_FEE);
+        map.put("chargeCalculationType", ChargesHelper.CHARGE_CALCULATION_TYPE_FLAT);
+        if (feeFrequency != null) {
+            map.put("feeFrequency", feeFrequency);
+            map.put("feeInterval", feeInterval);
+        }
+        String chargesCreateJson = new Gson().toJson(map);
+        LOG.info("{}", chargesCreateJson);
+        return chargesCreateJson;
+    }
+
+    // TODO: Rewrite to use fineract-client instead!
+    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
+    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
+    @Deprecated(forRemoval = true)
+    public static String getLoanLateFeeJSONWithCalculationTypePercentage(String penaltyPercentageAmount) {
+        final HashMap<String, Object> map = populateDefaultsForLoan();
+        map.put("penalty", ChargesHelper.PENALTY);
+        map.put("amount", penaltyPercentageAmount);
+        map.put("chargePaymentMode", ChargesHelper.CHARGE_PAYMENT_MODE_REGULAR);
+        map.put("chargeTimeType", CHARGE_LATE_FEE);
+        map.put("chargeCalculationType", ChargesHelper.CHARGE_CALCULATION_TYPE_PERCENTAGE_AMOUNT_AND_INTEREST);
+        String chargesCreateJson = new Gson().toJson(map);
+        LOG.info("{}", chargesCreateJson);
+        return chargesCreateJson;
+    }
+
+    // TODO: Rewrite to use fineract-client instead!
+    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
+    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
+    @Deprecated(forRemoval = true)
+    public static String getLoanLateFeeJSONWithCalculationTypePercentageWithFeeInterval(String penaltyPercentageAmount,
+            Integer feeFrequency, int feeInterval) {
+        final HashMap<String, Object> map = populateDefaultsForLoan();
+        map.put("penalty", ChargesHelper.PENALTY);
+        map.put("amount", penaltyPercentageAmount);
+        map.put("chargePaymentMode", ChargesHelper.CHARGE_PAYMENT_MODE_REGULAR);
+        map.put("chargeTimeType", CHARGE_LATE_FEE);
         map.put("chargeCalculationType", ChargesHelper.CHARGE_CALCULATION_TYPE_PERCENTAGE_AMOUNT_AND_INTEREST);
         map.put("feeFrequency", feeFrequency);
         map.put("feeInterval", feeInterval);
