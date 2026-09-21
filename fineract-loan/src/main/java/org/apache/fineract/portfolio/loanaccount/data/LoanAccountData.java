@@ -368,7 +368,7 @@ public class LoanAccountData {
 
         final Collection<LoanChargeData> charges = new ArrayList<LoanChargeData>();
         for (final ChargeData charge : product.charges()) {
-            if (!charge.isOverdueInstallmentCharge()) {
+            if (!charge.isOverdueInstallmentCharge() && !charge.isLateFeeCharge()) {
                 charges.add(toLoanChargeData(charge));
             }
         }

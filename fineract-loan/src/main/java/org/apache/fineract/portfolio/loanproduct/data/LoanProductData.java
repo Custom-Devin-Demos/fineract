@@ -1342,7 +1342,7 @@ public class LoanProductData implements Serializable {
         Collection<ChargeData> overdueFeeCharges = new ArrayList<>();
         Collection<ChargeData> charges = charges();
         for (ChargeData chargeData : charges) {
-            if (chargeData.isOverdueInstallmentCharge()) {
+            if (chargeData.isOverdueInstallmentCharge() || chargeData.isLateFeeCharge()) {
                 overdueFeeCharges.add(chargeData);
             }
         }

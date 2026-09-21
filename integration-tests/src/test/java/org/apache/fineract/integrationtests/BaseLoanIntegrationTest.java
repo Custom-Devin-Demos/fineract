@@ -1173,8 +1173,9 @@ public abstract class BaseLoanIntegrationTest extends IntegrationTest {
     }
 
     protected Long createLateFeePercentageCharge(double percentageAmount, Integer feeFrequency, int feeInterval) {
-        Integer chargeId = ChargesHelper.createCharges(requestSpec, responseSpec, ChargesHelper
-                .getLoanLateFeeJSONWithCalculationTypePercentageWithFeeInterval(String.valueOf(percentageAmount), feeFrequency, feeInterval));
+        Integer chargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
+                ChargesHelper.getLoanLateFeeJSONWithCalculationTypePercentageWithFeeInterval(String.valueOf(percentageAmount), feeFrequency,
+                        feeInterval));
         assertNotNull(chargeId);
         return chargeId.longValue();
     }

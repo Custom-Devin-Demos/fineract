@@ -126,6 +126,10 @@ public final class ChargeData implements Comparable<ChargeData>, Serializable {
         return obj.id.compareTo(this.id);
     }
 
+    public boolean isLateFeeCharge() {
+        return this.chargeTimeType != null && ChargeTimeType.fromInt(this.chargeTimeType.getId().intValue()).isLateFee();
+    }
+
     public boolean isOverdueInstallmentCharge() {
         boolean isOverdueInstallmentCharge = false;
         if (this.chargeTimeType != null) {

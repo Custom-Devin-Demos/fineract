@@ -382,7 +382,7 @@ public final class LoanChargeApiJsonValidator {
                         // TODO: GeneralPlatformDomainRuleException vs PlatformApiDataValidationException
                         throw new InvalidCurrencyException("loanCharge", "attach.to.loan", errorMessage);
                     }
-                    if (chargeDefinition.isOverdueInstallment()) {
+                    if (chargeDefinition.isOverdueInstallment() || chargeDefinition.isLateFee()) {
                         final String defaultUserMessage = "Installment charge cannot be added to the loan.";
                         throw new LoanChargeCannotBeAddedException("loanCharge", "overdue.charge", defaultUserMessage, null,
                                 chargeDefinition.getName());

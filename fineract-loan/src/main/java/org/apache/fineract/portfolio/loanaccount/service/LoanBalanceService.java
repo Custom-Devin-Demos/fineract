@@ -207,7 +207,7 @@ public class LoanBalanceService {
 
     public void updateLoanToLastDisbursalState(final Loan loan, final LoanDisbursementDetails disbursementDetail) {
         for (final LoanCharge charge : loan.getActiveCharges()) {
-            if (charge.isOverdueInstallmentCharge()) {
+            if (charge.isOverdueInstallmentOrLateFeeCharge()) {
                 charge.setActive(false);
             } else if (charge.isTrancheDisbursementCharge() && disbursementDetail.getDisbursementDate()
                     .equals(charge.getTrancheDisbursementCharge().getloanDisbursementDetails().actualDisbursementDate())) {
