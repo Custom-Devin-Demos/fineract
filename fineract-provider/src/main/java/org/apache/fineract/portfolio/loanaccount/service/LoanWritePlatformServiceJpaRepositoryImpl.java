@@ -3194,7 +3194,7 @@ public class LoanWritePlatformServiceJpaRepositoryImpl implements LoanWritePlatf
         BigDecimal principalForScheduleRegeneration = loan.getApprovedPrincipal();
 
         for (final LoanCharge charge : loan.getActiveCharges()) {
-            if (charge.isOverdueInstallmentCharge()) {
+            if (charge.isOverdueInstallmentOrLateFeeCharge()) {
                 charge.setActive(false);
             } else {
                 charge.resetToOriginal(loan.loanCurrency());

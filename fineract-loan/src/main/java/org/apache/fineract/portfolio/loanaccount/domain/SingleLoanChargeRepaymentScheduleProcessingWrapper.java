@@ -118,7 +118,8 @@ public class SingleLoanChargeRepaymentScheduleProcessingWrapper {
             return zero;
         }
         ChargeCalculationType calculationType = loanCharge.getChargeCalculation();
-        if ((loanCharge.isOverdueInstallmentCharge() || loanCharge.getChargeTimeType().isLateFee()) && calculationType.isPercentageBased()) {
+        if ((loanCharge.isOverdueInstallmentCharge() || loanCharge.getChargeTimeType().isLateFee())
+                && calculationType.isPercentageBased()) {
             return Money.of(currency, loanCharge.chargeAmount());
         }
         if (calculationType.isFlat()) {

@@ -1205,10 +1205,10 @@ public class LoansApiResource {
             repaymentStrategyOptions = this.dropdownReadPlatformService.retrieveTransactionProcessingStrategies();
             if (product.getMultiDisburseLoan()) {
                 chargeOptions = this.chargeReadPlatformService.retrieveLoanAccountApplicableCharges(resolvedLoanId,
-                        new ChargeTimeType[] { ChargeTimeType.OVERDUE_INSTALLMENT });
+                        new ChargeTimeType[] { ChargeTimeType.OVERDUE_INSTALLMENT, ChargeTimeType.LATE_FEE });
             } else {
-                chargeOptions = this.chargeReadPlatformService.retrieveLoanAccountApplicableCharges(resolvedLoanId,
-                        new ChargeTimeType[] { ChargeTimeType.OVERDUE_INSTALLMENT, ChargeTimeType.TRANCHE_DISBURSEMENT });
+                chargeOptions = this.chargeReadPlatformService.retrieveLoanAccountApplicableCharges(resolvedLoanId, new ChargeTimeType[] {
+                        ChargeTimeType.OVERDUE_INSTALLMENT, ChargeTimeType.LATE_FEE, ChargeTimeType.TRANCHE_DISBURSEMENT });
             }
             chargeTemplate = this.loanChargeReadPlatformService.retrieveLoanChargeTemplate();
 
@@ -1246,8 +1246,10 @@ public class LoansApiResource {
 
         }
 
-        Collection<ChargeData> overdueCharges = this.chargeReadPlatformService
-                .retrieveLoanProductCharges(loanBasicDetails.getLoanProductId(), ChargeTimeType.OVERDUE_INSTALLMENT);
+        Collection<ChargeData> overdueCharges = new ArrayList<>(this.chargeReadPlatformService
+                .retrieveLoanProductCharges(loanBasicDetails.getLoanProductId(), ChargeTimeType.OVERDUE_INSTALLMENT));
+        overdueCharges.addAll(
+                this.chargeReadPlatformService.retrieveLoanProductCharges(loanBasicDetails.getLoanProductId(), ChargeTimeType.LATE_FEE));
 
         paidInAdvanceTemplate = this.loanReadPlatformService.retrieveTotalPaidInAdvance(resolvedLoanId);
 
