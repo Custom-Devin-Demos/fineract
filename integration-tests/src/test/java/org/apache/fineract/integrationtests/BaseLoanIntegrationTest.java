@@ -1172,6 +1172,20 @@ public abstract class BaseLoanIntegrationTest extends IntegrationTest {
         return chargeId.longValue();
     }
 
+    protected Long createLateFeePercentageCharge(double percentageAmount, Integer feeFrequency, int feeInterval) {
+        Integer chargeId = ChargesHelper.createCharges(requestSpec, responseSpec, ChargesHelper
+                .getLoanLateFeeJSONWithCalculationTypePercentageWithFeeInterval(String.valueOf(percentageAmount), feeFrequency, feeInterval));
+        assertNotNull(chargeId);
+        return chargeId.longValue();
+    }
+
+    protected Long createLateFeeFlatCharge(double amount, Integer feeFrequency, int feeInterval) {
+        Integer chargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
+                ChargesHelper.getLoanLateFeeJSONWithFlatAmountWithFeeInterval(String.valueOf(amount), feeFrequency, feeInterval));
+        assertNotNull(chargeId);
+        return chargeId.longValue();
+    }
+
     protected void verifyRepaymentSchedule(GetLoansLoanIdResponse savedLoanResponse, GetLoansLoanIdResponse actualLoanResponse,
             int totalPeriods, int identicalPeriods) {
         List<GetLoansLoanIdRepaymentPeriod> savedPeriods = savedLoanResponse.getRepaymentSchedule().getPeriods();
@@ -1511,6 +1525,12 @@ public abstract class BaseLoanIntegrationTest extends IntegrationTest {
     protected List<GetLoansLoanIdChargesChargeIdResponse> getOverdueInstallmentLoanCharges(Long loanId) {
         return ok(fineractClient().loanCharges.retrieveAllLoanCharges(loanId)).stream() //
                 .filter(ch -> ch.getChargeTimeType().getId().intValue() == ChargesHelper.CHARGE_OVERDUE_INSTALLMENT_FEE) //
+                .toList(); //
+    }
+
+    protected List<GetLoansLoanIdChargesChargeIdResponse> getLateFeeLoanCharges(Long loanId) {
+        return ok(fineractClient().loanCharges.retrieveAllLoanCharges(loanId)).stream() //
+                .filter(ch -> ch.getChargeTimeType().getId().intValue() == ChargesHelper.CHARGE_LATE_FEE) //
                 .toList(); //
     }
 
