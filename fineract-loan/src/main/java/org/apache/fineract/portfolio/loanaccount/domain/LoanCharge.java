@@ -264,6 +264,14 @@ public class LoanCharge extends AbstractAuditableWithUTCDateTimeCustom<Long> {
         return ChargeTimeType.fromInt(this.chargeTime).equals(ChargeTimeType.OVERDUE_INSTALLMENT);
     }
 
+    public boolean isLateFeeCharge() {
+        return ChargeTimeType.fromInt(this.chargeTime).equals(ChargeTimeType.LATE_FEE);
+    }
+
+    public boolean isOverdueInstallmentOrLateFeeCharge() {
+        return isOverdueInstallmentCharge() || isLateFeeCharge();
+    }
+
     private static boolean isGreaterThanZero(final BigDecimal value) {
         return value.compareTo(BigDecimal.ZERO) > 0;
     }
