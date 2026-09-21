@@ -78,6 +78,10 @@ public final class ChargeEnumerations {
                 optionData = new EnumOptionData(ChargeTimeType.OVERDUE_INSTALLMENT.getValue().longValue(),
                         ChargeTimeType.OVERDUE_INSTALLMENT.getCode(), "Overdue Fees");
             break;
+            case LATE_FEE:
+                optionData = new EnumOptionData(ChargeTimeType.LATE_FEE.getValue().longValue(), ChargeTimeType.LATE_FEE.getCode(),
+                        "Late Fee");
+            break;
             case OVERDRAFT_FEE:
                 optionData = new EnumOptionData(ChargeTimeType.OVERDRAFT_FEE.getValue().longValue(), ChargeTimeType.OVERDRAFT_FEE.getCode(),
                         "Overdraft Fee");
