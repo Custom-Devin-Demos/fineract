@@ -94,7 +94,7 @@ public class LoanChargeService {
         BigDecimal chargeAmt;
         BigDecimal totalChargeAmt = BigDecimal.ZERO;
         if (loanCharge.getChargeCalculation().isPercentageBased()) {
-            if (loanCharge.isOverdueInstallmentCharge()) {
+            if (loanCharge.isOverdueInstallmentOrLateFeeCharge()) {
                 amount = calculateOverdueAmountPercentageAppliedTo(loan, loanCharge, penaltyWaitPeriod);
             } else {
                 amount = calculateAmountPercentageAppliedTo(loan, loanCharge);
@@ -120,7 +120,7 @@ public class LoanChargeService {
         BigDecimal chargeAmt;
         BigDecimal totalChargeAmt = BigDecimal.ZERO;
         if (loanCharge.getChargeCalculation().isPercentageBased()) {
-            if (loanCharge.isOverdueInstallmentCharge()) {
+            if (loanCharge.isOverdueInstallmentOrLateFeeCharge()) {
                 amount = calculateOverdueAmountPercentageAppliedTo(loan, loanCharge, penaltyWaitPeriod);
             } else {
                 amount = calculateAmountPercentageAppliedTo(loan, loanCharge);
@@ -223,7 +223,7 @@ public class LoanChargeService {
             chargeAmt = loanCharge.getPercentage();
             if (loanCharge.isInstalmentFee()) {
                 totalChargeAmt = calculatePerInstallmentChargeAmount(loan, loanCharge);
-            } else if (loanCharge.isOverdueInstallmentCharge()) {
+            } else if (loanCharge.isOverdueInstallmentOrLateFeeCharge()) {
                 totalChargeAmt = loanCharge.amountOutstanding();
             }
         } else {
@@ -249,7 +249,7 @@ public class LoanChargeService {
     }
 
     public BigDecimal calculateAmountPercentageAppliedTo(final Loan loan, final LoanCharge loanCharge) {
-        if (loanCharge.isOverdueInstallmentCharge()) {
+        if (loanCharge.isOverdueInstallmentOrLateFeeCharge()) {
             return loanCharge.getAmountPercentageAppliedTo();
         }
 
@@ -525,7 +525,8 @@ public class LoanChargeService {
         loanCharge.setChargeTime(chargeTime == null ? chargeDefinition.getChargeTimeType() : chargeTime.getValue());
 
         if (loanCharge.getChargeTimeType().equals(ChargeTimeType.SPECIFIED_DUE_DATE)
-                || loanCharge.getChargeTimeType().equals(ChargeTimeType.OVERDUE_INSTALLMENT)) {
+                || loanCharge.getChargeTimeType().equals(ChargeTimeType.OVERDUE_INSTALLMENT)
+                || loanCharge.getChargeTimeType().equals(ChargeTimeType.LATE_FEE)) {
 
             if (dueDate == null) {
                 final String defaultUserMessage = "Loan charge is missing due date.";
@@ -570,7 +571,7 @@ public class LoanChargeService {
      * Update interest recalculation settings if product configuration changes
      */
     public void updateOverdueScheduleInstallment(final Loan loan, final LoanCharge loanCharge) {
-        if (loanCharge.isOverdueInstallmentCharge() && loanCharge.isActive()) {
+        if (loanCharge.isOverdueInstallmentOrLateFeeCharge() && loanCharge.isActive()) {
             LoanOverdueInstallmentCharge overdueInstallmentCharge = loanCharge.getOverdueInstallmentCharge();
             if (overdueInstallmentCharge != null) {
                 Integer installmentNumber = overdueInstallmentCharge.getInstallment().getInstallmentNumber();

@@ -1493,10 +1493,10 @@ public class LoanReadPlatformServiceImpl implements LoanReadPlatformService, Loa
         Collection<ChargeData> chargeOptions = null;
         if (loanProduct.getMultiDisburseLoan()) {
             chargeOptions = this.chargeReadPlatformService.retrieveLoanProductApplicableCharges(productId,
-                    new ChargeTimeType[] { ChargeTimeType.OVERDUE_INSTALLMENT });
+                    new ChargeTimeType[] { ChargeTimeType.OVERDUE_INSTALLMENT, ChargeTimeType.LATE_FEE });
         } else {
-            chargeOptions = this.chargeReadPlatformService.retrieveLoanProductApplicableCharges(productId,
-                    new ChargeTimeType[] { ChargeTimeType.OVERDUE_INSTALLMENT, ChargeTimeType.TRANCHE_DISBURSEMENT });
+            chargeOptions = this.chargeReadPlatformService.retrieveLoanProductApplicableCharges(productId, new ChargeTimeType[] {
+                    ChargeTimeType.OVERDUE_INSTALLMENT, ChargeTimeType.LATE_FEE, ChargeTimeType.TRANCHE_DISBURSEMENT });
         }
 
         Integer loanCycleCounter = null;
@@ -1578,7 +1578,8 @@ public class LoanReadPlatformServiceImpl implements LoanReadPlatformService, Loa
                 .append(" where " + sqlGenerator.subDate(sqlGenerator.currentBusinessDate(), "?", "day") + " > ls.duedate ")
                 .append(" and ls.completed_derived <> true and mc.charge_applies_to_enum =1 ")
                 .append(" and ls.recalculated_interest_component <> true ")
-                .append(" and mc.charge_time_enum = 9 and ml.loan_status_id = 300 ");
+                .append(" and mc.charge_time_enum in (" + ChargeTimeType.OVERDUE_INSTALLMENT.getValue() + ", "
+                        + ChargeTimeType.LATE_FEE.getValue() + ") and ml.loan_status_id = 300 ");
 
         if (backdatePenalties) {
             return this.jdbcTemplate.query(sqlBuilder.toString(), rm, penaltyWaitPeriod);
@@ -1598,13 +1599,14 @@ public class LoanReadPlatformServiceImpl implements LoanReadPlatformService, Loa
             return list;
         }
 
-        Optional<Charge> optPenaltyCharge = loan.getLoanProduct().getCharges().stream()
-                .filter((e) -> ChargeTimeType.OVERDUE_INSTALLMENT.getValue().equals(e.getChargeTimeType()) && e.isLoanCharge()).findFirst();
+        List<Charge> penaltyCharges = loan.getLoanProduct().getCharges().stream()
+                .filter((e) -> (ChargeTimeType.OVERDUE_INSTALLMENT.getValue().equals(e.getChargeTimeType())
+                        || ChargeTimeType.LATE_FEE.getValue().equals(e.getChargeTimeType())) && e.isLoanCharge())
+                .toList();
 
-        if (optPenaltyCharge.isEmpty()) {
+        if (penaltyCharges.isEmpty()) {
             return list;
         }
-        final Charge penaltyCharge = optPenaltyCharge.get();
 
         final Long penaltyWaitPeriod = configurationDomainService.retrievePenaltyWaitPeriod();
         final boolean backdatePenalties = configurationDomainService.isBackdatePenaltiesEnabled();
@@ -1622,11 +1624,13 @@ public class LoanReadPlatformServiceImpl implements LoanReadPlatformService, Loa
                     continue;
                 }
 
-                list.add(new OverdueLoanScheduleData(loan.getId(), penaltyCharge.getId(),
-                        DateUtils.DEFAULT_DATE_FORMATTER.format(installment.getDueDate()), penaltyCharge.getAmount(),
-                        DateUtils.DEFAULT_DATE_FORMAT, Locale.ENGLISH.toLanguageTag(),
-                        installment.getPrincipalOutstanding(loan.getCurrency()).getAmount(),
-                        installment.getInterestOutstanding(loan.getCurrency()).getAmount(), installment.getInstallmentNumber()));
+                for (Charge penaltyCharge : penaltyCharges) {
+                    list.add(new OverdueLoanScheduleData(loan.getId(), penaltyCharge.getId(),
+                            DateUtils.DEFAULT_DATE_FORMATTER.format(installment.getDueDate()), penaltyCharge.getAmount(),
+                            DateUtils.DEFAULT_DATE_FORMAT, Locale.ENGLISH.toLanguageTag(),
+                            installment.getPrincipalOutstanding(loan.getCurrency()).getAmount(),
+                            installment.getInterestOutstanding(loan.getCurrency()).getAmount(), installment.getInstallmentNumber()));
+                }
             }
         }
         return list;

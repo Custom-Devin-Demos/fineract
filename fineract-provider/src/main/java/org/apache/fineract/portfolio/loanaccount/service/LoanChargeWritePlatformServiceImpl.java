@@ -778,7 +778,7 @@ public class LoanChargeWritePlatformServiceImpl implements LoanChargeWritePlatfo
     }
 
     private void inactivateOverdueLoanCharge(LoanCharge loanCharge) {
-        if (!loanCharge.getChargeTimeType().isOverdueInstallment()) {
+        if (!loanCharge.isOverdueInstallmentOrLateFeeCharge()) {
             throw new LoanChargeDeactivationException("loan.charge.deactivate.invalid.charge.type",
                     "Loan charge is not an overdue installment charge");
         }
@@ -805,7 +805,9 @@ public class LoanChargeWritePlatformServiceImpl implements LoanChargeWritePlatfo
             return;
         }
         Optional<Charge> optPenaltyCharge = loan.getLoanProduct().getCharges().stream()
-                .filter((e) -> ChargeTimeType.OVERDUE_INSTALLMENT.getValue().equals(e.getChargeTimeType()) && e.isLoanCharge()).findFirst();
+                .filter((e) -> (ChargeTimeType.OVERDUE_INSTALLMENT.getValue().equals(e.getChargeTimeType())
+                        || ChargeTimeType.LATE_FEE.getValue().equals(e.getChargeTimeType())) && e.isLoanCharge())
+                .findFirst();
         if (optPenaltyCharge.isEmpty()) {
             return;
         }
@@ -1008,7 +1010,7 @@ public class LoanChargeWritePlatformServiceImpl implements LoanChargeWritePlatfo
     }
 
     private void validateAddLoanCharge(final Loan loan, final Charge chargeDefinition, final LoanCharge loanCharge) {
-        if (chargeDefinition.isOverdueInstallment()) {
+        if (chargeDefinition.isOverdueInstallment() || ChargeTimeType.fromInt(chargeDefinition.getChargeTimeType()).isLateFee()) {
             final String defaultUserMessage = "Installment charge cannot be added to the loan.";
             throw new LoanChargeCannotBeAddedException("loanCharge", "overdue.charge", defaultUserMessage, null,
                     chargeDefinition.getName());
