@@ -277,7 +277,7 @@ public class Charge extends AbstractPersistableCustom<Long> {
             if (penalty && (chargeTime.isTimeOfDisbursement() || chargeTime.isTrancheDisbursement())) {
                 throw new ChargeDueAtDisbursementCannotBePenaltyException(name);
             }
-            if (!penalty && chargeTime.isOverdueInstallment()) {
+            if (!penalty && (chargeTime.isOverdueInstallment() || chargeTime.isLateFee())) {
                 throw new ChargeMustBePenaltyException(name);
             }
             // TODO vishwas, this validation seems unnecessary as identical
@@ -606,7 +606,8 @@ public class Charge extends AbstractPersistableCustom<Long> {
         if (this.penalty && ChargeTimeType.fromInt(this.chargeTimeType).isTimeOfDisbursement()) {
             throw new ChargeDueAtDisbursementCannotBePenaltyException(this.name);
         }
-        if (!penalty && ChargeTimeType.fromInt(this.chargeTimeType).isOverdueInstallment()) {
+        if (!penalty && (ChargeTimeType.fromInt(this.chargeTimeType).isOverdueInstallment()
+                || ChargeTimeType.fromInt(this.chargeTimeType).isLateFee())) {
             throw new ChargeMustBePenaltyException(name);
         }
 
@@ -684,6 +685,10 @@ public class Charge extends AbstractPersistableCustom<Long> {
 
     public boolean isOverdueInstallment() {
         return ChargeTimeType.fromInt(this.chargeTimeType).isOverdueInstallment();
+    }
+
+    public boolean isLateFee() {
+        return ChargeTimeType.fromInt(this.chargeTimeType).isLateFee();
     }
 
     public MonthDay getFeeOnMonthDay() {
