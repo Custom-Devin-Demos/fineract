@@ -73,7 +73,7 @@ public enum ChargeTimeType {
 
     public static Object[] validLoanChargeValues() {
         return new Integer[] { ChargeTimeType.DISBURSEMENT.getValue(), ChargeTimeType.SPECIFIED_DUE_DATE.getValue(),
-                ChargeTimeType.INSTALMENT_FEE.getValue() };
+                ChargeTimeType.INSTALMENT_FEE.getValue(), ChargeTimeType.LATE_FEE.getValue() };
     }
 
     public static Object[] validSavingsValues() {
