@@ -35,13 +35,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 import org.apache.fineract.client.models.AdvancedPaymentData;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdRepaymentPeriod;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
@@ -88,7 +88,8 @@ public class LoanAccountPaymentAllocationWithOverlappingDownPaymentInstallmentTe
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
@@ -179,7 +180,8 @@ public class LoanAccountPaymentAllocationWithOverlappingDownPaymentInstallmentTe
             // second disbursement with overlapping installment i.e same due date as regular repayment due date
 
             disbursementDate = LocalDate.of(2023, 4, 3);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             loanTransactionHelper.disburseLoanWithTransactionAmount("03 April 2023", loanId, "1000");
 
             checkDownPaymentTransaction(disbursementDate, 250.0f, 0.0f, 0.0f, 0.0f, loanId);
@@ -261,7 +263,8 @@ public class LoanAccountPaymentAllocationWithOverlappingDownPaymentInstallmentTe
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
@@ -354,7 +357,8 @@ public class LoanAccountPaymentAllocationWithOverlappingDownPaymentInstallmentTe
             // second disbursement with overlapping installment i.e same due date as regular repayment due date
 
             disbursementDate = LocalDate.of(2023, 4, 3);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             loanTransactionHelper.disburseLoanWithTransactionAmount("03 April 2023", loanId, "1000");
 
             // make repayment on 3rd April
@@ -437,7 +441,8 @@ public class LoanAccountPaymentAllocationWithOverlappingDownPaymentInstallmentTe
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
@@ -505,7 +510,8 @@ public class LoanAccountPaymentAllocationWithOverlappingDownPaymentInstallmentTe
             // second disbursement with overlapping installment i.e same due date as regular repayment due date
 
             disbursementDate = LocalDate.of(2023, 4, 3);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             loanTransactionHelper.disburseLoanWithTransactionAmount("03 April 2023", loanId, "200");
 
             // make repayment on 3rd April
@@ -632,7 +638,8 @@ public class LoanAccountPaymentAllocationWithOverlappingDownPaymentInstallmentTe
 
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
@@ -703,7 +710,8 @@ public class LoanAccountPaymentAllocationWithOverlappingDownPaymentInstallmentTe
             // second disbursement with overlapping installment i.e same due date as regular repayment due date
 
             disbursementDate = LocalDate.of(2023, 4, 3);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, disbursementDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(disbursementDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             loanTransactionHelper.disburseLoanWithTransactionAmount("03 April 2023", loanId, "200");
 
             // make repayment on 3rd April

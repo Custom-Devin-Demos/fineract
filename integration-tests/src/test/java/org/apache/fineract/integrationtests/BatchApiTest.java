@@ -259,13 +259,12 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
                 .withInterestTypeAsDecliningBalance() //
                 .currencyDetails("0", "100").build(null);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -360,13 +359,12 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
                 .withInterestTypeAsDecliningBalance() //
                 .currencyDetails("0", "100").build(null);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -429,8 +427,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         // Create charge object and get id
         final Integer chargeId = ChargesHelper.createCharges(this.requestSpec, this.responseSpec,
@@ -491,8 +489,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         // Create charge object and get id
         final Integer chargeId = ChargesHelper.createCharges(this.requestSpec, this.responseSpec,
@@ -569,8 +567,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         // Create charge object and get id
         final Integer chargeId = ChargesHelper.createCharges(this.requestSpec, this.responseSpec,
@@ -660,13 +658,12 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
                 .withInterestTypeAsDecliningBalance() //
                 .currencyDetails("0", "100").build(null);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -732,13 +729,12 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
                 .withInterestTypeAsDecliningBalance() //
                 .currencyDetails("0", "100").build(null);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -802,13 +798,12 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
                 .withInterestTypeAsDecliningBalance() //
                 .currencyDetails("0", "100").build(null);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -869,13 +864,12 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
                 .withInterestTypeAsDecliningBalance() //
                 .currencyDetails("0", "100").build(null);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -967,13 +961,12 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
                 .withInterestTypeAsDecliningBalance() //
                 .currencyDetails("0", "100").build(null);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -1030,13 +1023,12 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
                 .withInterestTypeAsDecliningBalance() //
                 .currencyDetails("0", "100").build(null);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -1094,8 +1086,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         // Create an ApplyLoan Request
         final BatchRequest batchRequest1 = BatchHelper.applyLoanRequestWithClientId(applyLoanRequestId, clientId, productId);
@@ -1152,8 +1144,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         /* Retrieve/Create Code Values for the Code "LoanRescheduleReason = 23" */
         final HashMap<String, Object> codeValue = CodeHelper.retrieveOrCreateCodeValue(23, this.requestSpec, this.responseSpec);
@@ -1287,8 +1279,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         // Create an ApplyLoan Request
         final BatchRequest batchRequest1 = BatchHelper.applyLoanRequestWithClientId(applyLoanRequestId, clientId, productId);
@@ -1549,8 +1541,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         // Create an ApplyLoan Request
         final BatchRequest applyLoanRequest = BatchHelper.applyLoanRequestWithClientId(applyLoanRequestId, clientId, productId);
@@ -1612,8 +1604,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Long getLoanRequestId = 5735L;
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         // Create an apply loan request
         final BatchRequest applyLoanRequest = BatchHelper.applyLoanRequestWithClientId(applyLoanRequestId, clientId, productId);
@@ -1687,8 +1679,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Long getLoanAfterReversal = repayReversalRequestId + 1;
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
         final String loanExternalId = UUID.randomUUID().toString();
 
         // Create an apply loan request
@@ -1789,8 +1781,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Long getLoanRequestId = 5735L;
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         // Create an apply loan request
         final BatchRequest applyLoanRequest = BatchHelper.applyLoanRequestWithClientId(applyLoanRequestId, clientId, productId);
@@ -1861,8 +1853,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Long getLoanRequestId = 5735L;
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         // Create an apply loan request
         final BatchRequest applyLoanRequest = BatchHelper.applyLoanRequestWithClientId(applyLoanRequestId, clientId, productId);
@@ -1937,8 +1929,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         // Create an apply loan request
         final BatchRequest applyLoanRequest = BatchHelper.applyLoanRequestWithClientId(applyLoanRequestId, clientId, productId);
@@ -2004,7 +1996,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final String startDate = "10 April 2022";
         final SavingsProductHelper savingsProductHelper = new SavingsProductHelper();
         final SavingsAccountHelper savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final String savingsProductJSON = savingsProductHelper.withInterestCompoundingPeriodTypeAsDaily()
                 .withInterestPostingPeriodTypeAsDaily().withInterestCalculationPeriodTypeAsDailyBalance().build();
@@ -2290,8 +2283,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         final BatchRequest applyLoanRequest = BatchHelper.applyLoanRequestWithClientId(applyLoanRequestId, clientId, productId);
 
@@ -2348,8 +2341,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         final BatchRequest applyLoanRequest = BatchHelper.applyLoanRequestWithClientId(applyLoanRequestId, clientId, productId);
 
@@ -2414,8 +2407,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         final BatchRequest applyLoanRequest = BatchHelper.applyLoanRequestWithClientId(applyLoanRequestId, clientId, productId);
 
@@ -2496,8 +2489,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         final BatchRequest applyLoanRequest = BatchHelper.applyLoanRequestWithClientId(applyLoanRequestId, clientId, productId);
 
@@ -2553,7 +2546,7 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
     public void verifyCalculatingRunningBalanceAfterBatchWithReleaseAmount() {
         final SavingsProductHelper savingsProductHelper = new SavingsProductHelper();
         final SavingsAccountHelper savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final String savingsProductJSON = savingsProductHelper.withInterestCompoundingPeriodTypeAsDaily()
                 .withInterestPostingPeriodTypeAsDaily().withInterestCalculationPeriodTypeAsDailyBalance().build();
@@ -2631,13 +2624,12 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
                 .withInterestTypeAsDecliningBalance() //
                 .currencyDetails("0", "100").build(null);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
@@ -2721,8 +2713,8 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
         final Integer productId = new LoanTransactionHelper(this.requestSpec, this.responseSpec).getLoanProductId(loanProductJSON);
 
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         // Create an ApplyLoan Request
         final BatchRequest applyLoanBatchRequest = BatchHelper.applyLoanRequestWithClientId(applyLoanRequestId, clientId, productId);

@@ -73,7 +73,7 @@ public class GroupTest {
 
     @Test
     public void checkGroupFunctions() {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Integer groupID = GroupHelper.createGroup(this.requestSpec, this.responseSpec);
         GroupHelper.verifyGroupCreatedOnServer(this.requestSpec, this.responseSpec, groupID);
 
@@ -110,8 +110,8 @@ public class GroupTest {
         Integer updateGroupId = GroupHelper.updateGroup(this.requestSpec, this.responseSpec, updateGroupName, groupID.toString());
 
         // create client and add client to group
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         groupID = GroupHelper.associateClient(this.requestSpec, this.responseSpec, groupID.toString(), clientID.toString());
         GroupHelper.verifyGroupMembers(this.requestSpec, this.responseSpec, groupID, clientID);
@@ -170,10 +170,9 @@ public class GroupTest {
     private Integer applyForLoanApplication(final Integer clientID, final Integer loanProductID, String principal) {
         LOG.info("--------------------------------APPLYING FOR LOAN APPLICATION--------------------------------");
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 

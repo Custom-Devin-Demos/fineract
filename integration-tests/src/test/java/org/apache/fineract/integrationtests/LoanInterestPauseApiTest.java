@@ -81,7 +81,7 @@ public class LoanInterestPauseApiTest extends BaseLoanIntegrationTest {
         LOAN_TRANSACTION_HELPER_403 = new LoanTransactionHelper(REQUEST_SPEC, RESPONSE_SPEC_403);
         LOAN_TRANSACTION_HELPER_404 = new LoanTransactionHelper(REQUEST_SPEC, RESPONSE_SPEC_404);
         LOAN_TRANSACTIONAL_HELPER_204 = new LoanTransactionHelper(REQUEST_SPEC, RESPONSE_SPEC_204);
-        ACCOUNT_HELPER = new AccountHelper(REQUEST_SPEC, RESPONSE_SPEC);
+        ACCOUNT_HELPER = new AccountHelper();
 
         externalId = UUID.randomUUID().toString();
 
@@ -676,7 +676,7 @@ public class LoanInterestPauseApiTest extends BaseLoanIntegrationTest {
     private void createClientEntity() {
         this.clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getResourceId();
         Assertions.assertNotNull(clientId);
-        ClientHelper.verifyClientCreatedOnServer(REQUEST_SPEC, RESPONSE_SPEC, clientId.intValue());
+        ClientHelper.verifyClientCreatedOnServer(clientId.intValue());
     }
 
     /**

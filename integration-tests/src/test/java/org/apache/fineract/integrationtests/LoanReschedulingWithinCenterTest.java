@@ -117,10 +117,9 @@ public class LoanReschedulingWithinCenterTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientId), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientId), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -191,8 +190,11 @@ public class LoanReschedulingWithinCenterTest extends BaseLoanIntegrationTest {
     private Integer createClient(Integer officeId) {
         // CREATE CLIENT
         final String clientActivationDate = "01 July 2014";
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, clientActivationDate, officeId.toString());
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        Integer clientId = ClientHelper
+                .createClient(
+                        ClientHelper.defaultClientCreationRequest().activationDate(clientActivationDate).officeId(Long.valueOf(officeId)))
+                .getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
         return clientId;
     }
 
@@ -275,10 +277,9 @@ public class LoanReschedulingWithinCenterTest extends BaseLoanIntegrationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientId), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientId), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 

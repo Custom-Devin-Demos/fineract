@@ -32,8 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
@@ -83,10 +83,12 @@ public class SavingsInterestPostingIntegrationTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, today);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(today)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             // client activation, savings activation and 1st transaction date
             final String startDate = "01 November 2021";
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                    .getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);

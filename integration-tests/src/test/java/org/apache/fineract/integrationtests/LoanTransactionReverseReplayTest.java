@@ -79,9 +79,9 @@ public class LoanTransactionReverseReplayTest extends BaseLoanIntegrationTest {
         responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
         clientHelper = new ClientHelper(requestSpec, responseSpec);
-        inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+        inlineLoanCOBHelper = new InlineLoanCOBHelper();
         journalEntryHelper = new JournalEntryHelper(requestSpec, responseSpec);
-        accountHelper = new AccountHelper(requestSpec, responseSpec);
+        accountHelper = new AccountHelper();
     }
 
     /**

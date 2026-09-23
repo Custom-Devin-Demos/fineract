@@ -97,7 +97,7 @@ public class InteropTest {
         String savingsExternalId = UUID.randomUUID().toString();
         String transactionCode = UUID.randomUUID().toString();
 
-        accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        accountHelper = new AccountHelper();
         savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
         interopHelper = new InteropHelper(requestSpec, responseSpec, savingsExternalId, transactionCode);
     }
@@ -124,7 +124,7 @@ public class InteropTest {
     }
 
     private void createClient() {
-        clientId = ClientHelper.createClient(requestSpec, responseSpec);
+        clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
     }
 

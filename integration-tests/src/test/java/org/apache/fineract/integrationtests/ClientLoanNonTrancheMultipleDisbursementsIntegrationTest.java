@@ -133,8 +133,8 @@ public class ClientLoanNonTrancheMultipleDisbursementsIntegrationTest {
     public void checkThatNonTrancheMultiDisbursalsCreateAScheduleOnFirstDisbursalTest() {
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         /***
          * Create loan product allowing non-tranche multiple disbursals with interest recalculation
@@ -217,8 +217,8 @@ public class ClientLoanNonTrancheMultipleDisbursementsIntegrationTest {
     public void checkThatNonTrancheMultiDisbursalsCreateAScheduleOnSubmitAndApprovalTest() {
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         /***
          * Create loan product allowing non-tranche multiple disbursals with interest recalculation

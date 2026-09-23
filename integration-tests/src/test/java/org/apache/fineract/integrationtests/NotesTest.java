@@ -73,7 +73,7 @@ public class NotesTest {
     public void testCreateClientNote() {
         String noteText = "this is a test note";
 
-        Integer clientId = ClientHelper.createClient(requestSpec, responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         String request = "{\"note\": \"" + noteText + "\"}";
@@ -88,7 +88,7 @@ public class NotesTest {
     public void testUpdateClientNote() {
         String noteText = "this is a test note";
 
-        Integer clientId = ClientHelper.createClient(requestSpec, responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         String request = "{\"note\": \"" + noteText + "\"}";
@@ -111,7 +111,7 @@ public class NotesTest {
     public void testDeleteClientNote() {
         String noteText = "this is a test note";
 
-        Integer clientId = ClientHelper.createClient(requestSpec, responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         String request = "{\"note\": \"" + noteText + "\"}";
@@ -187,7 +187,8 @@ public class NotesTest {
     public void testCreateLoanNote() {
         String noteText = "this is a test loan note";
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final Integer loanProductID = this.loanTransactionHelper.getLoanProductId(new LoanProductTestBuilder().build(null));
         final Integer loanId = applyForLoanApplication(clientID, loanProductID);
         Assertions.assertNotNull(loanId);
@@ -206,7 +207,8 @@ public class NotesTest {
         final String noteText = "this is a test Savings note";
         final String testDate = "01 January 2012";
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, testDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(testDate))
+                .getClientId().intValue();
         // Savings Account
         final String savingsProductJSON = this.savingsProductHelper.withInterestCompoundingPeriodTypeAsDaily()
                 .withInterestPostingPeriodTypeAsDaily().withInterestCalculationPeriodTypeAsDailyBalance().build();
@@ -229,10 +231,9 @@ public class NotesTest {
 
     private Integer applyForLoanApplication(final Integer clientID, final Integer loanProductID) {
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -259,7 +260,8 @@ public class NotesTest {
     public void testUpdateLoanNote() {
         String noteText = "this is a test loan note";
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final Integer loanProductID = this.loanTransactionHelper.getLoanProductId(new LoanProductTestBuilder().build(null));
         final Integer loanId = applyForLoanApplication(clientID, loanProductID);
         Assertions.assertNotNull(loanId);
@@ -284,7 +286,8 @@ public class NotesTest {
     public void testDeleteLoanNote() {
         String noteText = "this is a test loan note";
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final Integer loanProductID = this.loanTransactionHelper.getLoanProductId(new LoanProductTestBuilder().build(null));
         final Integer loanId = applyForLoanApplication(clientID, loanProductID);
         Assertions.assertNotNull(loanId);
@@ -305,7 +308,8 @@ public class NotesTest {
     public void testCreateLoanTransactionNote() {
         String noteText = "this is a test loan transaction note";
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final Integer loanProductID = this.loanTransactionHelper.getLoanProductId(new LoanProductTestBuilder().build(null));
         final Integer loanId = applyForLoanApplication(clientID, loanProductID);
         Assertions.assertNotNull(loanId);
@@ -330,7 +334,8 @@ public class NotesTest {
     public void testUpdateLoanTransactionNote() {
         String noteText = "this is a test loan transaction note";
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final Integer loanProductID = this.loanTransactionHelper.getLoanProductId(new LoanProductTestBuilder().build(null));
         final Integer loanId = applyForLoanApplication(clientID, loanProductID);
         Assertions.assertNotNull(loanId);
@@ -364,7 +369,8 @@ public class NotesTest {
     public void testDeleteLoanTransactionNote() {
         String noteText = "this is a test loan transaction note";
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final Integer loanProductID = this.loanTransactionHelper.getLoanProductId(new LoanProductTestBuilder().build(null));
         final Integer loanId = applyForLoanApplication(clientID, loanProductID);
         Assertions.assertNotNull(loanId);

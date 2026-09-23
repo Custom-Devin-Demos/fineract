@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.models.PutPermissionsRequest;
+import org.apache.fineract.client.util.Calls;
+import org.apache.fineract.client.util.FineractClient;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.AuditHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
@@ -115,9 +117,10 @@ public class MakercheckerTest {
             // create client - maker-checker disabled
             RequestSpecification makerRequestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build()
                     .header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey(maker, "A1b2c3d4e5f$"));
-            Integer clientId = ClientHelper.createClient(makerRequestSpec, this.responseSpec);
+            final FineractClient makerClient = FineractClientHelper.createNewFineractClient(maker, "A1b2c3d4e5f$");
+            Integer clientId = createClientAs(makerClient);
             assertNotNull(clientId);
-            ClientHelper.verifyClientCreatedOnServer(requestSpec, this.responseSpec, clientId);
+            ClientHelper.verifyClientCreatedOnServer(clientId);
 
             final Integer savingsId = createApproveActivateSavingsAccountDailyPosting(clientId, START_DATE_STRING);
             assertNotNull(savingsId);
@@ -132,7 +135,7 @@ public class MakercheckerTest {
             rolesHelper.updatePermissions(putPermissionsRequest);
 
             // create client - maker-checker enabled
-            clientId = ClientHelper.createClient(makerRequestSpec, this.responseSpec);
+            clientId = createClientAs(makerClient);
             assertNull(clientId, "Client is created on the server");
 
             List<Map<String, Object>> auditDetails = makercheckersHelper
@@ -168,7 +171,7 @@ public class MakercheckerTest {
             assertNotNull(response);
             clientId = (Integer) response.get("clientId");
             assertNotNull(clientId);
-            ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+            ClientHelper.verifyClientCreatedOnServer(clientId);
 
             response = MakercheckersHelper.approveMakerCheckerEntry(checkerRequestSpec, responseSpec, savingCommandId);
             assertNotNull(response);
@@ -178,9 +181,9 @@ public class MakercheckerTest {
             // add checker superuser permission - actions are performed in one step
             permissionMap = Map.of("CHECKER_SUPER_USER", true);
             RolesHelper.addPermissionsToRole(requestSpec, responseSpec, roleId, permissionMap);
-            clientId = ClientHelper.createClient(makerRequestSpec, this.responseSpec);
+            clientId = createClientAs(makerClient);
             assertNotNull(clientId);
-            ClientHelper.verifyClientCreatedOnServer(requestSpec, this.responseSpec, clientId);
+            ClientHelper.verifyClientCreatedOnServer(clientId);
 
             withdrawalId = (Integer) makerSavingsHelper.withdrawalFromSavingsAccount(savingsId, "100", TRANSACTION_DATE_STRING,
                     CommonConstants.RESPONSE_RESOURCE_ID);
@@ -275,6 +278,11 @@ public class MakercheckerTest {
         final String savingsProductJSON = this.savingsProductHelper.withInterestCompoundingPeriodTypeAsDaily()
                 .withInterestPostingPeriodTypeAsDaily().withInterestCalculationPeriodTypeAsDailyBalance().build();
         return SavingsProductHelper.createSavingsProduct(savingsProductJSON, requestSpec, responseSpec);
+    }
+
+    private Integer createClientAs(final FineractClient client) {
+        final Long clientId = Calls.ok(client.clients.createClient(ClientHelper.defaultClientCreationRequest())).getClientId();
+        return clientId == null ? null : clientId.intValue();
     }
 
     private Integer createApproveActivateSavingsAccountDailyPosting(final Integer clientID, final String startDate) {

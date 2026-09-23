@@ -112,8 +112,8 @@ public class AuditIntegrationTest {
         List<HashMap<String, Object>> auditsRecievedInitial;
 
         // When Client is created: Count should be "1"
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         auditsRecieved = auditHelper.getAuditDetails(clientId, "CREATE", "CLIENT");
         auditHelper.verifyOneAuditOnly(auditsRecieved, clientId, "CREATE", "CLIENT");
@@ -146,7 +146,7 @@ public class AuditIntegrationTest {
             "DMI_RANDOM_USED_ONLY_ONCE" }, justification = "False positive for random object created and used only once")
     public void checkAuditsWithLimitParam() {
         // Create client
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
 
         // The following loop would ensure database have atleast 8 audits.
         for (int i = 0; i < 4; i++) {

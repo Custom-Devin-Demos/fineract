@@ -56,8 +56,8 @@ import java.util.stream.Collectors;
 import org.apache.fineract.batch.domain.BatchRequest;
 import org.apache.fineract.batch.domain.BatchResponse;
 import org.apache.fineract.batch.domain.Header;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.integrationtests.common.BatchHelper;
@@ -127,12 +127,14 @@ public class SavingsAccountTransactionTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, today);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(today)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             LocalDate depositDate = Utils.getDateAsLocalDate(depositDateString);
             LocalDate withdrawDate = Utils.getDateAsLocalDate(withdrawDateString);
 
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDateString);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDateString))
+                    .getClientId().intValue();
             assertNotNull(clientID);
 
             final Integer savingsId = createApproveActivateSavingsAccountDailyPosting(clientID, startDateString);
@@ -148,8 +150,8 @@ public class SavingsAccountTransactionTest {
 
     @Test
     public void testConcurrentSavingsTransactions() {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer savingsProductId = createSavingsProductDailyPosting();
         assertNotNull(savingsProductId);
@@ -164,8 +166,8 @@ public class SavingsAccountTransactionTest {
 
     @Test
     public void testConcurrentSavingsBatchTransactions() {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer savingsProductId = createSavingsProductDailyPosting();
         assertNotNull(savingsProductId);
@@ -201,8 +203,8 @@ public class SavingsAccountTransactionTest {
 
     @Test
     public void testDeadlockSavingsBatchTransactions() {
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer savingsProductId = createSavingsProductDailyPosting();
         assertNotNull(savingsProductId);

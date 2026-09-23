@@ -78,8 +78,8 @@ public class ClientTest {
 
     @Test
     public void testClientStatus() {
-        final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         HashMap<String, Object> status = ClientHelper.getClientStatus(requestSpec, responseSpec, String.valueOf(clientId));
         ClientStatusChecker.verifyClientIsActive(status);
@@ -110,7 +110,7 @@ public class ClientTest {
     @Test
     public void testClientAsPersonStatus() {
         final Integer clientId = ClientHelper.createClientAsPerson(requestSpec, responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         HashMap<String, Object> status = ClientHelper.getClientStatus(requestSpec, responseSpec, String.valueOf(clientId));
         ClientStatusChecker.verifyClientIsActive(status);
@@ -141,7 +141,7 @@ public class ClientTest {
     @Test
     public void testClientAsEntityStatus() {
         final Integer clientId = ClientHelper.createClientAsEntity(requestSpec, responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         HashMap<String, Object> status = ClientHelper.getClientStatus(requestSpec, responseSpec, String.valueOf(clientId));
         ClientStatusChecker.verifyClientIsActive(status);
@@ -224,10 +224,10 @@ public class ClientTest {
                 .countryId(Long.valueOf(countryId)).stateProvinceId(Long.valueOf(stateId)).addressTypeId(addressTypeId.longValue())
                 .isActive(addressIsActive);
         PostClientsRequest request = ClientHelper.defaultClientCreationRequest().address(List.of(addressRequest));
-        final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, request);
+        final Integer clientId = ClientHelper.createClient(request).getClientId().intValue();
 
         // then
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+        ClientHelper.verifyClientCreatedOnServer(clientId);
         List<AddressData> clientAddresses = ClientHelper.getClientAddresses(requestSpec, responseSpec, clientId);
         AddressData addressResponse = clientAddresses.get(0);
         assertThat(addressResponse.getCity()).isEqualTo(city);
@@ -250,7 +250,7 @@ public class ClientTest {
         String postalCode = "1000";
 
         PostClientsRequest clientRequest = ClientHelper.defaultClientCreationRequest();
-        final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, clientRequest);
+        final Integer clientId = ClientHelper.createClient(clientRequest).getClientId().intValue();
         // when
         ClientAddressRequest request = new ClientAddressRequest().postalCode(postalCode).city(city).countryId(Long.valueOf(countryId))
                 .stateProvinceId(Long.valueOf(stateId)).isActive(addressIsActive);
@@ -278,7 +278,7 @@ public class ClientTest {
         PostClientsRequest request = new PostClientsRequest().officeId(1L).legalFormId(LEGALFORM_ID_PERSON).firstname(firstName)
                 .middlename(middleName).lastname(lastName).externalId(UUID.randomUUID().toString()).dateFormat(Utils.DATE_FORMAT)
                 .locale("en").active(true).activationDate(DEFAULT_DATE);
-        Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, request);
+        Integer clientId = ClientHelper.createClient(request).getClientId().intValue();
         assertNotNull(clientId);
 
         GetClientsClientIdResponse client = ClientHelper.getClient(requestSpec, responseSpec, clientId);
@@ -288,7 +288,7 @@ public class ClientTest {
         request = new PostClientsRequest().officeId(1L).legalFormId(LEGALFORM_ID_PERSON).fullname(fullName)
                 .externalId(UUID.randomUUID().toString()).dateFormat(Utils.DATE_FORMAT).locale("en").active(true)
                 .activationDate(DEFAULT_DATE);
-        clientId = ClientHelper.createClient(requestSpec, responseSpec, request);
+        clientId = ClientHelper.createClient(request).getClientId().intValue();
         assertNotNull(clientId);
 
         client = ClientHelper.getClient(requestSpec, responseSpec, clientId);

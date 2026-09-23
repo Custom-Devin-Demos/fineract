@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
 import org.apache.fineract.client.models.BusinessDateUpdateRequest;
+import org.apache.fineract.client.models.GetGLAccountsResponse;
 import org.apache.fineract.client.models.GetJournalEntriesTransactionIdResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.JournalEntryTransactionItem;
@@ -57,7 +58,6 @@ import org.apache.fineract.client.models.PostClientsResponse;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.models.PutJobsJobIDRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.client.IntegrationTest;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
@@ -144,7 +144,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         requestSpec.header("Fineract-Platform-TenantId", "default");
         responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        this.accountHelper = new AccountHelper(requestSpec, responseSpec);
+        this.accountHelper = new AccountHelper();
         this.journalEntryHelper = new JournalEntryHelper(requestSpec, responseSpec);
         schedulerJobHelper = new SchedulerJobHelper(requestSpec);
         clientHelper = new ClientHelper(requestSpec, responseSpec);
@@ -168,10 +168,11 @@ public class SchedulerJobsTestResults extends IntegrationTest {
 
             LocalDate submittedDate = LocalDate.of(2022, 9, 28);
             String submittedDateString = "28 September 2022";
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, submittedDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(submittedDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             this.savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             final Integer savingsProductID = createSavingsProduct(requestSpec, responseSpec,
@@ -200,7 +201,8 @@ public class SchedulerJobsTestResults extends IntegrationTest {
             savingsStatusHashMap = this.savingsAccountHelper.activateSavings(savingsId, submittedDateString);
             SavingsStatusChecker.verifySavingsIsActive(savingsStatusHashMap);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2022, 11, 11));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2022, 11, 11))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             String JobName = "Apply Annual Fee For Savings";
 
             this.schedulerJobHelper.executeAndAwaitJob(JobName);
@@ -224,7 +226,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
     public void testInterestPostingForSavingsJobOutcome() throws InterruptedException {
         this.savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsProductID = createSavingsProduct(requestSpec, responseSpec,
@@ -260,7 +262,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         this.savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
         this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsProductID = createSavingsProduct(requestSpec, responseSpec,
@@ -325,7 +327,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
     public void testApplyHolidaysToLoansJobOutcome() throws InterruptedException {
         this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         Integer holidayId = HolidayHelper.createHolidays(requestSpec, responseSpec);
@@ -425,7 +427,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
     public void testApplyType1HolidaysToLoansJobOutcome() throws InterruptedException {
         this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         Integer holidayId = HolidayHelper.createTyoe1Holidays(requestSpec, responseSpec);
@@ -547,7 +549,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
     public void testApplyDueFeeChargesForSavingsJobOutcome() throws InterruptedException {
         this.savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsProductID = createSavingsProduct(requestSpec, responseSpec,
@@ -606,7 +608,8 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         final Integer savingsProductID = createSavingsProduct(MINIMUM_OPENING_BALANCE, assetAccount, incomeAccount, expenseAccount,
                 liabilityAccount);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
         final Integer savingsID = this.savingsAccountHelper.applyForSavingsApplication(clientID, savingsProductID, ACCOUNT_TYPE_INDIVIDUAL);
 
         HashMap savingsStatusHashMap = SavingsStatusChecker.getStatusOfSavings(requestSpec, responseSpec, savingsID);
@@ -627,11 +630,11 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         String JobName = "Update Accounting Running Balances";
 
         this.schedulerJobHelper.executeAndAwaitJob(JobName);
-        final HashMap runningBalanceAfter = this.accountHelper.getAccountingWithRunningBalanceById(accountID.toString());
+        final GetGLAccountsResponse runningBalanceAfter = this.accountHelper.getAccountingWithRunningBalanceById(accountID.longValue());
 
-        final Integer INT_BALANCE = Integer.valueOf(MINIMUM_OPENING_BALANCE);
+        final Long INT_BALANCE = Long.valueOf(MINIMUM_OPENING_BALANCE);
 
-        Assertions.assertEquals(INT_BALANCE, runningBalanceAfter.get("organizationRunningBalance"),
+        Assertions.assertEquals(INT_BALANCE, runningBalanceAfter.getOrganizationRunningBalance(),
                 "Verifying Account Running Balance after running Update Accounting Running Balances Scheduler Job");
     }
 
@@ -639,7 +642,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
     public void testUpdateLoanArrearsAgingJobOutcome() {
         loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer loanProductID = createLoanProduct(null);
@@ -690,7 +693,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         currentDate = currentDate.plus(1, ChronoUnit.YEARS);
         final String VALID_TO = dateFormat.format(currentDate);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsProductID = createSavingsProduct(requestSpec, responseSpec,
@@ -766,7 +769,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         this.savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
         this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec, ChargesHelper.getLoanOverdueFeeJSON());
@@ -812,7 +815,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         this.savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
         this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec, ChargesHelper.getLoanOverdueFeeJSON());
@@ -857,7 +860,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
             this.savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
             this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -893,7 +896,8 @@ public class SchedulerJobsTestResults extends IntegrationTest {
                         LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(fee), "02 March 2020", "10", null));
             }
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 9, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 9, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             String jobName = "Loan COB";
             this.schedulerJobHelper.executeAndAwaitJob(jobName);
             for (Integer loanId : loanIDs) {
@@ -924,11 +928,12 @@ public class SchedulerJobsTestResults extends IntegrationTest {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 6, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 6, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             this.savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
             this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer fee = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -994,7 +999,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
 
             loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -1019,20 +1024,23 @@ public class SchedulerJobsTestResults extends IntegrationTest {
             loanStatusHashMap = loanTransactionHelper.disburseLoanWithNetDisbursalAmount("02 July 2020", loanID,
                     JsonPath.from(loanDetails).get("netDisbursalAmount").toString());
             LoanStatusChecker.verifyLoanIsActive(loanStatusHashMap);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 7, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 7, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             String jobName = "Loan COB";
 
             schedulerJobHelper.executeAndAwaitJob(jobName);
             GetLoansLoanIdResponse loan = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanID);
             Assertions.assertEquals(LocalDate.of(2020, 7, 2), loan.getLastClosedBusinessDate());
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 7, 3));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 7, 3))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             schedulerJobHelper.executeAndAwaitJob(jobName);
 
             loan = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanID);
             Assertions.assertEquals(LocalDate.of(2020, 7, 3), loan.getLastClosedBusinessDate());
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 7, 5));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 7, 5))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             schedulerJobHelper.executeAndAwaitJob(jobName);
 
             loan = loanTransactionHelper.getLoan(requestSpec, responseSpec, loanID);
@@ -1048,13 +1056,14 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2019, 2, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2019, 2, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             // set penalty wait period to 0
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.PENALTY_WAIT_PERIOD,
                     new PutGlobalConfigurationsRequest().value(0L));
             this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -1079,7 +1088,8 @@ public class SchedulerJobsTestResults extends IntegrationTest {
             loanStatusHashMap = this.loanTransactionHelper.disburseLoanWithNetDisbursalAmount("02 March 2019", loanID,
                     JsonPath.from(loanDetails).get("netDisbursalAmount").toString());
             LoanStatusChecker.verifyLoanIsActive(loanStatusHashMap);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2019, 4, 1));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2019, 4, 1))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             String jobName = "Loan COB";
 
             this.schedulerJobHelper.executeAndAwaitJob(jobName);
@@ -1089,7 +1099,8 @@ public class SchedulerJobsTestResults extends IntegrationTest {
                     "Verifying From Penalty Charges due fot first Repayment after Successful completion of Scheduler Job");
 
             LocalDate lastBusinessDateBeforeFastForward = LocalDate.of(2019, 4, 2);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, lastBusinessDateBeforeFastForward);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(lastBusinessDateBeforeFastForward)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             this.schedulerJobHelper.executeAndAwaitJob(jobName);
             repaymentScheduleDataAfter = this.loanTransactionHelper.getLoanRepaymentSchedule(requestSpec, responseSpec, loanID);
             Assertions.assertEquals(39.39f, (Float) repaymentScheduleDataAfter.get(1).get("penaltyChargesDue"),
@@ -1108,13 +1119,14 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 2, 2));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 2, 2))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             // set penalty wait period to 0
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.PENALTY_WAIT_PERIOD,
                     new PutGlobalConfigurationsRequest().value(0L));
             this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-            final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientID);
 
             Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -1144,14 +1156,16 @@ public class SchedulerJobsTestResults extends IntegrationTest {
                     new PutGlobalConfigurationsRequest().value(1L));
             LocalDate dateToFastForward = LocalDate.of(2020, 5, 2);
             String jobName = "Loan COB";
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, dateToFastForward);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(dateToFastForward)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             this.schedulerJobHelper.executeAndAwaitJob(jobName);
             List<HashMap> repaymentScheduleDataAfter = this.loanTransactionHelper.getLoanRepaymentSchedule(requestSpec, responseSpec,
                     loanID2);
             Assertions.assertEquals(0, repaymentScheduleDataAfter.get(1).get("penaltyChargesDue"),
                     "Verifying From Penalty Charges due fot first Repayment after Successful completion of Scheduler Job");
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.COB_DATE, LocalDate.of(2020, 5, 3));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.COB_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 5, 3))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             this.schedulerJobHelper.executeAndAwaitJob(jobName);
             repaymentScheduleDataAfter = this.loanTransactionHelper.getLoanRepaymentSchedule(requestSpec, responseSpec, loanID2);
             Assertions.assertEquals(39.39f, (Float) repaymentScheduleDataAfter.get(1).get("penaltyChargesDue"),
@@ -1170,7 +1184,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         this.savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
         this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         Integer overdueFeeChargeId = ChargesHelper.createCharges(requestSpec, responseSpec,
@@ -1226,7 +1240,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
     public void testUpdateOverdueDaysForNPA() throws InterruptedException {
         this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer loanProductID = createLoanProduct(null);
@@ -1274,7 +1288,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
         todaysDate.add(Calendar.MONTH, 1);
         final String WHOLE_TERM = "1";
 
-        Integer clientId = ClientHelper.createClient(requestSpec, responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
         Float balance = Float.parseFloat(MINIMUM_OPENING_BALANCE) + Float.parseFloat(FixedDepositAccountHelper.DEPOSIT_AMOUNT);
         final Integer savingsProductID = createSavingsProduct(requestSpec, responseSpec, String.valueOf(balance));
@@ -1447,10 +1461,9 @@ public class SchedulerJobsTestResults extends IntegrationTest {
     private Integer applyForLoanApplication(final String clientID, final String loanProductID, final String savingsID, final String date) {
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec, clientID,
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID, collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -1467,10 +1480,9 @@ public class SchedulerJobsTestResults extends IntegrationTest {
             final String date) {
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec, clientID,
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID, collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -1483,7 +1495,7 @@ public class SchedulerJobsTestResults extends IntegrationTest {
     }
 
     private Integer createFixedDepositProduct(final String validFrom, final String validTo) {
-        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper(requestSpec, responseSpec);
+        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper();
         final String fixedDepositProductJSON = fixedDepositProductHelper.withPeriodRangeChart().build(validFrom, validTo);
         return FixedDepositProductHelper.createFixedDepositProduct(fixedDepositProductJSON, requestSpec, responseSpec);
     }

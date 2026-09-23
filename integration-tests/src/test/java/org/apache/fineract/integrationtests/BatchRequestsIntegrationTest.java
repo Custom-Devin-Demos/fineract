@@ -93,7 +93,7 @@ public class BatchRequestsIntegrationTest {
 
         // Create new clients and add those to this group
         for (Integer i = 0; i < clientsCount; i++) {
-            clientIDs[i] = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+            clientIDs[i] = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             groupID = GroupHelper.associateClient(this.requestSpec, this.responseSpec, groupID.toString(), clientIDs[i].toString());
             LOG.info("client {} has been added to the group {}", clientIDs[i], groupID);
         }
@@ -127,9 +127,9 @@ public class BatchRequestsIntegrationTest {
         Integer selClientsCount = (int) Math.ceil(secureRandom.nextDouble() * clientsCount) + 2;
         for (int i = 0; i < selClientsCount; i++) {
 
-            final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+            final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
             Assertions.assertNotNull(collateralId);
-            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
+            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(
                     String.valueOf(clientIDs[(int) Math.floor(secureRandom.nextDouble() * (clientsCount - 1))]), collateralId);
             Assertions.assertNotNull(clientCollateralId);
 
@@ -163,7 +163,7 @@ public class BatchRequestsIntegrationTest {
 
         // Create new clients and add those to this group
         for (Integer i = 0; i < clientsCount; i++) {
-            clientIDs[i] = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+            clientIDs[i] = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             groupID = GroupHelper.associateClient(this.requestSpec, this.responseSpec, groupID.toString(), clientIDs[i].toString());
             LOG.info("client {} has been added to the group {}", clientIDs[i], groupID);
         }
@@ -198,9 +198,9 @@ public class BatchRequestsIntegrationTest {
         Integer selClientsCount = (int) Math.ceil(secureRandom.nextDouble() * clientsCount) + 2;
         for (int i = 0; i < selClientsCount; i++) {
 
-            final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+            final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
             Assertions.assertNotNull(collateralId);
-            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
+            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(
                     String.valueOf(clientIDs[(int) Math.floor(secureRandom.nextDouble() * (clientsCount - 1))]), collateralId);
             Assertions.assertNotNull(clientCollateralId);
 

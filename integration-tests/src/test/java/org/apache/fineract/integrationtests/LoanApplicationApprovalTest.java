@@ -77,7 +77,8 @@ public class LoanApplicationApprovalTest {
         final String approvalAmount = "5000";
         final String approveDate = "20 September 2012";
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final Integer loanProductID = this.loanTransactionHelper.getLoanProductId(new LoanProductTestBuilder().build(null));
         final Integer loanID = applyForLoanApplication(clientID, loanProductID, proposedAmount);
 
@@ -102,7 +103,8 @@ public class LoanApplicationApprovalTest {
         final String approvalAmount = "9000";
         final String approveDate = "2 April 2012";
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final Integer loanProductID = this.loanTransactionHelper.getLoanProductId(new LoanProductTestBuilder().build(null));
         final Integer loanID = applyForLoanApplication(clientID, loanProductID, proposedAmount);
 
@@ -134,7 +136,8 @@ public class LoanApplicationApprovalTest {
         createTranches.add(createTrancheDetail("01 March 2014", "1000"));
         createTranches.add(createTrancheDetail("23 March 2014", "4000"));
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2014");
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2014"))
+                .getClientId().intValue();
         log.info("---------------------------------CLIENT CREATED WITH ID--------------------------------------------------- {}", clientID);
 
         final Integer loanProductID = this.loanTransactionHelper.getLoanProductId(new LoanProductTestBuilder() //
@@ -151,7 +154,8 @@ public class LoanApplicationApprovalTest {
 
     @Test
     public void loanApplicationShouldFailIfTransactionProcessingStrategyIsAdvancedPaymentAllocationButItIsNotConfiguredOnProduct() {
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2014");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2014"))
+                .getClientId().intValue();
         log.info("---------------------------------CLIENT CREATED WITH ID--------------------------------------------------- {}", clientId);
 
         final Integer loanProductId = this.loanTransactionHelper
@@ -263,10 +267,9 @@ public class LoanApplicationApprovalTest {
 
     private Integer applyForLoanApplication(final Integer clientID, final Integer loanProductID, final String proposedAmount) {
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -293,10 +296,9 @@ public class LoanApplicationApprovalTest {
             List<HashMap> tranches) {
         log.info("--------------------------------APPLYING FOR LOAN APPLICATION--------------------------------");
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                clientID.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String loanApplicationJSON = new LoanApplicationTestBuilder()

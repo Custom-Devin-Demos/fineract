@@ -64,7 +64,7 @@ public class LoanFixedPrincipalPercentageAmortizationTest {
         this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
-        // this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        // this.accountHelper = new AccountHelper();
         // this.schedulerJobHelper = new SchedulerJobHelper(this.requestSpec);
     }
 
@@ -72,8 +72,8 @@ public class LoanFixedPrincipalPercentageAmortizationTest {
     public void checkLoanCreateAndDisburseFlowWithFixedPrincipalPercentage() {
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final Integer loanProductID = createLoanProduct(ACCOUNTING_NONE);
         final Integer loanID = applyForLoanApplication(clientID, loanProductID, null, null, "100000.00");
         final ArrayList<HashMap> loanSchedule = this.loanTransactionHelper.getLoanRepaymentSchedule(this.requestSpec, this.responseSpec,
@@ -85,8 +85,8 @@ public class LoanFixedPrincipalPercentageAmortizationTest {
     public void checkLoanCreateAndDisburseFlowWithFixedPrincipalPercentageWithPrincipalGrace() {
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final Integer loanProductID = createLoanProduct(ACCOUNTING_NONE);
         final Integer loanID = applyForLoanApplicationWithPrincipalGrace(clientID, loanProductID, null, null, "100000.00");
         final ArrayList<HashMap> loanSchedule = this.loanTransactionHelper.getLoanRepaymentSchedule(this.requestSpec, this.responseSpec,
@@ -98,8 +98,8 @@ public class LoanFixedPrincipalPercentageAmortizationTest {
     public void checkLoanCreateAndDisburseFlowWithFixedPrincipalPercentageAndFlatInterest() {
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final Integer loanProductID = createLoanProductWithFlatInterest(ACCOUNTING_NONE);
         final Integer loanID = applyForLoanApplicationWithFlatInterest(clientID, loanProductID, null, null, "100000.00");
         final ArrayList<HashMap> loanSchedule = this.loanTransactionHelper.getLoanRepaymentSchedule(this.requestSpec, this.responseSpec,
@@ -131,10 +131,9 @@ public class LoanFixedPrincipalPercentageAmortizationTest {
 
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -174,10 +173,9 @@ public class LoanFixedPrincipalPercentageAmortizationTest {
             final String savingsId, String principal) {
         List<HashMap> collaterals = new ArrayList<>();
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(clientID), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         LOG.info("--------------------------------APPLYING FOR LOAN APPLICATION--------------------------------");

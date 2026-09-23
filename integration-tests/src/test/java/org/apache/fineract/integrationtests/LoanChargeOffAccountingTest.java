@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.apache.fineract.client.models.AllowAttributeOverrides;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetCodesResponse;
 import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.PostChargeOffReasonToExpenseAccountMappings;
@@ -47,7 +48,6 @@ import org.apache.fineract.client.models.PostLoansLoanIdTransactionsRequest;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.models.PutLoansLoanIdResponse;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
@@ -92,15 +92,15 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
         this.requestSpec.header("Fineract-Platform-TenantId", "default");
         this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.assetAccount = this.accountHelper.createAssetAccount();
         this.incomeAccount = this.accountHelper.createIncomeAccount();
         this.expenseAccount = this.accountHelper.createExpenseAccount();
         this.overpaymentAccount = this.accountHelper.createLiabilityAccount();
         this.journalEntryHelper = new JournalEntryHelper(this.requestSpec, this.responseSpec);
         this.clientHelper = new ClientHelper(this.requestSpec, this.responseSpec);
-        this.inlineLoanCOBHelper = new InlineLoanCOBHelper(this.requestSpec, this.responseSpec);
-        this.periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(this.requestSpec, this.responseSpec);
+        this.inlineLoanCOBHelper = new InlineLoanCOBHelper();
+        this.periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper();
     }
 
     @Test
@@ -727,7 +727,8 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 9, 5));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 9, 5))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             // Loan ExternalId
             String loanExternalIdStr = UUID.randomUUID().toString();
 
@@ -755,7 +756,8 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
             Integer penalty1LoanChargeId = this.loanTransactionHelper.addChargesForLoan(loanId,
                     LoanTransactionHelper.getSpecifiedDueDateChargesForLoanAsJSON(String.valueOf(penalty), penaltyCharge1AddedDate, "10"));
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 9, 6));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 9, 6))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
             GetLoansLoanIdResponse loanDetails = loanTransactionHelper.getLoanDetails(loanId.longValue());
             assertTrue(loanDetails.getTransactions().get(0).getType().getDisbursement());
@@ -775,7 +777,8 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
             assertTrue(loanDetails.getChargedOff());
 
             // no accrual
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 9, 7));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 9, 7))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
             loanDetails = loanTransactionHelper.getLoanDetails(loanId.longValue());
             assertTrue(loanDetails.getTransactions().get(0).getType().getDisbursement());
@@ -784,7 +787,8 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
             assertTrue(loanDetails.getTransactions().get(3).getType().getChargeoff());
             assertEquals(4, loanDetails.getTransactions().size());
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 9, 8));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 9, 8))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
             this.periodicAccrualAccountingHelper.runPeriodicAccrualAccounting(dateFormatter.format(LocalDate.of(2020, 9, 8)));
             loanDetails = loanTransactionHelper.getLoanDetails(loanId.longValue());
@@ -796,7 +800,8 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
 
             loanTransactionHelper.undoChargeOffLoan((long) loanId, new PostLoansLoanIdTransactionsRequest());
             // generate accrual again
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 9, 9));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 9, 9))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
             loanDetails = loanTransactionHelper.getLoanDetails(loanId.longValue());
             assertTrue(loanDetails.getTransactions().get(0).getType().getDisbursement());
@@ -806,7 +811,8 @@ public class LoanChargeOffAccountingTest extends BaseLoanIntegrationTest {
             assertTrue(loanDetails.getTransactions().get(4).getType().getAccrual());
             assertEquals(5, loanDetails.getTransactions().size());
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2020, 9, 10));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2020, 9, 10))).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             this.loanTransactionHelper.chargeOffLoan((long) loanId,
                     new PostLoansLoanIdTransactionsRequest().transactionDate("10 September 2020").locale("en").dateFormat("dd MMMM yyyy")

@@ -48,12 +48,12 @@ import java.util.Set;
 import java.util.TimeZone;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.accounting.common.AccountingConstants.FinancialActivity;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetFixedDepositAccountsAccountIdTransactionsResponse;
 import org.apache.fineract.client.models.PostTaxesComponentsRequest;
 import org.apache.fineract.client.models.PostTaxesGroupRequest;
 import org.apache.fineract.client.models.PostTaxesGroupTaxComponents;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.infrastructure.core.api.JsonQuery;
 import org.apache.fineract.infrastructure.core.exception.PlatformApiDataValidationException;
@@ -151,7 +151,7 @@ public class FixedDepositTest extends IntegrationTest {
         this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         this.requestSpec.header("Fineract-Platform-TenantId", "default");
         this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.schedulerJobHelper = new SchedulerJobHelper(this.requestSpec);
         this.journalEntryHelper = new JournalEntryHelper(this.requestSpec, this.responseSpec);
         this.financialActivityAccountHelper = new FinancialActivityAccountHelper(this.requestSpec);
@@ -241,8 +241,8 @@ public class FixedDepositTest extends IntegrationTest {
      */
     @Test
     public void testFixedDepositProductCreation() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
 
         /***
          * Create GL Accounts for product account mapping
@@ -281,8 +281,8 @@ public class FixedDepositTest extends IntegrationTest {
      */
     @Test
     public void testFixedDepositAccountWithPrematureClosureTypeWithdrawal() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -318,7 +318,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String INTEREST_POSTED_DATE = dateFormat.format(todaysDate.getTime());
         final String CLOSED_ON_DATE = dateFormat.format(Calendar.getInstance().getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -412,8 +412,8 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testFixedDepositAccountWithPrematureClosureTypeWithdrawal_WITH_HOLD_TAX() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -450,7 +450,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String INTEREST_POSTED_DATE = dateFormat.format(todaysDate.getTime());
         final String CLOSED_ON_DATE = dateFormat.format(Calendar.getInstance().getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -553,8 +553,8 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testFixedDepositAccountClosureTypeWithdrawal_WITH_HOLD_TAX() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -585,7 +585,7 @@ public class FixedDepositTest extends IntegrationTest {
         LocalDate closedOn = todaysDate.plusMonths(14);
         final String CLOSED_ON_DATE = Utils.dateFormatter.format(closedOn);
 
-        Integer clientId = ClientHelper.createClient(requestSpec, responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -779,7 +779,7 @@ public class FixedDepositTest extends IntegrationTest {
 
     private void testFixedDepositAccountForInterestRate(final String chartToUse, final String depositAmount, final String depositPeriod,
             final Float interestRate) {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -790,7 +790,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String APPROVED_ON_DATE = "01 March 2015";
         final String ACTIVATION_DATE = "01 March 2015";
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -834,8 +834,8 @@ public class FixedDepositTest extends IntegrationTest {
      */
     @Test
     public void testFixedDepositAccountWithPrematureClosureTypeTransferToSavings() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -871,7 +871,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String INTEREST_POSTED_DATE = dateFormat.format(todaysDate.getTime());
         final String CLOSED_ON_DATE = dateFormat.format(Calendar.getInstance().getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -1001,8 +1001,8 @@ public class FixedDepositTest extends IntegrationTest {
      */
     @Test
     public void testFixedDepositAccountWithPrematureClosureTypeReinvest() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -1041,7 +1041,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String INTEREST_POSTED_DATE = dateFormat.format(todaysDate.getTime());
         final String CLOSED_ON_DATE = dateFormat.format(Calendar.getInstance().getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -1107,7 +1107,7 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testFixedDepositAccountUpdation() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -1124,7 +1124,7 @@ public class FixedDepositTest extends IntegrationTest {
         monthDayFormat.format(todaysDate.getTime());
         String submittedOnDate = dateFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1148,7 +1148,7 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testFixedDepositAccountUndoApproval() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -1166,7 +1166,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String APPROVED_ON_DATE = dateFormat.format(todaysDate.getTime());
         monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1190,8 +1190,8 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testFixedDepositAccountRejectedAndClosed() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -1209,7 +1209,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String REJECTED_ON_DATE = dateFormat.format(todaysDate.getTime());
         monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1231,8 +1231,8 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testFixedDepositAccountWithdrawnByClientAndClosed() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -1250,7 +1250,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String WITHDRAWN_ON_DATE = dateFormat.format(todaysDate.getTime());
         monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1272,7 +1272,7 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testFixedDepositAccountIsDeleted() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -1289,7 +1289,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String SUBMITTED_ON_DATE = dateFormat.format(todaysDate.getTime());
         monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1310,7 +1310,7 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testMaturityAmountForMonthlyCompoundingAndMonthlyPosting_With_360_Days() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -1332,7 +1332,7 @@ public class FixedDepositTest extends IntegrationTest {
         dateFormat.format(todaysDate.getTime());
         monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1380,8 +1380,8 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testPrematureClosureAmountWithPenalInterestForWholeTerm_With_360() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -1403,7 +1403,7 @@ public class FixedDepositTest extends IntegrationTest {
         todaysDate = Utils.getLocalDateOfTenant();
         final String CLOSED_ON_DATE = dateFormat.format(todaysDate);
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1477,7 +1477,7 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testMaturityAmountForMonthlyCompoundingAndMonthlyPosting_With_365_Days() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -1499,7 +1499,7 @@ public class FixedDepositTest extends IntegrationTest {
         dateFormat.format(todaysDate.getTime());
         monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1543,8 +1543,8 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testPrematureClosureAmountWithPenalInterestForWholeTerm_With_365() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -1568,7 +1568,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String CLOSED_ON_DATE = dateFormat.format(todaysDate);
         LocalDate closingDate = todaysDate;
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1632,8 +1632,8 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testPrematureClosureAmountWithPenalInterestTillPrematureWithdrawal_With_365_Days() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -1657,7 +1657,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String CLOSED_ON_DATE = dateFormat.format(todaysDate);
         LocalDate closingDate = todaysDate;
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1724,8 +1724,8 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testPrematureClosureAmountWithPenalInterestTillPrematureWithdrawal_With_360_Days() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -1749,7 +1749,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String CLOSED_ON_DATE = dateFormat.format(todaysDate);
         LocalDate closingDate = todaysDate;
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1820,7 +1820,7 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testMaturityAmountForDailyCompoundingAndMonthlyPosting_With_365_Days() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -1842,7 +1842,7 @@ public class FixedDepositTest extends IntegrationTest {
         dateFormat.format(todaysDate.getTime());
         monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1892,7 +1892,7 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testMaturityAmountForDailyCompoundingAndMonthlyPosting_With_360_Days() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -1915,7 +1915,7 @@ public class FixedDepositTest extends IntegrationTest {
         monthDayFormat.format(todaysDate.getTime());
 
         log.info("Submitted Date: {}", SUBMITTED_ON_DATE);
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1967,7 +1967,7 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testMaturityAmountForDailyCompoundingAndAnnuallyPosting_With_365_Days() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -1995,7 +1995,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String ACTIVATION_DATE = dateFormat.format(todaysDate.getTime());
         monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2050,7 +2050,7 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testMaturityAmountDailyCompoundingAndAnnuallyPostingWith_360_Days() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -2078,7 +2078,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String ACTIVATION_DATE = dateFormat.format(todaysDate.getTime());
         monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2133,8 +2133,8 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testFixedDepositWithBi_AnnualCompoundingAndPosting_365_Days() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -2162,7 +2162,7 @@ public class FixedDepositTest extends IntegrationTest {
         dateFormat.format(todaysDate.getTime());
         monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2214,8 +2214,8 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testFixedDepositWithBi_AnnualCompoundingAndPosting_360_Days() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -2243,7 +2243,7 @@ public class FixedDepositTest extends IntegrationTest {
         dateFormat.format(todaysDate.getTime());
         monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2295,8 +2295,8 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testFixedDepositWithQuarterlyCompoundingAndQuarterlyPosting_365_Days() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -2324,7 +2324,7 @@ public class FixedDepositTest extends IntegrationTest {
         dateFormat.format(todaysDate.getTime());
         monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2375,8 +2375,8 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testFixedDepositWithQuarterlyCompoundingAndQuarterlyPosting_360_Days() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -2404,7 +2404,7 @@ public class FixedDepositTest extends IntegrationTest {
         dateFormat.format(todaysDate.getTime());
         monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2459,8 +2459,8 @@ public class FixedDepositTest extends IntegrationTest {
      */
     @Test
     public void testFixedDepositAccountWithRolloverMaturityAmount() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -2493,7 +2493,7 @@ public class FixedDepositTest extends IntegrationTest {
         Integer numberOfDaysLeft = daysInMonth - currentDate + 1;
         todaysDate.add(Calendar.DATE, numberOfDaysLeft);
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -2539,8 +2539,8 @@ public class FixedDepositTest extends IntegrationTest {
      */
     @Test
     public void testFixedDepositAccountWithRolloverPrincipal() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -2573,7 +2573,7 @@ public class FixedDepositTest extends IntegrationTest {
         Integer numberOfDaysLeft = daysInMonth - currentDate + 1;
         todaysDate.add(Calendar.DATE, numberOfDaysLeft);
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -2622,7 +2622,7 @@ public class FixedDepositTest extends IntegrationTest {
             final Account incomeAccount = this.accountHelper.createIncomeAccount();
             final Account expenseAccount = this.accountHelper.createExpenseAccount();
 
-            this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+            this.fixedDepositProductHelper = new FixedDepositProductHelper();
             this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
             DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -2648,7 +2648,8 @@ public class FixedDepositTest extends IntegrationTest {
                     new PutGlobalConfigurationsRequest().enabled(true));
 
             LocalDate marchDate = LocalDate.of(currentYear + 1, 3, 1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, marchDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(marchDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             log.info("Submitted Date: {}", SUBMITTED_ON_DATE);
 
@@ -2657,7 +2658,7 @@ public class FixedDepositTest extends IntegrationTest {
                     incomeAccount, expenseAccount);
             Assertions.assertNotNull(fixedDepositProductId);
 
-            Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+            Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientId);
 
             Integer fixedDepositAccountId = applyForFixedDepositApplication(clientId.toString(), fixedDepositProductId.toString(),
@@ -2697,7 +2698,7 @@ public class FixedDepositTest extends IntegrationTest {
             final Account incomeAccount = this.accountHelper.createIncomeAccount();
             final Account expenseAccount = this.accountHelper.createExpenseAccount();
 
-            this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+            this.fixedDepositProductHelper = new FixedDepositProductHelper();
             this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
 
             DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -2723,7 +2724,8 @@ public class FixedDepositTest extends IntegrationTest {
                     new PutGlobalConfigurationsRequest().enabled(true));
 
             LocalDate marchDate = LocalDate.of(currentYear + 1, 1, 1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, marchDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(marchDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             log.info("Submitted Date: {}", SUBMITTED_ON_DATE);
 
@@ -2732,7 +2734,7 @@ public class FixedDepositTest extends IntegrationTest {
                     incomeAccount, expenseAccount);
             Assertions.assertNotNull(fixedDepositProductId);
 
-            Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+            Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientId);
 
             Integer fixedDepositAccountId = applyForFixedDepositApplication(clientId.toString(), fixedDepositProductId.toString(),
@@ -2769,7 +2771,7 @@ public class FixedDepositTest extends IntegrationTest {
     private Integer createFixedDepositProduct(final String validFrom, final String validTo, final String accountingRule,
             Account... accounts) {
         log.info("------------------------------CREATING NEW FIXED DEPOSIT PRODUCT ---------------------------------------");
-        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper();
         if (accountingRule.equals(CASH_BASED)) {
             fixedDepositProductHelper = fixedDepositProductHelper.withAccountingRuleAsCashBased(accounts);
         } else if (accountingRule.equals(NONE)) {
@@ -2785,7 +2787,7 @@ public class FixedDepositTest extends IntegrationTest {
     private Integer createFixedDepositProductWithoutCharts(final String validFrom, final String validTo, final String accountingRule,
             Account... accounts) {
         log.info("------------------------------CREATING NEW FIXED DEPOSIT PRODUCT ---------------------------------------");
-        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper();
         if (accountingRule.equals(CASH_BASED)) {
             fixedDepositProductHelper = fixedDepositProductHelper.withAccountingRuleAsCashBased(accounts);
         } else if (accountingRule.equals(NONE)) {
@@ -2799,7 +2801,7 @@ public class FixedDepositTest extends IntegrationTest {
     private Integer createFixedDepositProductWithWithHoldTax(final String validFrom, final String validTo, final String taxGroupId,
             final String accountingRule, Account... accounts) {
         log.info("------------------------------CREATING NEW FIXED DEPOSIT PRODUCT ---------------------------------------");
-        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper();
         if (accountingRule.equals(CASH_BASED)) {
             fixedDepositProductHelper = fixedDepositProductHelper.withAccountingRuleAsCashBased(accounts);
         } else if (accountingRule.equals(NONE)) {
@@ -2814,7 +2816,7 @@ public class FixedDepositTest extends IntegrationTest {
     private Integer createFixedDepositProduct(final String validFrom, final String validTo, final String accountingRule,
             final String chartToBePicked, Account... accounts) {
         log.info("------------------------------CREATING NEW FIXED DEPOSIT PRODUCT ---------------------------------------");
-        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper();
         if (accountingRule.equals(CASH_BASED)) {
             fixedDepositProductHelper = fixedDepositProductHelper.withAccountingRuleAsCashBased(accounts);
         } else if (accountingRule.equals(NONE)) {
@@ -2963,9 +2965,9 @@ public class FixedDepositTest extends IntegrationTest {
      */
     @Test
     public void testFixedDepositAccountUndoTransaction() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.journalEntryHelper = new JournalEntryHelper(this.requestSpec, this.responseSpec);
 
         final Account assetAccount = this.accountHelper.createAssetAccount();
@@ -2987,7 +2989,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String APPROVED_ON_DATE = dateFormat.format(todaysDate.getTime());
         final String ACTIVATION_DATE = dateFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         Integer fixedDepositProductId = createFixedDepositProduct(VALID_FROM, VALID_TO, CASH_BASED, assetAccount, liabilityAccount,
@@ -3081,9 +3083,9 @@ public class FixedDepositTest extends IntegrationTest {
 
     @Test
     public void testFixedDepositAccountAdjustTransaction() {
-        this.fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        this.fixedDepositProductHelper = new FixedDepositProductHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.journalEntryHelper = new JournalEntryHelper(this.requestSpec, this.responseSpec);
 
         final Account assetAccount = this.accountHelper.createAssetAccount();
@@ -3105,7 +3107,7 @@ public class FixedDepositTest extends IntegrationTest {
         final String APPROVED_ON_DATE = dateFormat.format(todaysDate.getTime());
         final String ACTIVATION_DATE = dateFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         Integer fixedDepositProductId = createFixedDepositProduct(VALID_FROM, VALID_TO, CASH_BASED, assetAccount, liabilityAccount,

@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.fineract.client.models.AdvancedQueryData;
 import org.apache.fineract.client.models.AdvancedQueryRequest;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.ColumnFilterData;
 import org.apache.fineract.client.models.FilterData;
 import org.apache.fineract.client.models.GetDataTablesResponse;
@@ -65,7 +66,6 @@ import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.models.ResultsetColumnHeaderData;
 import org.apache.fineract.client.models.SortOrder;
 import org.apache.fineract.client.models.TableQueryData;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.dataqueries.data.EntityTables;
@@ -132,9 +132,11 @@ public class DatatableAdvancedQueryTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, today);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(today)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, yesterdayS);
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(yesterdayS))
+                    .getClientId().intValue();
             assertNotNull(clientId);
             final Integer savingsId = createSavingsAccountDailyPosting(clientId, yesterdayS);
             assertNotNull(savingsId);
@@ -218,9 +220,11 @@ public class DatatableAdvancedQueryTest {
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, today);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(today)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec, yesterdayS);
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(yesterdayS))
+                    .getClientId().intValue();
             assertNotNull(clientId);
             final Integer savingsId = createSavingsAccountDailyPosting(clientId, yesterdayS);
             assertNotNull(savingsId);

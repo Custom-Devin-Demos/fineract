@@ -71,7 +71,7 @@ public class ClientAuditingIntegrationTest {
         LOG.info("-------------------------Creating Client---------------------------");
 
         final Integer clientID = ClientHelper.createClientPending(requestSpec, responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         Map<String, Object> auditFieldsResponse = ClientHelper.getClientAuditFields(requestSpec, responseSpec, clientID, "");
 
         OffsetDateTime createdDate = OffsetDateTime.parse((String) auditFieldsResponse.get(CREATED_DATE),

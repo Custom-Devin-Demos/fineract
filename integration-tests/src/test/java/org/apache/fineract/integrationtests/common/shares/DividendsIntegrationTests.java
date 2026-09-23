@@ -62,7 +62,7 @@ public class DividendsIntegrationTests {
         final Integer productId = createShareProduct();
         ArrayList<Integer> shareAccounts = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             Assertions.assertNotNull(clientId);
             Integer savingsAccountId = SavingsAccountHelper.openSavingsAccount(requestSpec, responseSpec, clientId, "1000");
             Assertions.assertNotNull(savingsAccountId);

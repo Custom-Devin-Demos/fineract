@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.client.models.BusinessDateResponse;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.DeleteDelinquencyBucketResponse;
 import org.apache.fineract.client.models.DeleteDelinquencyRangeResponse;
 import org.apache.fineract.client.models.DelinquencyBucketRequest;
@@ -303,7 +304,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
 
             final LocalDate bussinesLocalDate = Utils.getDateAsLocalDate("01 March 2012");
             log.info("Current date {}", bussinesLocalDate);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, bussinesLocalDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(bussinesLocalDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             final BusinessDateResponse businessDateResponse = this.businessDateHelper.getBusinessDateByType(requestSpec, responseSpec,
                     BusinessDateType.BUSINESS_DATE);
 
@@ -331,7 +333,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), null);
             assertNotNull(getLoanProductsProductResponse);
@@ -397,7 +400,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
 
             final LocalDate bussinesLocalDate = Utils.getDateAsLocalDate("01 April 2012");
             log.info("Current date {}", bussinesLocalDate);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, bussinesLocalDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(bussinesLocalDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Given
             final LoanTransactionHelper loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
@@ -426,7 +430,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), null);
             assertNotNull(getLoanProductsProductResponse);
@@ -520,7 +525,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
         final DelinquencyBucketResponse delinquencyBucket = DelinquencyBucketsHelper.getBucket(delinquencyBucketResponse.getResourceId());
 
         // Client and Loan account creation
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                 delinquencyBucket.getId(), null);
         assertNotNull(getLoanProductsProductResponse);
@@ -609,7 +615,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
         final DelinquencyBucketResponse delinquencyBucket = DelinquencyBucketsHelper.getBucket(delinquencyBucketResponse.getResourceId());
 
         // Client and Loan account creation
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                 delinquencyBucket.getId(), null);
         assertNotNull(getLoanProductsProductResponse);
@@ -691,7 +698,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
             LocalDate businessDate = Utils.getLocalDateOfTenant();
             businessDate = businessDate.minusDays(37);
             log.info("Current date {}", businessDate);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             final LoanTransactionHelper loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
             final SchedulerJobHelper schedulerJobHelper = new SchedulerJobHelper(requestSpec);
@@ -719,7 +727,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), null);
             assertNotNull(getLoanProductsProductResponse);
@@ -749,7 +758,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
             // Move the Business date to get older the loan and to have an overdue loan
             businessDate = businessDate.plusMonths(1);
             log.info("Current date {}", businessDate);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             // Run Second time the Job
             schedulerJobHelper.executeAndAwaitJob(jobName);
 
@@ -783,7 +793,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
 
             LocalDate bussinesLocalDate = Utils.getDateAsLocalDate("01 April 2012");
             log.info("Current date {}", bussinesLocalDate);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, bussinesLocalDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(bussinesLocalDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Given
             final LoanTransactionHelper loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
@@ -810,7 +821,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), null);
             assertNotNull(getLoanProductsProductResponse);
@@ -853,7 +865,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
             // Move the Business date to get older the loan and to have an overdue loan
             bussinesLocalDate = bussinesLocalDate.plusDays(3);
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, bussinesLocalDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(bussinesLocalDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             // Run the Loan inline COB Job
             inlineLoanCOBHelper.executeInlineCOB(Long.valueOf(loanId));
 
@@ -884,7 +897,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
 
             LocalDate bussinesLocalDate = Utils.getDateAsLocalDate("01 January 2012");
             log.info("Current date {}", bussinesLocalDate);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, bussinesLocalDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(bussinesLocalDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Given
             final LoanTransactionHelper loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
@@ -911,7 +925,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), "3");
             assertNotNull(getLoanProductsProductResponse);
@@ -934,7 +949,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
 
             bussinesLocalDate = Utils.getDateAsLocalDate("31 January 2012");
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, bussinesLocalDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(bussinesLocalDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             // Run the Loan inline COB Job
             inlineLoanCOBHelper.executeInlineCOB(Long.valueOf(loanId));
 
@@ -961,7 +977,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
 
             LocalDate bussinesLocalDate = Utils.getDateAsLocalDate("01 January 2012");
             log.info("Current date {}", bussinesLocalDate);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, bussinesLocalDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(bussinesLocalDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Given
             final LoanTransactionHelper loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
@@ -988,7 +1005,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), "3");
             assertNotNull(getLoanProductsProductResponse);
@@ -1021,7 +1039,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
 
             bussinesLocalDate = Utils.getDateAsLocalDate("31 January 2012");
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, bussinesLocalDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(bussinesLocalDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             // Run the Loan inline COB Job
             inlineLoanCOBHelper.executeInlineCOB(Long.valueOf(loanId));
 
@@ -1047,7 +1066,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
 
             LocalDate bussinesLocalDate = Utils.getDateAsLocalDate("01 January 2012");
 
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucketId, "3");
             assertNotNull(getLoanProductsProductResponse);
@@ -1093,7 +1113,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
             Long delinquencyBucketId = DelinquencyBucketsHelper.createDefaultBucket();
             LocalDate bussinesLocalDate = Utils.getDateAsLocalDate("01 January 2012");
 
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucketId, "3");
             assertNotNull(getLoanProductsProductResponse);
@@ -1127,7 +1148,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
             verifyDelinquency(loanId, "01 February 2012", 1033.33, 5);
 
             bussinesLocalDate = Utils.getDateAsLocalDate("10 February 2012");
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, bussinesLocalDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(bussinesLocalDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             loanTransactionHelper.createLoanDelinquencyAction(loanId.longValue(), RESUME, "10 February 2012");
 
             updateBusinessDate("12 March 2012");
@@ -1143,7 +1165,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
 
             Long delinquencyBucketId = DelinquencyBucketsHelper.createDefaultBucket();
 
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucketId, "3");
             assertNotNull(getLoanProductsProductResponse);
@@ -1220,7 +1243,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
         runAt("01 January 2012", () -> {
             Long delinquencyBucketId = DelinquencyBucketsHelper.createDefaultBucket();
 
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProductWithInstallmentLevelDelinquency(
                     loanTransactionHelper, delinquencyBucketId, "3");
             assertNotNull(getLoanProductsProductResponse);
@@ -1322,7 +1346,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
         final DelinquencyBucketResponse delinquencyBucket = DelinquencyBucketsHelper.getBucket(delinquencyBucketResponse.getResourceId());
 
         // Client and Loan account creation
-        final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+        final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012"))
+                .getClientId().intValue();
         final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                 delinquencyBucket.getId(), null);
         assertNotNull(getLoanProductsProductResponse);
@@ -1362,7 +1387,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
 
             LocalDate bussinesLocalDate = Utils.getDateAsLocalDate(operationDate);
             log.info("Current date {}", bussinesLocalDate);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, bussinesLocalDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(bussinesLocalDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             // Given
             final LoanTransactionHelper loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
@@ -1381,7 +1407,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
                     .getBucket(delinquencyBucketResponse.getResourceId());
 
             // Client creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, operationDate);
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(operationDate))
+                    .getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), null);
             assertNotNull(getLoanProductsProductResponse);
@@ -1392,7 +1419,8 @@ public class DelinquencyBucketsIntegrationTest extends BaseLoanIntegrationTest {
 
             // run cob for business date 01 January 2012
             bussinesLocalDate = Utils.getDateAsLocalDate(operationDate);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, bussinesLocalDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(bussinesLocalDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             // Run the Loan inline COB Job
             inlineLoanCOBHelper.executeInlineCOB(Long.valueOf(loanId));
 

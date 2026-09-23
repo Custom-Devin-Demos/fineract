@@ -86,8 +86,8 @@ public class SavingsAccountRecalculateBalanceTest {
     public void testSavingsAccountDepositAfterNegativeHoldAmount() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer savingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, "0", null, false, true, false, null);
         Assertions.assertNotNull(savingsProductID);
@@ -136,8 +136,8 @@ public class SavingsAccountRecalculateBalanceTest {
     public void testSavingsAccountDepositAfterNegativeHoldAmountNoInterest() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer savingsProductID = createSavingsProduct(this.requestSpec, this.responseSpec, "0", null, false, true, false,
                 BigDecimal.ZERO);

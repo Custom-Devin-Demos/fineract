@@ -357,7 +357,7 @@ public class DelinquencyActionIntegrationTests extends BaseLoanIntegrationTest {
                     "16 November 2023", "25 November 2023");
 
             // run cob for business date 26 November
-            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper();
             businessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
                     .date("26 November 2023").dateFormat(DATETIME_PATTERN).locale("en"));
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId.longValue()));
@@ -507,7 +507,7 @@ public class DelinquencyActionIntegrationTests extends BaseLoanIntegrationTest {
         });
 
         runAt("02 February 2022", () -> {
-            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper();
             Long loanId = loanIdHolder[0];
 
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId));
@@ -560,7 +560,7 @@ public class DelinquencyActionIntegrationTests extends BaseLoanIntegrationTest {
         });
 
         runAt("02 March 2022", () -> {
-            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper();
             Long loanId = loanIdHolder[0];
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId));
 
@@ -607,7 +607,7 @@ public class DelinquencyActionIntegrationTests extends BaseLoanIntegrationTest {
         });
 
         runAt("05 February 2022", () -> {
-            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper();
             Long loanId = loanIdHolder[0];
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId));
 
@@ -659,7 +659,7 @@ public class DelinquencyActionIntegrationTests extends BaseLoanIntegrationTest {
         });
 
         runAt("01 March 2022", () -> {
-            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper();
             Long loanId = loanIdHolder[0];
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId));
 
@@ -720,7 +720,7 @@ public class DelinquencyActionIntegrationTests extends BaseLoanIntegrationTest {
         });
 
         runAt("12 January 2022", () -> {
-            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper();
             Long loanId = loanIdHolder[0];
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId));
 
@@ -755,7 +755,7 @@ public class DelinquencyActionIntegrationTests extends BaseLoanIntegrationTest {
         });
 
         runAt("01 March 2022", () -> {
-            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper();
             Long loanId = loanIdHolder[0];
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId));
 
@@ -785,7 +785,7 @@ public class DelinquencyActionIntegrationTests extends BaseLoanIntegrationTest {
         });
 
         runAt("07 January 2025", () -> {
-            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper();
             Long loanId = loanIdHolder[0];
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId));
 
@@ -793,19 +793,19 @@ public class DelinquencyActionIntegrationTests extends BaseLoanIntegrationTest {
         });
 
         runAt("15 January 2025", () -> {
-            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper();
             Long loanId = loanIdHolder[0];
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId));
         });
 
         runAt("25 January 2025", () -> {
-            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper();
             Long loanId = loanIdHolder[0];
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId));
         });
 
         runAt("10 February 2025", () -> {
-            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+            final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper();
             Long loanId = loanIdHolder[0];
             inlineLoanCOBHelper.executeInlineCOB(List.of(loanId));
 

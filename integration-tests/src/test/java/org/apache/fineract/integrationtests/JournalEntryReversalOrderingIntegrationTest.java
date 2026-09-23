@@ -61,7 +61,7 @@ public class JournalEntryReversalOrderingIntegrationTest extends BaseLoanIntegra
         this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
         this.journalEntryHelper = new JournalEntryHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.clientHelper = new ClientHelper(this.requestSpec, this.responseSpec);
     }
 

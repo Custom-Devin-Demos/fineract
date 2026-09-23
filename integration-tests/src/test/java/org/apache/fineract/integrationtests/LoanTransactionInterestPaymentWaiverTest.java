@@ -110,7 +110,7 @@ public class LoanTransactionInterestPaymentWaiverTest extends BaseLoanIntegratio
         responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
         businessDateHelper = new BusinessDateHelper();
-        accountHelper = new AccountHelper(requestSpec, responseSpec);
+        accountHelper = new AccountHelper();
         ClientHelper clientHelper = new ClientHelper(requestSpec, responseSpec);
         loanRescheduleRequestHelper = new LoanRescheduleRequestHelper(requestSpec, responseSpec);
         chargesHelper = new ChargesHelper();
@@ -795,13 +795,12 @@ public class LoanTransactionInterestPaymentWaiverTest extends BaseLoanIntegratio
                 .withInterestTypeAsDecliningBalance() //
                 .currencyDetails("0", "100").build(null);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
 
         final Integer productId = new LoanTransactionHelper(requestSpec, responseSpec).getLoanProductId(loanProductJSON);

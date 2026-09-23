@@ -103,7 +103,7 @@ public class ClientLoanCreditBalanceRefundandRepaymentTypeIntegrationTest extend
         this.responseSpec403 = new ResponseSpecBuilder().expectStatusCode(403).build();
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
         this.loanTransactionHelperValidationError = new LoanTransactionHelper(this.requestSpec, new ResponseSpecBuilder().build());
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.assetAccount = this.accountHelper.createAssetAccount();
         this.incomeAccount = this.accountHelper.createIncomeAccount();
         this.expenseAccount = this.accountHelper.createExpenseAccount();
@@ -165,8 +165,8 @@ public class ClientLoanCreditBalanceRefundandRepaymentTypeIntegrationTest extend
     private Integer fromStartToDisburseLoan(LoanProductTestBuilder loanProductTestBuilder, String submitApproveDisburseDate,
             String principal, final String accountingRule, final Account... accounts) {
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         boolean allowMultipleDisbursals = false;
         final Integer loanProductID = createLoanProduct(loanProductTestBuilder, principal, allowMultipleDisbursals, accountingRule,

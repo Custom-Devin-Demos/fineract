@@ -84,7 +84,7 @@ public class DateValidationTest {
         this.clientHelper = new ClientHelper(this.requestSpec, this.responseSpec);
         this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
         this.interopHelper = new InteropHelper(requestSpec, errorResponseSpec);
-        this.accountHelper = new AccountHelper(requestSpec, responseSpec);
+        this.accountHelper = new AccountHelper();
     }
 
     @Test
@@ -202,7 +202,7 @@ public class DateValidationTest {
 
     private Integer createFixedDepositProduct(final String validFrom, final String validTo, Account... accounts) {
         log.info("------------------------------CREATING NEW FIXED DEPOSIT PRODUCT ---------------------------------------");
-        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper(this.requestSpec, this.responseSpec);
+        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper();
         fixedDepositProductHelper = fixedDepositProductHelper.withAccountingRuleAsCashBased(accounts);
         final String fixedDepositProductJSON = fixedDepositProductHelper.withPeriodRangeChart() //
                 .build(validFrom, validTo, true);

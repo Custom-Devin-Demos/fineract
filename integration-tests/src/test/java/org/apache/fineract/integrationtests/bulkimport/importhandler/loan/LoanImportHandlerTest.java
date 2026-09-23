@@ -122,10 +122,10 @@ public class LoanImportHandlerTest {
 
         List<HashMap> collaterals = new ArrayList<>();
         HashMap<String, String> collateralHashMap = new HashMap<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                String.valueOf(outcome_client_creation), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(outcome_client_creation),
+                collateralId);
         Assertions.assertNotNull(clientCollateralId);
         collateralHashMap.put("clientCollateralId", collateralId.toString());
         collateralHashMap.put("quantity", "1");

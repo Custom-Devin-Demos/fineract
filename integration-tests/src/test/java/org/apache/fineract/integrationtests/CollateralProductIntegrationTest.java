@@ -51,16 +51,16 @@ public class CollateralProductIntegrationTest {
     @Test
     public void createCollateralProductTest() {
         LOG.info("-------------------------Creating Collateral Product---------------------------");
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
     }
 
     @Test
     public void updateCollateralProductTest() {
         LOG.info("-------------------------Updating Collateral Product---------------------------");
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer resourceId = CollateralManagementHelper.updateCollateralProduct(this.requestSpec, this.responseSpec, collateralId);
+        final Integer resourceId = CollateralManagementHelper.updateCollateralProduct(collateralId);
 
         Assertions.assertEquals(collateralId, resourceId);
     }

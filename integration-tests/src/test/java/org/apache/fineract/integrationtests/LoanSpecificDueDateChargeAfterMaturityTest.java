@@ -116,8 +116,8 @@ public class LoanSpecificDueDateChargeAfterMaturityTest extends BaseLoanIntegrat
         responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
 
         loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
-        accountHelper = new AccountHelper(requestSpec, responseSpec);
-        periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(requestSpec, responseSpec);
+        accountHelper = new AccountHelper();
+        periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper();
         final Account assetAccount = accountHelper.createAssetAccount();
         final Account incomeAccount = accountHelper.createIncomeAccount();
         final Account expenseAccount = accountHelper.createExpenseAccount();
@@ -136,7 +136,8 @@ public class LoanSpecificDueDateChargeAfterMaturityTest extends BaseLoanIntegrat
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingNoInterest(assetAccount, incomeAccount, expenseAccount,
                 overpaymentAccount);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
 
         final Integer loanID = applyForLoanApplication(clientID, loanProductID, "0");
 
@@ -269,7 +270,8 @@ public class LoanSpecificDueDateChargeAfterMaturityTest extends BaseLoanIntegrat
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingNoInterest(assetAccount, incomeAccount, expenseAccount,
                 overpaymentAccount);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
 
         final Integer loanID = applyForLoanApplication(clientID, loanProductID, "0");
 

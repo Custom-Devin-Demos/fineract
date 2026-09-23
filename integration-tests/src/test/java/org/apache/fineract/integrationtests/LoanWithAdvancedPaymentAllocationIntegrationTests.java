@@ -70,7 +70,7 @@ public class LoanWithAdvancedPaymentAllocationIntegrationTests {
         RequestSpecification requestSpec = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
         requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         ResponseSpecification responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
-        AccountHelper accountHelper = new AccountHelper(requestSpec, responseSpec);
+        AccountHelper accountHelper = new AccountHelper();
         LOAN_TRANSACTION_HELPER = new LoanTransactionHelper(requestSpec, responseSpec);
         CLIENT_HELPER = new ClientHelper(requestSpec, responseSpec);
 

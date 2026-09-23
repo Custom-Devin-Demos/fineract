@@ -21,7 +21,6 @@ package org.apache.fineract.integrationtests.investor.externalassetowner;
 import static org.apache.fineract.client.models.ExternalTransferData.StatusEnum.BUYBACK;
 import static org.apache.fineract.client.models.ExternalTransferData.StatusEnum.CANCELLED;
 import static org.apache.fineract.client.models.ExternalTransferData.StatusEnum.PENDING;
-import static org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType.BUSINESS_DATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -45,6 +44,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.fineract.accounting.common.AccountingConstants;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.ExternalAssetOwnerRequest;
 import org.apache.fineract.client.models.ExternalOwnerTransferJournalEntryData;
 import org.apache.fineract.client.models.ExternalTransferData;
@@ -100,7 +100,7 @@ public class ExternalAssetOwnerTransferCancelTest extends BaseLoanIntegrationTes
         REQUEST_SPEC = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
         REQUEST_SPEC.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         RESPONSE_SPEC = new ResponseSpecBuilder().expectStatusCode(200).build();
-        AccountHelper accountHelper = new AccountHelper(REQUEST_SPEC, RESPONSE_SPEC);
+        AccountHelper accountHelper = new AccountHelper();
         EXTERNAL_ASSET_OWNER_HELPER = new ExternalAssetOwnerHelper();
         SCHEDULER_JOB_HELPER = new SchedulerJobHelper(REQUEST_SPEC);
         FINANCIAL_ACTIVITY_ACCOUNT_HELPER = new FinancialActivityAccountHelper(REQUEST_SPEC);
@@ -275,7 +275,8 @@ public class ExternalAssetOwnerTransferCancelTest extends BaseLoanIntegrationTes
     private void setInitialBusinessDate(String date) {
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(true));
-        BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BUSINESS_DATE, LocalDate.parse(date));
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(LocalDate.parse(date))).dateFormat(Utils.DATE_FORMAT).locale("en"));
     }
 
     private void cleanUpAndRestoreBusinessDate() {
@@ -283,14 +284,15 @@ public class ExternalAssetOwnerTransferCancelTest extends BaseLoanIntegrationTes
         REQUEST_SPEC.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         REQUEST_SPEC.header("Fineract-Platform-TenantId", "default");
         RESPONSE_SPEC = new ResponseSpecBuilder().expectStatusCode(200).build();
-        BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BUSINESS_DATE, TODAYS_DATE);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(TODAYS_DATE)).dateFormat(Utils.DATE_FORMAT).locale("en"));
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(false));
     }
 
     @NonNull
     private Integer createClient() {
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
         return clientID;
     }
@@ -334,9 +336,9 @@ public class ExternalAssetOwnerTransferCancelTest extends BaseLoanIntegrationTes
 
     private Integer applyForLoanApplication(final String clientID, final String loanProductID, final String date) {
         List<HashMap> collaterals = new ArrayList<>();
-        Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC, clientID, collateralId);
+        Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID, collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 

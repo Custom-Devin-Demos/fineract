@@ -40,12 +40,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.PaymentTypeCreateRequest;
 import org.apache.fineract.client.models.PostTaxesComponentsRequest;
 import org.apache.fineract.client.models.PostTaxesGroupRequest;
 import org.apache.fineract.client.models.PostTaxesGroupTaxComponents;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
 import org.apache.fineract.integrationtests.common.ClientHelper;
@@ -110,8 +110,8 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsAccount() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = null;
@@ -154,8 +154,8 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsLastTransactionAndRunningBalanceUpdate() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = null;
@@ -198,8 +198,8 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsBackedDatedTransactionsNotAllowed() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = null;
@@ -267,8 +267,8 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsAccountWithMinBalanceForInterestCalculation() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = "5000";
         final String minRequiredBalance = null;
@@ -319,8 +319,8 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(400).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = "1000.0";
@@ -363,8 +363,8 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = "1500.0";
@@ -431,8 +431,8 @@ public class ClientSavingsIntegrationTest {
         SavingsAccountHelper savingsAccountHelperValidationError = new SavingsAccountHelper(this.requestSpec,
                 new ResponseSpecBuilder().build());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = null;
@@ -475,8 +475,8 @@ public class ClientSavingsIntegrationTest {
         SavingsAccountHelper savingsAccountHelperValidationError = new SavingsAccountHelper(this.requestSpec,
                 new ResponseSpecBuilder().build());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = null;
@@ -521,8 +521,8 @@ public class ClientSavingsIntegrationTest {
 
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = null;
@@ -550,8 +550,8 @@ public class ClientSavingsIntegrationTest {
         SavingsAccountHelper savingsAccountHelperValidationError = new SavingsAccountHelper(this.requestSpec,
                 new ResponseSpecBuilder().build());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = null;
@@ -654,14 +654,15 @@ public class ClientSavingsIntegrationTest {
 
             LocalDate submittedDate = LocalDate.of(2022, 9, 28);
             String submittedDateString = "28 September 2022";
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, submittedDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(submittedDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             final ResponseSpecification erroResponseSpec = new ResponseSpecBuilder().build();
             this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
             final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, erroResponseSpec);
 
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-            ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            ClientHelper.verifyClientCreatedOnServer(clientID);
             // Assertions.assertNotNull(clientID);
             final String minBalanceForInterestCalculation = null;
             final String minRequiredBalance = null;
@@ -716,7 +717,8 @@ public class ClientSavingsIntegrationTest {
             HashMap savingsChargeForPay = charges.get(0);
             Integer annualSavingsChargeId = (Integer) savingsChargeForPay.get("id");
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2023, 1, 16));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2023, 1, 16))).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             ArrayList<HashMap> savingsAccountErrorData = (ArrayList<HashMap>) validationErrorHelper.inactivateCharge(annualSavingsChargeId,
                     savingsId, CommonConstants.RESPONSE_ERROR);
@@ -730,7 +732,8 @@ public class ClientSavingsIntegrationTest {
 
             final LocalDate today = LocalDate.of(2024, 1, 17);
             final int noChargeDues = today.getYear() - chargeDueDate.getYear();
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, today);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(today)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             for (int dueYearDiff = 0; dueYearDiff <= noChargeDues; dueYearDiff++) {
                 this.savingsAccountHelper.payCharge(annualSavingsChargeId, savingsId, String.valueOf(chargeAmount),
@@ -806,7 +809,8 @@ public class ClientSavingsIntegrationTest {
             LocalDate expectedNextDueDate = chargeDueDate.plusWeeks((Integer) paidCharge.get("feeInterval"));
             assertEquals(expectedNextDueDate, nextDueDate);
         } finally {
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, LocalDate.of(2024, 11, 11));
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(LocalDate.of(2024, 11, 11))).dateFormat(Utils.DATE_FORMAT).locale("en"));
             savingsAccountHelper.closeSavingsAccountOnDate(savingsId, "true", "11 November 2024");
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(false));
@@ -829,8 +833,8 @@ public class ClientSavingsIntegrationTest {
         /***
          * Create a client to apply for savings account (overdraft account).
          */
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
 
@@ -961,14 +965,15 @@ public class ClientSavingsIntegrationTest {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, Utils.getLocalDateOfTenant());
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(Utils.getLocalDateOfTenant())).dateFormat(Utils.DATE_FORMAT).locale("en"));
             this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
             /***
              * Create a client to apply for savings account (overdraft account).
              */
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-            ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            ClientHelper.verifyClientCreatedOnServer(clientID);
             // Assertions.assertNotNull(clientID);
             final String minBalanceForInterestCalculation = null;
 
@@ -1035,7 +1040,8 @@ public class ClientSavingsIntegrationTest {
             // yyyy",Locale.US);
             LocalDate transactionDate = Utils.getLocalDateOfTenant();
             transactionDate = transactionDate.withDayOfMonth(2);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             String transactionDateValue = dateFormat.format(transactionDate);
 
             /***
@@ -1101,7 +1107,8 @@ public class ClientSavingsIntegrationTest {
             LOG.info("-----Post Interest As on Successfully Worked----------");
 
             transactionDate = transactionDate.withDayOfMonth(3);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             transactionDateValue = dateFormat.format(transactionDate);
 
             this.savingsAccountHelper.postInterestAsOnSavings(savingsId, transactionDateValue);
@@ -1128,7 +1135,8 @@ public class ClientSavingsIntegrationTest {
             LOG.info("-----Post Interest As on Successfully Worked-------");
 
             transactionDate = transactionDate.withDayOfMonth(22);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             transactionDateValue = dateFormat.format(transactionDate);
             if (Calendar.DAY_OF_MONTH >= 22) {
                 this.savingsAccountHelper.postInterestAsOnSavings(savingsId, transactionDateValue);
@@ -1186,7 +1194,8 @@ public class ClientSavingsIntegrationTest {
 
             }
             transactionDate = transactionDate.withDayOfMonth(1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             transactionDateValue = dateFormat.format(transactionDate);
             final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
             final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
@@ -1225,15 +1234,16 @@ public class ClientSavingsIntegrationTest {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, Utils.getLocalDateOfTenant());
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(Utils.getLocalDateOfTenant())).dateFormat(Utils.DATE_FORMAT).locale("en"));
             final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.US);
             this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
             /***
              * Create a client to apply for savings account (overdraft account).
              */
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-            ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            ClientHelper.verifyClientCreatedOnServer(clientID);
             // Assertions.assertNotNull(clientID);
             final String minBalanceForInterestCalculation = null;
 
@@ -1298,7 +1308,8 @@ public class ClientSavingsIntegrationTest {
             // yyyy", Locale.US);
             LocalDate transactionDate = Utils.getLocalDateOfTenant();
             transactionDate = transactionDate.withDayOfMonth(2);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             String transactionDateValue = dateFormat.format(transactionDate);
 
             /***
@@ -1375,7 +1386,8 @@ public class ClientSavingsIntegrationTest {
             LOG.info("-----Post Interest As on Successfully Worked----------");
 
             transactionDate = transactionDate.withDayOfMonth(3);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             transactionDateValue = dateFormat.format(transactionDate);
 
             this.savingsAccountHelper.postInterestAsOnSavings(savingsId, transactionDateValue);
@@ -1405,7 +1417,8 @@ public class ClientSavingsIntegrationTest {
             // Locale.US);
 
             transactionDate = transactionDate.withDayOfMonth(22);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             transactionDateValue = dateFormat.format(transactionDate);
             if (Calendar.DAY_OF_MONTH >= 22) {
                 this.savingsAccountHelper.postInterestAsOnSavings(savingsId, transactionDateValue);
@@ -1462,7 +1475,8 @@ public class ClientSavingsIntegrationTest {
 
             }
             transactionDate = transactionDate.withDayOfMonth(1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, transactionDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(transactionDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             transactionDateValue = dateFormat.format(transactionDate);
             final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
             final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
@@ -1501,7 +1515,8 @@ public class ClientSavingsIntegrationTest {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
 
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, Utils.getLocalDateOfTenant());
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(Utils.getLocalDateOfTenant())).dateFormat(Utils.DATE_FORMAT).locale("en"));
             final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.US);
             this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
             final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
@@ -1509,8 +1524,8 @@ public class ClientSavingsIntegrationTest {
             /***
              * Create a client to apply for savings account (overdraft account).
              */
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-            ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            ClientHelper.verifyClientCreatedOnServer(clientID);
             // Assertions.assertNotNull(clientID);
             final String minBalanceForInterestCalculation = null;
 
@@ -1555,7 +1570,8 @@ public class ClientSavingsIntegrationTest {
 
             LocalDate postedDate = Utils.getLocalDateOfTenant();
             postedDate = postedDate.withDayOfMonth(2);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, postedDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(postedDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             final String POSTED_TRANSACTION_DATE = dateFormat.format(postedDate);
 
@@ -1684,8 +1700,8 @@ public class ClientSavingsIntegrationTest {
         /***
          * Create a client to apply for savings account (overdraft account).
          */
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
 
@@ -1838,8 +1854,8 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsAccount_WITH_WITHHOLD_TAX() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = null;
@@ -1888,8 +1904,8 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsAccount_WITH_WITHHOLD_TAX_DISABLE_AT_ACCOUNT_LEVEL() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = null;
@@ -1940,8 +1956,8 @@ public class ClientSavingsIntegrationTest {
     public void testSavingsAccount_DormancyTracking() throws InterruptedException {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = null;
@@ -2208,8 +2224,8 @@ public class ClientSavingsIntegrationTest {
         SavingsAccountHelper savingsAccountHelperValidationError = new SavingsAccountHelper(this.requestSpec,
                 new ResponseSpecBuilder().build());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = null;
@@ -2326,8 +2342,8 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final String minBalanceForInterestCalculation = null;
         final boolean enforceMinRequiredBalance = true;
@@ -2389,8 +2405,8 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final String minBalanceForInterestCalculation = null;
         final boolean enforceMinRequiredBalance = false;
@@ -2453,8 +2469,8 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final String minBalanceForInterestCalculation = null;
         final boolean enforceMinRequiredBalance = false;
@@ -2518,8 +2534,8 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final String minBalanceForInterestCalculation = null;
         final boolean enforceMinRequiredBalance = false;
@@ -2592,8 +2608,8 @@ public class ClientSavingsIntegrationTest {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(400).build();
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final String minBalanceForInterestCalculation = null;
         final boolean enforceMinRequiredBalance = false;
@@ -2620,9 +2636,9 @@ public class ClientSavingsIntegrationTest {
         // SavingsAccountHelper(this.requestSpec,new
         // ResponseSpecBuilder().build());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = "500";
@@ -2681,8 +2697,8 @@ public class ClientSavingsIntegrationTest {
 
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = null;
@@ -2767,8 +2783,8 @@ public class ClientSavingsIntegrationTest {
     public void testAccountBalanceAfterSavingsTransactionReversalPosting() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = "0";
@@ -2816,8 +2832,8 @@ public class ClientSavingsIntegrationTest {
     public void testReversalWhenIsBulkIsTrue() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = "0";
         final String enforceMinRequiredBalance = "false";
@@ -2858,8 +2874,8 @@ public class ClientSavingsIntegrationTest {
     public void testReversalWhenIsBulkIsFalse() {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = "0";
         final String enforceMinRequiredBalance = "false";
@@ -2901,8 +2917,8 @@ public class ClientSavingsIntegrationTest {
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         configurationForBackdatedTransaction();
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = "0";
         final String enforceMinRequiredBalance = "false";
@@ -2951,8 +2967,8 @@ public class ClientSavingsIntegrationTest {
         SavingsAccountHelper savingsAccountHelperValidationError = new SavingsAccountHelper(this.requestSpec,
                 new ResponseSpecBuilder().build());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final String minBalanceForInterestCalculation = null;
         final String minRequiredBalance = null;
@@ -3013,12 +3029,13 @@ public class ClientSavingsIntegrationTest {
 
             LocalDate submittedDate = LocalDate.of(2023, 1, 1);
             String submittedDateString = "01 January 2023";
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, submittedDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(submittedDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
 
-            final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-            ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+            final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            ClientHelper.verifyClientCreatedOnServer(clientID);
 
             final String minBalanceForInterestCalculation = null;
             final String minRequiredBalance = null;
@@ -3056,7 +3073,8 @@ public class ClientSavingsIntegrationTest {
             float chargeAmount = (Float) savingsChargeForPay.get("amount");
 
             LocalDate paymentDate = LocalDate.of(2023, 3, 1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, paymentDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(paymentDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             Integer payChargeTransactionId = this.savingsAccountHelper.payCharge(annualSavingsChargeId, savingsId,
                     String.valueOf(chargeAmount), paymentDate);
@@ -3068,8 +3086,8 @@ public class ClientSavingsIntegrationTest {
 
         } finally {
             if (savingsId != null) {
-                BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE,
-                        LocalDate.of(2024, 11, 11));
+                BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                        .date(Utils.dateFormatter.format(LocalDate.of(2024, 11, 11))).dateFormat(Utils.DATE_FORMAT).locale("en"));
                 savingsAccountHelper.closeSavingsAccountOnDate(savingsId, "true", "11 November 2024");
             }
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
@@ -3088,7 +3106,8 @@ public class ClientSavingsIntegrationTest {
         String startDate = formatter.format(transactionDate);
         String secondTrx = formatter.format(transactionDate.plusDays(1));
         final String jobName = "Post Interest For Savings";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3111,7 +3130,8 @@ public class ClientSavingsIntegrationTest {
         String startDate = formatter.format(transactionDate);
         String secondTrx = formatter.format(transactionDate.plusDays(1));
         final String jobName = "Post Interest For Savings";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3133,7 +3153,8 @@ public class ClientSavingsIntegrationTest {
         String startDate = formatter.format(transactionDate);
         String secondTrx = formatter.format(transactionDate.plusDays(1));
         final String jobName = "Post Interest For Savings";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3159,7 +3180,8 @@ public class ClientSavingsIntegrationTest {
         String startDate = formatter.format(transactionDate);
         String secondTrx = formatter.format(transactionDate.plusDays(1));
         final String jobName = "Post Interest For Savings";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3185,7 +3207,8 @@ public class ClientSavingsIntegrationTest {
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy");
         String startDate = formatter.format(transactionDate);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3213,7 +3236,8 @@ public class ClientSavingsIntegrationTest {
         String startDate = formatter.format(transactionDate);
         String nxtTransaction = formatter.format(nextTransactionDate);
         final String jobName = "Post Interest For Savings";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3246,7 +3270,8 @@ public class ClientSavingsIntegrationTest {
         String startDate = formatter.format(transactionDate);
         String nxtTransaction = formatter.format(nextTransactionDate);
         final String jobName = "Post Interest For Savings";
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
 
         final Integer savingsId = createSavingsAccountDailyPostingOverdraft(clientID, startDate);
@@ -3272,8 +3297,8 @@ public class ClientSavingsIntegrationTest {
         final ResponseSpecification errorResponse = new ResponseSpecBuilder().expectStatusCode(403).build();
         final SavingsAccountHelper validationErrorHelper = new SavingsAccountHelper(this.requestSpec, errorResponse);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final String minBalanceForInterestCalculation = null;
         final boolean enforceMinRequiredBalance = false;
@@ -3321,8 +3346,8 @@ public class ClientSavingsIntegrationTest {
         /***
          * Create a client to apply for savings account (overdraft account).
          */
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
 
@@ -3396,8 +3421,8 @@ public class ClientSavingsIntegrationTest {
         /***
          * Create a client to apply for savings account (overdraft account).
          */
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
 
@@ -3477,8 +3502,8 @@ public class ClientSavingsIntegrationTest {
         /***
          * Create a client to apply for savings account (overdraft account).
          */
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
 
@@ -3556,8 +3581,8 @@ public class ClientSavingsIntegrationTest {
         /***
          * Create a client to apply for savings account (overdraft account).
          */
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
         // Assertions.assertNotNull(clientID);
         final String minBalanceForInterestCalculation = null;
 

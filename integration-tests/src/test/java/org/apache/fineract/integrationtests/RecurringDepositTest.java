@@ -137,7 +137,7 @@ public class RecurringDepositTest {
     @Test
     public void testRecurringDepositAccountWithPrematureClosureTypeWithdrawal() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         /***
@@ -176,7 +176,7 @@ public class RecurringDepositTest {
         /***
          * Create client for applying Deposit account
          */
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -286,7 +286,7 @@ public class RecurringDepositTest {
     @Test
     public void testRecurringDepositAccountWithPrematureClosureTypeTransferToSavings() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -326,7 +326,7 @@ public class RecurringDepositTest {
         /***
          * Create client for applying Deposit and Savings accounts
          */
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -487,7 +487,7 @@ public class RecurringDepositTest {
     @Test
     public void testRecurringDepositAccountWithPrematureClosureTypeTransferToSavings_WITH_HOLD_TAX() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -528,7 +528,7 @@ public class RecurringDepositTest {
         /***
          * Create client for applying Deposit and Savings accounts
          */
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -696,7 +696,7 @@ public class RecurringDepositTest {
     @Test
     public void testRecurringDepositAccountWithClosureTypeTransferToSavings_WITH_HOLD_TAX() throws InterruptedException {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -725,7 +725,7 @@ public class RecurringDepositTest {
         /***
          * Create client for applying Deposit and Savings accounts
          */
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -840,7 +840,7 @@ public class RecurringDepositTest {
     @Test
     public void testRecurringDepositAccountWithPrematureClosureTypeReinvest() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -883,7 +883,7 @@ public class RecurringDepositTest {
         /***
          * Create client for applying Deposit account
          */
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -1002,7 +1002,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1046,7 +1046,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1075,7 +1075,7 @@ public class RecurringDepositTest {
     @Test
     public void testRecurringDepositAccountRejectedAndClosed() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -1094,7 +1094,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1121,7 +1121,7 @@ public class RecurringDepositTest {
     @Test
     public void testRecurringDepositAccountWithdrawnByClientAndClosed() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
@@ -1140,7 +1140,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1184,7 +1184,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1210,7 +1210,7 @@ public class RecurringDepositTest {
     @Test
     public void testUpdateAndUndoTransactionForRecurringDepositAccount() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
         /***
@@ -1243,7 +1243,7 @@ public class RecurringDepositTest {
         /***
          * Create client for applying Deposit account
          */
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***
@@ -1362,7 +1362,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1437,7 +1437,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1515,7 +1515,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1590,7 +1590,7 @@ public class RecurringDepositTest {
     @Test
     public void testPrematureClosureAmountWithPenalInterestForWholeTerm_With_365_Days() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -1619,7 +1619,7 @@ public class RecurringDepositTest {
         final Account expenseAccount = this.accountHelper.createExpenseAccount();
         final Account liabilityAccount = this.accountHelper.createLiabilityAccount();
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1714,7 +1714,7 @@ public class RecurringDepositTest {
     @Test
     public void testPrematureClosureAmountWithPenalInterestForWholeTerm_With_360_Days() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -1743,7 +1743,7 @@ public class RecurringDepositTest {
         final Account expenseAccount = this.accountHelper.createExpenseAccount();
         final Account liabilityAccount = this.accountHelper.createLiabilityAccount();
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1843,7 +1843,7 @@ public class RecurringDepositTest {
     @Test
     public void testPrematureClosureAmountWithPenalInterestTillPrematureWithdrawal_With_365_Days() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -1867,7 +1867,7 @@ public class RecurringDepositTest {
         final Account expenseAccount = this.accountHelper.createExpenseAccount();
         final Account liabilityAccount = this.accountHelper.createLiabilityAccount();
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -1966,7 +1966,7 @@ public class RecurringDepositTest {
     @Test
     public void testPrematureClosureAmountWithPenalInterestTillPrematureWithdrawal_With_360_Days() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -1988,7 +1988,7 @@ public class RecurringDepositTest {
         final Account expenseAccount = this.accountHelper.createExpenseAccount();
         final Account liabilityAccount = this.accountHelper.createLiabilityAccount();
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2112,7 +2112,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2191,7 +2191,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2250,7 +2250,7 @@ public class RecurringDepositTest {
     @Test
     public void testRecurringDepositWithBi_AnnualCompoundingAndPosting_365_Days() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -2279,7 +2279,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2340,7 +2340,7 @@ public class RecurringDepositTest {
     @Test
     public void testRecurringDepositWithBi_AnnualCompoundingAndPosting_360_Days() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -2369,7 +2369,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2458,7 +2458,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2548,7 +2548,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2610,7 +2610,7 @@ public class RecurringDepositTest {
     @Test
     public void testRecurringDepositQuarterlyCompoundingAndQuarterlyPosting_365_Days() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -2639,7 +2639,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2700,7 +2700,7 @@ public class RecurringDepositTest {
     @Test
     public void testRecurringDepositQuarterlyCompoundingAndQuarterlyPosting_360_Days() {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -2729,7 +2729,7 @@ public class RecurringDepositTest {
         final String expectedFirstDepositOnDate = dateFormat.format(todaysDate.getTime());
         final String MONTH_DAY = monthDayFormat.format(todaysDate.getTime());
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         final String accountingRule = NONE;
@@ -2894,7 +2894,7 @@ public class RecurringDepositTest {
     private void testFixedDepositAccountForInterestRate(final String chartToUse, final String depositAmount, final String depositPeriod,
             final Float interestRate) {
         this.recurringDepositProductHelper = new RecurringDepositProductHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(this.requestSpec, this.responseSpec);
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(this.requestSpec, this.responseSpec);
 
@@ -2905,7 +2905,7 @@ public class RecurringDepositTest {
         final String APPROVED_ON_DATE = "01 March 2015";
         final String ACTIVATION_DATE = "01 March 2015";
 
-        Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientId);
 
         /***

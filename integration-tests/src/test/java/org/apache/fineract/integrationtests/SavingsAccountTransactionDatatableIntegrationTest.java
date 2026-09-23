@@ -149,7 +149,8 @@ public class SavingsAccountTransactionDatatableIntegrationTest {
     @Test
     public void testDatatableCreateReadUpdateDeleteEntryForSavingsAccountTransaction() {
         // Create Client
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         // Create savings product and account
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);

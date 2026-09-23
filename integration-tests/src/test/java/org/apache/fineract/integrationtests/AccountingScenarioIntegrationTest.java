@@ -139,10 +139,10 @@ public class AccountingScenarioIntegrationTest {
         responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
 
         this.loanTransactionHelper = new LoanTransactionHelper(requestSpec, responseSpec);
-        this.accountHelper = new AccountHelper(requestSpec, responseSpec);
+        this.accountHelper = new AccountHelper();
         this.journalEntryHelper = new JournalEntryHelper(requestSpec, responseSpec);
         this.schedulerJobHelper = new SchedulerJobHelper(requestSpec);
-        this.periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper(requestSpec, responseSpec);
+        this.periodicAccrualAccountingHelper = new PeriodicAccrualAccountingHelper();
         this.savingsAccountHelper = new SavingsAccountHelper(requestSpec, responseSpec);
 
         this.tenantTimeZone = TimeZone.getTimeZone(Utils.TENANT_TIME_ZONE);
@@ -158,13 +158,13 @@ public class AccountingScenarioIntegrationTest {
         final Integer loanProductID = createLoanProductWithUpfrontAccrualAccountingEnabled(assetAccount, incomeAccount, expenseAccount,
                 overpaymentAccount);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -293,7 +293,8 @@ public class AccountingScenarioIntegrationTest {
         final Integer savingsProductID = createSavingsProduct(MINIMUM_OPENING_BALANCE, assetAccount, incomeAccount, expenseAccount,
                 liabilityAccount);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
         final Integer savingsID = this.savingsAccountHelper.applyForSavingsApplication(clientID, savingsProductID, ACCOUNT_TYPE_INDIVIDUAL);
 
         HashMap savingsStatusHashMap = SavingsStatusChecker.getStatusOfSavings(requestSpec, responseSpec, savingsID);
@@ -391,7 +392,8 @@ public class AccountingScenarioIntegrationTest {
         Assertions.assertNotNull(savingsProductsResponse.getAccountingMappings().getSavingsControlAccount());
         Assertions.assertNotNull(savingsProductsResponse.getAccountingMappings().getInterestPayableAccount());
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
         final Integer savingsID = this.savingsAccountHelper.applyForSavingsApplication(clientID, savingsProductID, ACCOUNT_TYPE_INDIVIDUAL);
 
         HashMap savingsStatusHashMap = SavingsStatusChecker.getStatusOfSavings(requestSpec, responseSpec, savingsID);
@@ -475,7 +477,7 @@ public class AccountingScenarioIntegrationTest {
 
     @Test
     public void testFixedDepositAccountingFlow() {
-        this.accountHelper = new AccountHelper(requestSpec, responseSpec);
+        this.accountHelper = new AccountHelper();
         this.fixedDepositAccountHelper = new FixedDepositAccountHelper(requestSpec, responseSpec);
 
         final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.US);
@@ -500,8 +502,8 @@ public class AccountingScenarioIntegrationTest {
         final Account expenseAccount = this.accountHelper.createExpenseAccount();
         final Account liabilityAccount = this.accountHelper.createLiabilityAccount();
 
-        Integer clientId = ClientHelper.createClient(requestSpec, responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
         // Assertions.assertNotNull(clientId);
 
         Integer fixedDepositProductId = createFixedDepositProduct(VALID_FROM, VALID_TO, assetAccount, incomeAccount, expenseAccount,
@@ -548,7 +550,7 @@ public class AccountingScenarioIntegrationTest {
 
     @Test
     public void testRecurringDepositAccountingFlow() {
-        this.accountHelper = new AccountHelper(requestSpec, responseSpec);
+        this.accountHelper = new AccountHelper();
         this.recurringDepositAccountHelper = new RecurringDepositAccountHelper(requestSpec, responseSpec);
 
         final Account assetAccount = this.accountHelper.createAssetAccount();
@@ -574,8 +576,8 @@ public class AccountingScenarioIntegrationTest {
         todaysDate = todaysDate.plusMonths(1).withDayOfMonth(1);
         final String INTEREST_POSTED_DATE = dateFormat.format(todaysDate);
 
-        Integer clientId = ClientHelper.createClient(requestSpec, responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(requestSpec, responseSpec, clientId);
+        Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientId);
 
         Integer recurringDepositProductId = createRecurringDepositProduct(VALID_FROM, VALID_TO, assetAccount, liabilityAccount,
                 incomeAccount, expenseAccount);
@@ -644,7 +646,7 @@ public class AccountingScenarioIntegrationTest {
 
     private Integer createFixedDepositProduct(final String validFrom, final String validTo, Account... accounts) {
         LOG.info("------------------------------CREATING NEW FIXED DEPOSIT PRODUCT ---------------------------------------");
-        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper(requestSpec, responseSpec);
+        FixedDepositProductHelper fixedDepositProductHelper = new FixedDepositProductHelper();
         final String fixedDepositProductJSON = fixedDepositProductHelper //
                 .withPeriodRangeChart()//
                 .withAccountingRuleAsCashBased(accounts).build(validFrom, validTo);
@@ -697,13 +699,13 @@ public class AccountingScenarioIntegrationTest {
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingEnabled(assetAccount, incomeAccount, expenseAccount,
                 overpaymentAccount);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -821,13 +823,13 @@ public class AccountingScenarioIntegrationTest {
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingEnabled(assetAccount, incomeAccount, expenseAccount,
                 overpaymentAccount);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -898,13 +900,13 @@ public class AccountingScenarioIntegrationTest {
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingEnabled(assetAccount, incomeAccount, expenseAccount,
                 overpaymentAccount);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -992,13 +994,13 @@ public class AccountingScenarioIntegrationTest {
         final Integer loanProductID = createLoanProductWithPeriodicAccrualAccountingEnabled(assetAccount, incomeAccount, expenseAccount,
                 overpaymentAccount);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -1122,13 +1124,13 @@ public class AccountingScenarioIntegrationTest {
         final Integer loanProductID = createLoanProductWithCashBasedAccountingEnabled(assetAccount, incomeAccount, expenseAccount,
                 overpaymentAccount);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
 
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(requestSpec, responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(requestSpec, responseSpec, clientID.toString(),
-                collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 
@@ -1246,7 +1248,8 @@ public class AccountingScenarioIntegrationTest {
 
         final Integer shareProductID = createSharesProduct(assetAccount, incomeAccount, equityAccount, liabilityAccount);
 
-        final Integer clientID = ClientHelper.createClient(requestSpec, responseSpec, DATE_OF_JOINING);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(DATE_OF_JOINING))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final Integer savingsAccountId = SavingsAccountHelper.openSavingsAccount(requestSpec, responseSpec, clientID, "1000");
         Assertions.assertNotNull(savingsAccountId);

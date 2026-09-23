@@ -71,7 +71,7 @@ public class ProvisioningIntegrationTest {
         this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         this.requestSpec.header("Fineract-Platform-TenantId", "default");
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         Assumptions.assumeTrue(!isAlreadyProvisioningEntriesCreated());
     }
 
@@ -79,18 +79,17 @@ public class ProvisioningIntegrationTest {
     public void testCreateProvisioningCriteria() {
         ProvisioningTransactionHelper transactionHelper = new ProvisioningTransactionHelper(requestSpec, responseSpec);
         ArrayList<Integer> loanProducts = new ArrayList<>(LOANPRODUCTS_SIZE);
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         for (int i = 0; i < LOANPRODUCTS_SIZE; i++) {
             final Integer loanProductID = createLoanProduct(false, NONE);
             loanProducts.add(loanProductID);
             Assertions.assertNotNull(loanProductID);
             List<HashMap> collaterals = new ArrayList<>();
-            final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+            final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
             Assertions.assertNotNull(collateralId);
-            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                    String.valueOf(clientID), collateralId);
+            final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(String.valueOf(clientID), collateralId);
             Assertions.assertNotNull(clientCollateralId);
             addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
             final Integer loanID = applyForLoanApplication(clientID, loanProductID, null, null, "1,00,000.00", collaterals);

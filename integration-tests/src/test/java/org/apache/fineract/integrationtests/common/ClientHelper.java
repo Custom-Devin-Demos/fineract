@@ -102,17 +102,6 @@ public class ClientHelper {
     private final RequestSpecification requestSpec;
     private final ResponseSpecification responseSpec;
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static Integer createClient(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            PostClientsRequest request) {
-        log.info("---------------------------------CREATING A CLIENT---------------------------------------------");
-        String requestBody = GSON.toJson(request);
-        return Utils.performServerPost(requestSpec, responseSpec, CREATE_CLIENT_URL, requestBody, "clientId");
-    }
-
     public static PostClientsResponse createClient(final PostClientsRequest request) {
         return Calls.ok(FineractClientHelper.getFineractClient().clients.createClient(request));
     }
@@ -219,46 +208,6 @@ public class ClientHelper {
 
     public static GetClientsClientIdAccountsResponse getClientAccounts(final long clientId) {
         return FeignCalls.ok(() -> FineractFeignClientHelper.getFineractFeignClient().clients().retrieveAllClientAccounts(clientId));
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static Integer createClient(final RequestSpecification requestSpec, final ResponseSpecification responseSpec) {
-        return createClient(requestSpec, responseSpec, DEFAULT_DATE);
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static Integer createClient(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            final String activationDate) {
-        return createClient(requestSpec, responseSpec, activationDate, "1");
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static Integer createClient(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            final String activationDate, final String officeId) {
-        log.info("---------------------------------CREATING A CLIENT---------------------------------------------");
-        return Utils.performServerPost(requestSpec, responseSpec, CREATE_CLIENT_URL, getTestClientAsJSON(activationDate, officeId),
-                "clientId");
-    }
-
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static PostClientsResponse createClient(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            final String activationDate, final String officeId, final String externalId) {
-        log.info("---------------------------------CREATING A CLIENT---------------------------------------------");
-        final String response = Utils.performServerPost(requestSpec, responseSpec, CREATE_CLIENT_URL,
-                getTestClientAsJSON(activationDate, officeId));
-        return GSON.fromJson(response, PostClientsResponse.class);
     }
 
     // TODO: Rewrite to use fineract-client instead!
@@ -612,16 +561,11 @@ public class ClientHelper {
         return GSON.toJson(map);
     }
 
-    // TODO: Rewrite to use fineract-client instead!
-    // Example: org.apache.fineract.integrationtests.common.loans.LoanTransactionHelper.disburseLoan(java.lang.Long,
-    // org.apache.fineract.client.models.PostLoansLoanIdRequest)
-    @Deprecated(forRemoval = true)
-    public static void verifyClientCreatedOnServer(final RequestSpecification requestSpec, final ResponseSpecification responseSpec,
-            final Integer clientId) {
+    public static void verifyClientCreatedOnServer(final Integer clientId) {
         log.info("------------------------------CHECK CLIENT DETAILS------------------------------------\n");
-        final String CLIENT_URL = "/fineract-provider/api/v1/clients/" + clientId + "?" + Utils.TENANT_IDENTIFIER;
-        final Integer responseClientID = Utils.performServerGet(requestSpec, responseSpec, CLIENT_URL, "id");
-        assertEquals(clientId, responseClientID, "ERROR IN CREATING THE CLIENT");
+        final GetClientsClientIdResponse client = Calls
+                .ok(FineractClientHelper.getFineractClient().clients.retrieveOneClient(clientId.longValue(), null));
+        assertEquals(clientId.longValue(), client.getId(), "ERROR IN CREATING THE CLIENT");
     }
 
     // TODO: Rewrite to use fineract-client instead!

@@ -101,7 +101,7 @@ public class ClientLoanChargeRefundIntegrationTest {
         this.requestSpec.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         this.responseSpec = new ResponseSpecBuilder().expectStatusCode(200).build();
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.assetAccount = this.accountHelper.createAssetAccount();
         this.feeIncomeAccount = this.accountHelper.createIncomeAccount();
         this.penaltyIncomeAccount = this.accountHelper.createIncomeAccount();
@@ -433,8 +433,8 @@ public class ClientLoanChargeRefundIntegrationTest {
     private Integer fromStartToDisburseLoan(String submitApproveDisburseDate, String principal, final boolean penalty,
             final String accountingRule, final Account... accounts) {
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         boolean allowMultipleDisbursals = false;
         final Integer loanProductID = createLoanProduct(principal, allowMultipleDisbursals, accountingRule, accounts);

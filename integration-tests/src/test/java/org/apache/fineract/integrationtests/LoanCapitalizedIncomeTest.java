@@ -1195,7 +1195,7 @@ public class LoanCapitalizedIncomeTest extends BaseLoanIntegrationTest {
             deleteAllExternalEvents();
             final PostClientsResponse client = clientHelper.createClient(ClientHelper.defaultClientCreationRequest());
 
-            final AccountHelper accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+            final AccountHelper accountHelper = new AccountHelper();
             final Account classificationIncomeAccount = accountHelper
                     .createIncomeAccount(Utils.uniqueRandomStringGenerator("capitalizedincome_class_income_", 6));
             classificationIncomeAccountRef.set(classificationIncomeAccount);

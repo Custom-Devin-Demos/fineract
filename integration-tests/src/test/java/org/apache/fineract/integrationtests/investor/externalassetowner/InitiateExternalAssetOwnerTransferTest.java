@@ -26,7 +26,6 @@ import static org.apache.fineract.client.models.ExternalTransferData.StatusEnum.
 import static org.apache.fineract.client.models.ExternalTransferData.SubStatusEnum.BALANCE_ZERO;
 import static org.apache.fineract.client.models.ExternalTransferData.SubStatusEnum.SAMEDAY_TRANSFERS;
 import static org.apache.fineract.client.models.ExternalTransferData.SubStatusEnum.UNSOLD;
-import static org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType.BUSINESS_DATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -61,6 +60,7 @@ import lombok.RequiredArgsConstructor;
 import okhttp3.ResponseBody;
 import org.apache.fineract.accounting.common.AccountingConstants;
 import org.apache.fineract.accounting.journalentry.domain.JournalEntryType;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.ExternalAssetOwnerRequest;
 import org.apache.fineract.client.models.ExternalOwnerJournalEntryData;
 import org.apache.fineract.client.models.ExternalOwnerTransferJournalEntryData;
@@ -141,7 +141,7 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
         REQUEST_SPEC = new RequestSpecBuilder().setContentType(ContentType.JSON).build();
         REQUEST_SPEC.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         RESPONSE_SPEC = new ResponseSpecBuilder().expectStatusCode(200).build();
-        AccountHelper accountHelper = new AccountHelper(REQUEST_SPEC, RESPONSE_SPEC);
+        AccountHelper accountHelper = new AccountHelper();
         EXTERNAL_ASSET_OWNER_HELPER = new ExternalAssetOwnerHelper();
         SCHEDULER_JOB_HELPER = new SchedulerJobHelper(REQUEST_SPEC);
         FINANCIAL_ACTIVITY_ACCOUNT_HELPER = new FinancialActivityAccountHelper(REQUEST_SPEC);
@@ -964,7 +964,10 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
             ExternalEventHelper.changeEventState(REQUEST_SPEC, RESPONSE_SPEC, "LoanOwnershipTransferBusinessEvent", true);
 
             final Integer officeId = OFFICE_HELPER.createOffice(LocalDate.of(2020, 1, 1)).getResourceId().intValue();
-            final var clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "1 January 2020", officeId.toString());
+            final var clientID = ClientHelper
+                    .createClient(
+                            ClientHelper.defaultClientCreationRequest().activationDate("1 January 2020").officeId(Long.valueOf(officeId)))
+                    .getClientId().intValue();
             final var loanID = createLoanForClient(clientID);
             addPenaltyForLoan(loanID, "10");
 
@@ -1219,7 +1222,10 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
             ExternalEventHelper.changeEventState(REQUEST_SPEC, RESPONSE_SPEC, "LoanOwnershipTransferBusinessEvent", true);
 
             final Integer officeId = OFFICE_HELPER.createOffice(LocalDate.of(2020, 1, 1)).getResourceId().intValue();
-            final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC, "1 January 2020", officeId.toString());
+            final Integer clientID = ClientHelper
+                    .createClient(
+                            ClientHelper.defaultClientCreationRequest().activationDate("1 January 2020").officeId(Long.valueOf(officeId)))
+                    .getClientId().intValue();
             final Integer loanID = createLoanForClient(clientID);
 
             // Create first sale transfer
@@ -1321,7 +1327,7 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
                             .externalAssetOwner(externalAssetOwner)));
             Assertions.assertTrue(callFailedRuntimeException.getMessage().contains("External asset owner with external id:"));
 
-            final Integer clientId = ClientHelper.createClient(requestSpec, responseSpec);
+            final Integer clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
             final String operationDate = "10 April 2025";
 
             PostLoanProductsResponse loanProductResponse = loanProductHelper.createLoanProduct(
@@ -1439,7 +1445,8 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
     }
 
     private void updateBusinessDateAndExecuteCOBJob(String date) {
-        BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BUSINESS_DATE, LocalDate.parse(date));
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(LocalDate.parse(date))).dateFormat(Utils.DATE_FORMAT).locale("en"));
         SCHEDULER_JOB_HELPER.executeAndAwaitJob("Loan COB");
     }
 
@@ -1485,7 +1492,8 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
     private void setInitialBusinessDate(String date) {
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(true));
-        BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BUSINESS_DATE, LocalDate.parse(date));
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(LocalDate.parse(date))).dateFormat(Utils.DATE_FORMAT).locale("en"));
     }
 
     private void cleanUpAndRestoreBusinessDate() {
@@ -1493,7 +1501,8 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
         REQUEST_SPEC.header("Authorization", "Basic " + Utils.loginIntoServerAndGetBase64EncodedAuthenticationKey());
         REQUEST_SPEC.header("Fineract-Platform-TenantId", "default");
         RESPONSE_SPEC = new ResponseSpecBuilder().expectStatusCode(200).build();
-        BusinessDateHelper.updateBusinessDate(REQUEST_SPEC, RESPONSE_SPEC, BUSINESS_DATE, TODAYS_DATE);
+        BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                .date(Utils.dateFormatter.format(TODAYS_DATE)).dateFormat(Utils.DATE_FORMAT).locale("en"));
         globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                 new PutGlobalConfigurationsRequest().enabled(false));
         globalConfigurationHelper.manageConfigurations(GlobalConfigurationConstants.ENABLE_AUTO_GENERATED_EXTERNAL_ID, false);
@@ -1501,7 +1510,7 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
 
     @NonNull
     private Integer createClient() {
-        final Integer clientID = ClientHelper.createClient(REQUEST_SPEC, RESPONSE_SPEC);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(clientID);
         return clientID;
     }
@@ -1545,9 +1554,9 @@ public class InitiateExternalAssetOwnerTransferTest extends BaseLoanIntegrationT
 
     private Integer applyForLoanApplication(final String clientID, final String loanProductID, final String date) {
         List<HashMap> collaterals = new ArrayList<>();
-        Integer collateralId = CollateralManagementHelper.createCollateralProduct(REQUEST_SPEC, RESPONSE_SPEC);
+        Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(REQUEST_SPEC, RESPONSE_SPEC, clientID, collateralId);
+        Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(clientID, collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
 

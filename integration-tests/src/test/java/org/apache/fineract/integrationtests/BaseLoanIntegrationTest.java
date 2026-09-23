@@ -144,7 +144,7 @@ public abstract class BaseLoanIntegrationTest extends IntegrationTest {
     private final String fullAdminAuthKey = getFullAdminAuthKey();
     protected final RequestSpecification requestSpec = createRequestSpecification(fullAdminAuthKey);
     private final String nonByPassUserAuthKey = getNonByPassUserAuthKey(requestSpec, responseSpec);
-    protected final AccountHelper accountHelper = new AccountHelper(requestSpec, responseSpec);
+    protected final AccountHelper accountHelper = new AccountHelper();
     // asset
     protected final Account loansReceivableAccount = accountHelper.createAssetAccount("loanPortfolio");
     protected final Account interestReceivableAccount = accountHelper.createAssetAccount("interestReceivable");
@@ -174,7 +174,7 @@ public abstract class BaseLoanIntegrationTest extends IntegrationTest {
     protected JournalEntryHelper journalEntryHelper = new JournalEntryHelper(requestSpec, responseSpec);
     protected ClientHelper clientHelper = new ClientHelper(requestSpec, responseSpec);
     protected SchedulerJobHelper schedulerJobHelper = new SchedulerJobHelper(requestSpec);
-    protected final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper(requestSpec, responseSpec);
+    protected final InlineLoanCOBHelper inlineLoanCOBHelper = new InlineLoanCOBHelper();
     protected final LoanAccountLockHelper loanAccountLockHelper = new LoanAccountLockHelper(requestSpec,
             createResponseSpecification(Matchers.is(202)));
     protected DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATETIME_PATTERN);

@@ -35,10 +35,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.GetSavingsAccountTransactionsPageItem;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
 import org.apache.fineract.client.models.SavingsAccountTransactionsSearchResponse;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.infrastructure.core.service.MathUtil;
@@ -98,7 +98,8 @@ public class SavingsAccountTransactionsSearchIntegrationTest {
 
     @Test
     public void testSavingsTransactionsSearchAmountFrom() throws JsonProcessingException {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
 
@@ -120,7 +121,8 @@ public class SavingsAccountTransactionsSearchIntegrationTest {
 
     @Test
     public void testSavingsTransactionsSearchAmountFromTo() throws JsonProcessingException {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
 
@@ -143,7 +145,8 @@ public class SavingsAccountTransactionsSearchIntegrationTest {
 
     @Test
     public void testSavingsTransactionsSearchDateFromTo() throws JsonProcessingException {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
 
@@ -169,14 +172,16 @@ public class SavingsAccountTransactionsSearchIntegrationTest {
     @Test
     public void testSavingsTransactionsSearchSubmittedDateFromTo() throws JsonProcessingException {
         LocalDate businessDate = Utils.getLocalDateOfTenant();
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
 
         try {
             globalConfigurationHelper.updateGlobalConfiguration(GlobalConfigurationConstants.ENABLE_BUSINESS_DATE,
                     new PutGlobalConfigurationsRequest().enabled(true));
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             this.savingsAccountHelper.depositToSavingsAccount(savingsId, "100", firstDepositDate, CommonConstants.RESPONSE_RESOURCE_ID);
             this.savingsAccountHelper.depositToSavingsAccount(savingsId, "300", secondDepositDate, CommonConstants.RESPONSE_RESOURCE_ID);
@@ -205,7 +210,8 @@ public class SavingsAccountTransactionsSearchIntegrationTest {
 
     @Test
     public void testSavingsTransactionsSearchTransactionTypeDepositAndDefaultSort() {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
 
@@ -236,7 +242,8 @@ public class SavingsAccountTransactionsSearchIntegrationTest {
 
     @Test
     public void testSavingsTransactionsSearchTransactionTypesWithdrawAndDeposit() throws JsonProcessingException {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
 
@@ -266,7 +273,8 @@ public class SavingsAccountTransactionsSearchIntegrationTest {
 
     @Test
     public void testSavingsTransactionsSearchPaginationAndNoFilter() {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
 
@@ -287,7 +295,8 @@ public class SavingsAccountTransactionsSearchIntegrationTest {
 
     @Test
     public void testSavingsTransactionsSearchTransactionTypeDepositAndSortByAmountAsc() {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
 
@@ -319,7 +328,8 @@ public class SavingsAccountTransactionsSearchIntegrationTest {
 
     @Test
     public void testSavingsTransactionsSearchWithFiltersSortingAndPagination() {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
 
@@ -356,7 +366,8 @@ public class SavingsAccountTransactionsSearchIntegrationTest {
 
     @Test
     public void testSavingsTransactionsSearchDateValidationError() {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
 
@@ -376,7 +387,8 @@ public class SavingsAccountTransactionsSearchIntegrationTest {
 
     @Test
     public void testSavingsTransactionsSearchTransactionAmountValidationError() {
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec, startDate);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest().activationDate(startDate))
+                .getClientId().intValue();
         Assertions.assertNotNull(clientID);
         final Integer savingsId = createSavingsAccountDailyPosting(clientID, startDate);
         this.savingsAccountHelper.depositToSavingsAccount(savingsId, "100", firstDepositDate, CommonConstants.RESPONSE_RESOURCE_ID);

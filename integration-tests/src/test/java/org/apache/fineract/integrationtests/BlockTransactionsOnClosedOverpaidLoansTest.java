@@ -63,7 +63,7 @@ public class BlockTransactionsOnClosedOverpaidLoansTest {
         this.loanTransactionHelper = new LoanTransactionHelper(this.requestSpec, this.responseSpec);
         this.loanTransactionHelperForError = new LoanTransactionHelper(this.requestSpec, this.responseSpecForError);
         this.globalConfigurationHelper = new GlobalConfigurationHelper();
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
     }
 
     @AfterEach
@@ -75,8 +75,8 @@ public class BlockTransactionsOnClosedOverpaidLoansTest {
     public void testTransactionsOnOverpaidLoan() {
         this.globalConfigurationHelper.manageConfigurations("block-transactions-on-closed-overpaid-loans", true);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-        ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, clientID);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+        ClientHelper.verifyClientCreatedOnServer(clientID);
 
         final Integer loanProductID = createLoanProduct();
         final Integer loanID = applyForLoanApplication(clientID, loanProductID, "1000", "01 January 2024");
@@ -114,7 +114,7 @@ public class BlockTransactionsOnClosedOverpaidLoansTest {
     public void testTransactionsOnClosedLoan() {
         this.globalConfigurationHelper.manageConfigurations("block-transactions-on-closed-overpaid-loans", true);
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         final Integer loanProductID = createLoanProduct();
         final Integer loanID = applyForLoanApplication(clientID, loanProductID, "1000", "01 January 2024");
 

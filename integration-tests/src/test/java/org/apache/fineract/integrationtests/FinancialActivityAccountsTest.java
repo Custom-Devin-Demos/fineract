@@ -62,7 +62,7 @@ public class FinancialActivityAccountsTest {
         this.responseSpecForValidationError = new ResponseSpecBuilder().expectStatusCode(400).build();
         this.responseSpecForDomainRuleViolation = new ResponseSpecBuilder().expectStatusCode(403).build();
         this.responseSpecForResourceNotFoundError = new ResponseSpecBuilder().expectStatusCode(404).build();
-        this.accountHelper = new AccountHelper(this.requestSpec, this.responseSpec);
+        this.accountHelper = new AccountHelper();
         this.financialActivityAccountHelper = new FinancialActivityAccountHelper(this.requestSpec);
     }
 

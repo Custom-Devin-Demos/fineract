@@ -335,7 +335,7 @@ public class AccountNumberPreferencesTest {
     }
 
     private void createAndValidateClientWithoutAccountPreference() {
-        this.clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        this.clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         Assertions.assertNotNull(this.clientId);
         String clientAccountNo = (String) ClientHelper.getClient(requestSpec, responseSpec, this.clientId.toString(), "accountNo");
         validateAccountNumberLengthAndStartsWithPrefix(clientAccountNo, null);
@@ -362,7 +362,7 @@ public class AccountNumberPreferencesTest {
             /* Create Client with Client Type */
             this.clientId = ClientHelper.createClientForAccountPreference(this.requestSpec, this.responseSpec, this.clientCodeValueId,
                     "clientId");
-            ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, this.clientId);
+            ClientHelper.verifyClientCreatedOnServer(this.clientId);
 
             // Assertions.assertNotNull(clientId);
 
@@ -370,8 +370,8 @@ public class AccountNumberPreferencesTest {
             this.validateAccountNumberLengthAndStartsWithPrefix(clientAccountNo, this.clientCodeValueName);
 
         } else if (clientPrefixName.equals(this.officeName)) {
-            this.clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec);
-            ClientHelper.verifyClientCreatedOnServer(this.requestSpec, this.responseSpec, this.clientId);
+            this.clientId = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
+            ClientHelper.verifyClientCreatedOnServer(this.clientId);
             // Assertions.assertNotNull(clientId);
             clientAccountNo = (String) ClientHelper.getClient(requestSpec, responseSpec, this.clientId.toString(), "accountNo");
             String officeName = (String) ClientHelper.getClient(requestSpec, responseSpec, this.clientId.toString(), "officeName");
@@ -418,10 +418,9 @@ public class AccountNumberPreferencesTest {
 
         LOG.info("---------------------------------NEW LOAN APPLICATION------------------------------------------");
         List<HashMap> collaterals = new ArrayList<>();
-        final Integer collateralId = CollateralManagementHelper.createCollateralProduct(this.requestSpec, this.responseSpec);
+        final Integer collateralId = CollateralManagementHelper.createCollateralProduct();
         Assertions.assertNotNull(collateralId);
-        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.requestSpec, this.responseSpec,
-                this.clientId.toString(), collateralId);
+        final Integer clientCollateralId = CollateralManagementHelper.createClientCollateral(this.clientId.toString(), collateralId);
         Assertions.assertNotNull(clientCollateralId);
         addCollaterals(collaterals, clientCollateralId, BigDecimal.valueOf(1));
         final String loanApplicationJSON = new LoanApplicationTestBuilder().withPrincipal(loanPrincipalAmount)

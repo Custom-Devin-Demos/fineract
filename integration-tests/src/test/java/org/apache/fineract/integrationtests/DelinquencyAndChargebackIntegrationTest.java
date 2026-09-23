@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.client.models.AdvancedPaymentData;
+import org.apache.fineract.client.models.BusinessDateUpdateRequest;
 import org.apache.fineract.client.models.DelinquencyBucketResponse;
 import org.apache.fineract.client.models.DelinquencyRangeData;
 import org.apache.fineract.client.models.GetLoanProductsProductIdResponse;
@@ -45,7 +46,6 @@ import org.apache.fineract.client.models.GetLoansLoanIdResponse;
 import org.apache.fineract.client.models.PaymentAllocationOrder;
 import org.apache.fineract.client.models.PostLoansLoanIdTransactionsResponse;
 import org.apache.fineract.client.models.PutGlobalConfigurationsRequest;
-import org.apache.fineract.infrastructure.businessdate.domain.BusinessDateType;
 import org.apache.fineract.infrastructure.configuration.api.GlobalConfigurationConstants;
 import org.apache.fineract.infrastructure.core.service.DateUtils;
 import org.apache.fineract.integrationtests.common.BusinessDateHelper;
@@ -95,7 +95,8 @@ public class DelinquencyAndChargebackIntegrationTest extends BaseLoanIntegration
             final LocalDate todaysDate = Utils.getDateAsLocalDate("01 April 2012");
             LocalDate businessDate = todaysDate.minusMonths(3);
             log.info("Current Business date {}", businessDate);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             final SchedulerJobHelper schedulerJobHelper = new SchedulerJobHelper(requestSpec);
             // Delinquency Bucket
@@ -103,7 +104,8 @@ public class DelinquencyAndChargebackIntegrationTest extends BaseLoanIntegration
             final DelinquencyBucketResponse delinquencyBucket = DelinquencyBucketsHelper.getBucket(delinquencyBucketId);
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), loanProductTestBuilder);
             assertNotNull(getLoanProductsProductResponse);
@@ -119,7 +121,8 @@ public class DelinquencyAndChargebackIntegrationTest extends BaseLoanIntegration
 
             // Move the Business date 1 month to apply the first repayment
             businessDate = businessDate.plusMonths(1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             log.info("Current Business date {}", businessDate);
 
             String amountVal = "100.00";
@@ -133,7 +136,8 @@ public class DelinquencyAndChargebackIntegrationTest extends BaseLoanIntegration
 
             // Move the Business date 1 month more to apply the second repayment
             businessDate = businessDate.plusMonths(1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             log.info("Current Business date {}", businessDate);
 
             operationDate = Utils.dateFormatter.format(businessDate);
@@ -148,7 +152,8 @@ public class DelinquencyAndChargebackIntegrationTest extends BaseLoanIntegration
 
             // Move the Business date n days to apply the chargeback for the previous repayment
             businessDate = businessDate.plusDays(21);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             log.info("Current Business date {}", businessDate);
 
             // Apply the Chargeback transaction
@@ -164,7 +169,8 @@ public class DelinquencyAndChargebackIntegrationTest extends BaseLoanIntegration
 
             // Move the Business date n days to run the COB
             businessDate = businessDate.plusDays(14);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             log.info("Current Business date {}", businessDate);
 
             // Run the Loan inline COB Job
@@ -176,7 +182,8 @@ public class DelinquencyAndChargebackIntegrationTest extends BaseLoanIntegration
 
             // Move the Business date few days to apply the repayment for Chargeback
             businessDate = todaysDate.plusDays(4);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             log.info("Current Business date {}", businessDate);
 
             operationDate = Utils.dateFormatter.format(businessDate);
@@ -216,7 +223,8 @@ public class DelinquencyAndChargebackIntegrationTest extends BaseLoanIntegration
 
             LocalDate businessDate = LocalDate.parse("2022-01-01", DateUtils.DEFAULT_DATE_FORMATTER);
             log.info("Current Business date {}", businessDate);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
 
             final SchedulerJobHelper schedulerJobHelper = new SchedulerJobHelper(requestSpec);
             // Delinquency Bucket
@@ -224,7 +232,8 @@ public class DelinquencyAndChargebackIntegrationTest extends BaseLoanIntegration
             final DelinquencyBucketResponse delinquencyBucket = DelinquencyBucketsHelper.getBucket(delinquencyBucketId);
 
             // Client and Loan account creation
-            final Integer clientId = ClientHelper.createClient(this.requestSpec, this.responseSpec, "01 January 2012");
+            final Integer clientId = ClientHelper
+                    .createClient(ClientHelper.defaultClientCreationRequest().activationDate("01 January 2012")).getClientId().intValue();
             final GetLoanProductsProductIdResponse getLoanProductsProductResponse = createLoanProduct(loanTransactionHelper,
                     delinquencyBucket.getId(), loanProductTestBuilder);
             assertNotNull(getLoanProductsProductResponse);
@@ -241,7 +250,8 @@ public class DelinquencyAndChargebackIntegrationTest extends BaseLoanIntegration
             // Move the Business date 1 month to apply the first repayment
             businessDate = businessDate.plusMonths(1);
             expectedDates.add(businessDate);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             log.info("Current Business date {}", businessDate);
 
             String amountVal = "400.00";
@@ -255,7 +265,8 @@ public class DelinquencyAndChargebackIntegrationTest extends BaseLoanIntegration
 
             // Move the Business date 1 month more to apply the second repayment
             businessDate = businessDate.plusMonths(1);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             log.info("Current Business date {}", businessDate);
 
             operationDate = Utils.dateFormatter.format(businessDate);
@@ -271,7 +282,8 @@ public class DelinquencyAndChargebackIntegrationTest extends BaseLoanIntegration
 
             // Move the Business date n days to apply the chargeback for the previous repayment
             businessDate = businessDate.plusDays(15);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             log.info("Current Business date {}", businessDate);
 
             // Apply the Chargeback transaction
@@ -287,7 +299,8 @@ public class DelinquencyAndChargebackIntegrationTest extends BaseLoanIntegration
 
             // Move the Business date n days to run the COB
             businessDate = businessDate.plusDays(23);
-            BusinessDateHelper.updateBusinessDate(requestSpec, responseSpec, BusinessDateType.BUSINESS_DATE, businessDate);
+            BusinessDateHelper.updateBusinessDate(new BusinessDateUpdateRequest().type(BusinessDateUpdateRequest.TypeEnum.BUSINESS_DATE)
+                    .date(Utils.dateFormatter.format(businessDate)).dateFormat(Utils.DATE_FORMAT).locale("en"));
             log.info("Current Business date {}", businessDate);
 
             // Run the Loan inline COB Job

@@ -68,7 +68,7 @@ public class SavingsAccountForceWithdrawalTest {
                 .getGlobalConfigurationByName(GlobalConfigurationConstants.FORCE_WITHDRAWAL_ON_SAVINGS_ACCOUNT_LIMIT);
         Assertions.assertEquals(5000L, config.getValue());
 
-        final Integer clientID = ClientHelper.createClient(this.requestSpec, this.responseSpec);
+        final Integer clientID = ClientHelper.createClient(ClientHelper.defaultClientCreationRequest()).getClientId().intValue();
         final Integer savingsProductId = createSavingsProductDailyPosting();
         final Integer savingsId = this.savingsAccountHelper.applyForSavingsApplication(clientID, savingsProductId, "INDIVIDUAL");
         this.savingsAccountHelper.approveSavings(savingsId);
