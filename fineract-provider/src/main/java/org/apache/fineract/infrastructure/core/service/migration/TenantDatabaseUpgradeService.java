@@ -29,8 +29,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import javax.sql.DataSource;
-import liquibase.Scope;
-import liquibase.ThreadLocalScopeManager;
 import liquibase.change.custom.CustomTaskChange;
 import liquibase.exception.LiquibaseException;
 import liquibase.integration.spring.SpringLiquibase;
@@ -88,7 +86,6 @@ public class TenantDatabaseUpgradeService implements InitializingBean {
             }
         }
         try {
-            Scope.setScopeManager(new ThreadLocalScopeManager());
             upgradeTenantStore();
             upgradeIndividualTenants();
         } catch (LiquibaseException e) {

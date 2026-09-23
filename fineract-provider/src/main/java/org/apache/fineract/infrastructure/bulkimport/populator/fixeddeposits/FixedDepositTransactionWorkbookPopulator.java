@@ -34,7 +34,6 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
@@ -105,7 +104,7 @@ public class FixedDepositTransactionWorkbookPopulator extends AbstractWorkbookPo
                 if (cell == null) {
                     cell = row.createCell(col);
                 }
-                cell.setCellType(CellType.STRING);
+                cell.setCellValue("");
                 cell.setCellStyle(textCellStyle);
             }
         }

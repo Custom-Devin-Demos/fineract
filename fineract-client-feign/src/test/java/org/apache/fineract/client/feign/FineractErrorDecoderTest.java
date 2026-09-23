@@ -161,11 +161,6 @@ class FineractErrorDecoderTest {
                 }
 
                 @Override
-                public java.io.Reader asReader() {
-                    return new java.io.InputStreamReader(asInputStream(), StandardCharsets.UTF_8);
-                }
-
-                @Override
                 public java.io.Reader asReader(java.nio.charset.Charset charset) {
                     return new java.io.InputStreamReader(asInputStream(), charset);
                 }

@@ -149,7 +149,7 @@ public class AuthorizationServerConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
-                .apply(authorizationServerConfigurer);
+                .with(authorizationServerConfigurer, Customizer.withDefaults());
 
         if (fineractProperties.getSecurity().getCors().isEnabled()) {
             http.cors(Customizer.withDefaults());
@@ -235,8 +235,7 @@ public class AuthorizationServerConfig {
 
     @Bean
     public DaoAuthenticationProvider customAuthenticationProvider() {
-        DaoAuthenticationProvider authProvider = new TemporaryPasswordAwareAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider authProvider = new TemporaryPasswordAwareAuthenticationProvider(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }

@@ -439,13 +439,11 @@ public class SecurityConfig {
             http.addFilterAfter(twoFactorAuthenticationFilter(), CorrelationHeaderFilter.class);
         }
 
-        if (serverProperties.getSsl().isEnabled()) {
-            http.requiresChannel(channel -> channel.requestMatchers(API_MATCHER.matcher("/api/**")).requiresSecure());
-        }
-
         if (fineractProperties.getSecurity().getHsts().isEnabled()) {
-            http.requiresChannel(channel -> channel.anyRequest().requiresSecure()).headers(
+            http.redirectToHttps(Customizer.withDefaults()).headers(
                     headers -> headers.httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000)));
+        } else if (serverProperties.getSsl().isEnabled()) {
+            http.redirectToHttps(https -> https.requestMatchers(API_MATCHER.matcher("/api/**")));
         }
 
         if (fineractProperties.getSecurity().getCors().isEnabled()) {
@@ -502,8 +500,7 @@ public class SecurityConfig {
 
     @Bean(name = "customAuthenticationProvider")
     public DaoAuthenticationProvider authProvider() {
-        DaoAuthenticationProvider authProvider = new TemporaryPasswordAwareAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider authProvider = new TemporaryPasswordAwareAuthenticationProvider(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         authProvider.setPostAuthenticationChecks(platformUserDetailsChecker);
         return authProvider;
