@@ -46,6 +46,7 @@ dependencies {
     }
     testImplementation (
             project(':fineract-validation'),
+            'org.springframework.boot:spring-boot-jdbc',
             'org.mockito:mockito-inline',
             'org.testcontainers:junit-jupiter',
             'org.springframework.restdocs:spring-restdocs-mockmvc',

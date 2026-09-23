@@ -67,6 +67,8 @@ dependencies {
             'org.springframework.boot:spring-boot-starter-actuator',
             'org.springframework.boot:spring-boot-starter-batch',
             'org.springframework.boot:spring-boot-starter-data-jdbc',
+            'org.springframework.boot:spring-boot-liquibase',
+            'org.springframework.boot:spring-boot-gson',
             'org.springframework.batch:spring-batch-integration',
             'org.springframework.boot:spring-boot-starter-integration',
             'org.springframework.integration:spring-integration-event',

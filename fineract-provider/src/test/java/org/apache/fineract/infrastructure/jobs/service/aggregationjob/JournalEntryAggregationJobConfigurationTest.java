@@ -19,8 +19,10 @@
 package org.apache.fineract.infrastructure.jobs.service.aggregationjob;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.fineract.infrastructure.core.config.FineractProperties;
 import org.apache.fineract.infrastructure.core.service.migration.TenantDataSourceFactory;
 import org.apache.fineract.infrastructure.jobs.service.aggregationjob.listener.JournalEntryAggregationJobListener;
@@ -30,10 +32,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.job.JobInstance;
+import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.scope.context.JobSynchronizationManager;
-import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -73,10 +77,10 @@ class JournalEntryAggregationJobConfigurationTest {
     private FineractProperties.FineractJournalEntryAggregationProperties journalEntryAggregationProperties;
 
     @Mock
-    private JobExecution jobExecution;
+    private ExecutionContext executionContext;
 
     @Mock
-    private ExecutionContext executionContext;
+    private HikariDataSource dataSource;
 
     /**
      * Test method for {@link JournalEntryAggregationJobConfiguration#journalEntryAggregation()}.
@@ -86,7 +90,8 @@ class JournalEntryAggregationJobConfigurationTest {
         given(fineractProperties.getJob()).willReturn(fineractJobProperties);
         given(fineractJobProperties.getJournalEntryAggregation()).willReturn(journalEntryAggregationProperties);
         given(fineractJobProperties.getJournalEntryAggregation().getChunkSize()).willReturn(5);
-        JobSynchronizationManager.register(jobExecution);
+        given(tenantDataSourceFactory.create(any())).willReturn(dataSource);
+        JobSynchronizationManager.register(new JobExecution(1L, new JobInstance(1L, "journalEntryAggregation"), new JobParameters()));
         assertNotNull(configuration.journalEntryAggregation(), "The journalEntryDailyAggregationJob bean should not be null");
     }
 }

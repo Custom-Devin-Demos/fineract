@@ -247,6 +247,13 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+// The published SDK stays on Java 8, but the test sources need a modern JVM baseline
+// because JUnit 6 (Spring Boot 4) requires Java 17+.
+tasks.named('compileTestJava') {
+    sourceCompatibility = JavaVersion.VERSION_17.toString()
+    targetCompatibility = JavaVersion.VERSION_17.toString()
+}
+
 tasks.withType(JavaCompile).configureEach {
     options.errorprone {
         excludedPaths = '.*/build/generated/java/src/main/java/.*'

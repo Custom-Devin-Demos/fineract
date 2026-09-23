@@ -44,6 +44,7 @@ dependencies {
         exclude group: 'org.skyscreamer'
     }
     testImplementation (
+            'org.springframework.boot:spring-boot-jdbc',
             'org.mockito:mockito-inline',
             'org.testcontainers:junit-jupiter',
             )

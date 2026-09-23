@@ -31,6 +31,7 @@ dependencies {
 
             'com.fasterxml.jackson.core:jackson-databind',
 
+            'org.springframework.boot:spring-boot-liquibase',
             'org.liquibase:liquibase-core',
 
             'com.mysql:mysql-connector-j',

@@ -56,18 +56,18 @@ import org.apache.fineract.infrastructure.jobs.data.JobParameterDTO;
 import org.apache.fineract.infrastructure.jobs.domain.CustomJobParameterRepository;
 import org.apache.fineract.infrastructure.jobs.exception.JobNotFoundException;
 import org.apache.fineract.infrastructure.jobs.service.InlineExecutorService;
+import org.apache.fineract.infrastructure.jobs.service.JobParametersUtil;
 import org.apache.fineract.infrastructure.security.service.PlatformSecurityContext;
 import org.apache.fineract.infrastructure.springbatch.SpringBatchJobConstants;
 import org.springframework.batch.core.BatchStatus;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameter;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.configuration.JobLocator;
-import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.configuration.JobRegistry;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.job.parameters.JobParameter;
+import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.NoSuchJobException;
+import org.springframework.batch.core.repository.explore.JobExplorer;
 import org.springframework.lang.NonNull;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
@@ -83,7 +83,7 @@ public abstract class InlineCommonLockableCOBExecutorService<T extends AccountLo
     private final AccountLockRepository<T> loanAccountLockRepository;
     private final InlineLoanCOBExecutionDataParser dataParser;
     private final JobLauncher jobLauncher;
-    private final JobLocator jobLocator;
+    private final JobRegistry jobRegistry;
     private final JobExplorer jobExplorer;
     private final TransactionTemplate transactionTemplate;
     private final CustomJobParameterRepository customJobParameterRepository;
@@ -136,14 +136,12 @@ public abstract class InlineCommonLockableCOBExecutorService<T extends AccountLo
     @SuppressFBWarnings("SLF4J_SIGN_ONLY_FORMAT")
     private void execute(List<Long> loanIds, String jobName, LocalDate businessDate) {
         lockLoanAccounts(loanIds, businessDate);
-        Job inlineLoanCOBJob;
-        try {
-            inlineLoanCOBJob = jobLocator.getJob(jobName);
-        } catch (NoSuchJobException e) {
-            throw new JobNotFoundException(jobName, e);
+        Job inlineLoanCOBJob = jobRegistry.getJob(jobName);
+        if (inlineLoanCOBJob == null) {
+            throw new JobNotFoundException(jobName, new NoSuchJobException(jobName));
         }
-        JobParameters jobParameters = new JobParametersBuilder(jobExplorer).getNextJobParameters(inlineLoanCOBJob)
-                .addJobParameters(new JobParameters(getJobParametersMap(loanIds, businessDate))).toJobParameters();
+        JobParameters jobParameters = JobParametersUtil.nextJobParameters(inlineLoanCOBJob, jobExplorer)
+                .addJobParameters(JobParametersUtil.toJobParameters(getJobParametersMap(loanIds, businessDate))).toJobParameters();
         JobExecution jobExecution;
         try {
             jobExecution = jobLauncher.run(inlineLoanCOBJob, jobParameters);
@@ -210,8 +208,10 @@ public abstract class InlineCommonLockableCOBExecutorService<T extends AccountLo
         Long businessDateJobParameterId = saveCustomJobParameter(COBConstant.BUSINESS_DATE_PARAMETER_NAME,
                 businessDate.format(DateTimeFormatter.ISO_DATE));
         Map<String, JobParameter<?>> jobParameterMap = new HashMap<>();
-        jobParameterMap.put(SpringBatchJobConstants.CUSTOM_JOB_PARAMETER_ID_KEY, new JobParameter<>(loanIdsJobParameterId, Long.class));
-        jobParameterMap.put(COBConstant.BUSINESS_DATE_PARAMETER_NAME, new JobParameter<>(businessDateJobParameterId, Long.class));
+        jobParameterMap.put(SpringBatchJobConstants.CUSTOM_JOB_PARAMETER_ID_KEY,
+                new JobParameter<>(SpringBatchJobConstants.CUSTOM_JOB_PARAMETER_ID_KEY, loanIdsJobParameterId, Long.class));
+        jobParameterMap.put(COBConstant.BUSINESS_DATE_PARAMETER_NAME,
+                new JobParameter<>(COBConstant.BUSINESS_DATE_PARAMETER_NAME, businessDateJobParameterId, Long.class));
         return jobParameterMap;
     }
 
