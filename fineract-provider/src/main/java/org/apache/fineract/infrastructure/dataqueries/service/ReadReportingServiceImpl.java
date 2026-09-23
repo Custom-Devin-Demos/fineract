@@ -38,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.fineract.infrastructure.core.config.FineractProperties;
 import org.apache.fineract.infrastructure.core.domain.JdbcSupport;
 import org.apache.fineract.infrastructure.core.exception.ErrorHandler;
@@ -141,9 +141,9 @@ public class ReadReportingServiceImpl implements ReadReportingService {
         // permitted to be run by the user
         sql = this.genericDataService.replace(sql, "${currentUserId}", currentUser.getId().toString());
         sql = this.genericDataService.replace(sql, "${currentDate}", sqlGenerator.currentBusinessDate());
-        sql = StringUtils.replaceIgnoreCase(sql, "NOW()", sqlGenerator.currentTenantDateTime());
-        sql = StringUtils.replaceIgnoreCase(sql, "curdate()", sqlGenerator.currentBusinessDate());
-        sql = StringUtils.replaceIgnoreCase(sql, "CURRENT_DATE", sqlGenerator.currentBusinessDate());
+        sql = Strings.CI.replace(sql, "NOW()", sqlGenerator.currentTenantDateTime());
+        sql = Strings.CI.replace(sql, "curdate()", sqlGenerator.currentBusinessDate());
+        sql = Strings.CI.replace(sql, "CURRENT_DATE", sqlGenerator.currentBusinessDate());
         sql = this.genericDataService.wrapSQL(sql);
 
         return sql;

@@ -20,7 +20,7 @@ package org.apache.fineract.infrastructure.reportmailingjob.data;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.fineract.infrastructure.core.data.EnumOptionData;
 
 public enum ReportMailingJobEmailAttachmentFileFormat {
@@ -50,11 +50,11 @@ public enum ReportMailingJobEmailAttachmentFileFormat {
     public static ReportMailingJobEmailAttachmentFileFormat newInstance(final String value) {
         ReportMailingJobEmailAttachmentFileFormat emailAttachmentFileFormat = INVALID;
 
-        if (StringUtils.equalsIgnoreCase(value, XLS.value)) {
+        if (Strings.CI.equals(value, XLS.value)) {
             emailAttachmentFileFormat = XLS;
-        } else if (StringUtils.equalsIgnoreCase(value, PDF.value)) {
+        } else if (Strings.CI.equals(value, PDF.value)) {
             emailAttachmentFileFormat = PDF;
-        } else if (StringUtils.equalsIgnoreCase(value, CSV.value)) {
+        } else if (Strings.CI.equals(value, CSV.value)) {
             emailAttachmentFileFormat = CSV;
         }
 

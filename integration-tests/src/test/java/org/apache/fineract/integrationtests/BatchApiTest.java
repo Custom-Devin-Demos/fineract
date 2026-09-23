@@ -555,7 +555,7 @@ public class BatchApiTest extends BaseLoanIntegrationTest {
                 .withInterestTypeAsDecliningBalance() //
                 .currencyDetails("0", "100").build(null);
 
-        final Long applyLoanRequestId = Long.valueOf(RandomStringUtils.randomNumeric(4));
+        final Long applyLoanRequestId = Long.valueOf(RandomStringUtils.insecure().nextNumeric(4));
         final Long approveLoanRequestId = applyLoanRequestId + 1;
         final Long disburseLoanRequestId = approveLoanRequestId + 1;
         final Long getLoanRequestId = disburseLoanRequestId + 1;

@@ -170,9 +170,8 @@ public class FixedDepositTest extends IntegrationTest {
         jsonObject.addProperty("tenureInMonths", 12);
         jsonObject.addProperty("interestPostingPeriodInMonths", 3);
         jsonObject.addProperty("interestCompoundingPeriodInMonths", 7);
-        JsonParser parser = new JsonParser();
         String apiRequestBodyAsJson = jsonObject.toString();
-        JsonElement element = parser.parse(apiRequestBodyAsJson);
+        JsonElement element = JsonParser.parseString(apiRequestBodyAsJson);
         moneyHelperStatic = Mockito.mockStatic(MoneyHelper.class);
         moneyHelperStatic.when(() -> MoneyHelper.getMathContext()).thenReturn(new MathContext(12, RoundingMode.UP));
         fixedDepositAccountInterestCalculationServiceImpl = new FixedDepositAccountInterestCalculationServiceImpl(
@@ -196,9 +195,8 @@ public class FixedDepositTest extends IntegrationTest {
         jsonObject.addProperty("tenureInMonths", 15);
         jsonObject.addProperty("interestPostingPeriodInMonths", 3);
         jsonObject.addProperty("interestCompoundingPeriodInMonths", 6);
-        JsonParser parser = new JsonParser();
         String apiRequestBodyAsJson = jsonObject.toString();
-        JsonElement element = parser.parse(apiRequestBodyAsJson);
+        JsonElement element = JsonParser.parseString(apiRequestBodyAsJson);
         moneyHelperStatic = Mockito.mockStatic(MoneyHelper.class);
         moneyHelperStatic.when(() -> MoneyHelper.getMathContext()).thenReturn(new MathContext(12, RoundingMode.UP));
         fixedDepositAccountInterestCalculationServiceImpl = new FixedDepositAccountInterestCalculationServiceImpl(
@@ -222,9 +220,8 @@ public class FixedDepositTest extends IntegrationTest {
         jsonObject.addProperty("tenureInMonths", 12);
         jsonObject.addProperty("interestPostingPeriodInMonths", 3);
         jsonObject.addProperty("interestCompoundingPeriodInMonths", 6);
-        JsonParser parser = new JsonParser();
         String apiRequestBodyAsJson = jsonObject.toString();
-        JsonElement element = parser.parse(apiRequestBodyAsJson);
+        JsonElement element = JsonParser.parseString(apiRequestBodyAsJson);
         moneyHelperStatic = Mockito.mockStatic(MoneyHelper.class);
         moneyHelperStatic.when(() -> MoneyHelper.getMathContext()).thenReturn(new MathContext(12, RoundingMode.UP));
         fixedDepositAccountInterestCalculationServiceImpl = new FixedDepositAccountInterestCalculationServiceImpl(

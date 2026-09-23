@@ -91,7 +91,7 @@ public class JobExecutionContextCopyListenerTest {
         final Random random = new Random();
         final Map<String, Object> map = new HashMap<>();
         for (int i = 0; i < random.nextInt(50); i++) {
-            map.put(RandomStringUtils.randomAlphanumeric(5), RandomStringUtils.randomAlphanumeric(5));
+            map.put(RandomStringUtils.insecure().nextAlphanumeric(5), RandomStringUtils.insecure().nextAlphanumeric(5));
         }
 
         return map;

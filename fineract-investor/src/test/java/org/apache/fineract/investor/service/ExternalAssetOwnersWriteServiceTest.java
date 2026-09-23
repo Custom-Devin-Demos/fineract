@@ -608,14 +608,15 @@ public class ExternalAssetOwnersWriteServiceTest {
                 // purchaseRatio cannot be null
                 Arguments.of("value", "value", null, LocalDate.now(ZoneId.systemDefault()).plusDays(1)),
                 // purchaseRatio length cannot be > 50
-                Arguments.of("value", "value", RandomStringUtils.randomAlphanumeric(51), LocalDate.now(ZoneId.systemDefault()).plusDays(1)),
+                Arguments.of("value", "value", RandomStringUtils.insecure().nextAlphanumeric(51),
+                        LocalDate.now(ZoneId.systemDefault()).plusDays(1)),
                 // transferExternalId length cannot be > 100
-                Arguments.of("value", RandomStringUtils.randomAlphanumeric(101), "value",
+                Arguments.of("value", RandomStringUtils.insecure().nextAlphanumeric(101), "value",
                         LocalDate.now(ZoneId.systemDefault()).plusDays(1)),
                 // ownerExternalId cannot be null
                 Arguments.of(null, "value", "value", LocalDate.now(ZoneId.systemDefault()).plusDays(1)),
                 // ownerExternalId length cannot be > 100
-                Arguments.of(RandomStringUtils.randomAlphanumeric(101), "value", "value",
+                Arguments.of(RandomStringUtils.insecure().nextAlphanumeric(101), "value", "value",
                         LocalDate.now(ZoneId.systemDefault()).plusDays(1)));
     }
 
@@ -890,7 +891,7 @@ public class ExternalAssetOwnersWriteServiceTest {
     private ExternalAssetOwnerTransfer createExternalAssetOwnerTransfer(final TestContext testContext,
             final ExternalTransferStatus status) {
         ExternalAssetOwnerTransfer transfer = new ExternalAssetOwnerTransfer();
-        transfer.setExternalId(new ExternalId(RandomStringUtils.randomAlphanumeric(10)));
+        transfer.setExternalId(new ExternalId(RandomStringUtils.insecure().nextAlphanumeric(10)));
         transfer.setOwner(new ExternalAssetOwner());
         transfer.setStatus(status);
         transfer.setLoanId(testContext.loanId);
@@ -958,20 +959,20 @@ public class ExternalAssetOwnersWriteServiceTest {
         @InjectMocks
         private ExternalAssetOwnersWriteServiceImpl externalAssetOwnersWriteServiceImpl;
 
-        private static final BigDecimal PURCHASE_RATIO = BigDecimal.valueOf(Float.parseFloat(RandomStringUtils.randomNumeric(1, 3)) / 100)
-                .setScale(2, RoundingMode.HALF_UP);
+        private static final BigDecimal PURCHASE_RATIO = BigDecimal
+                .valueOf(Float.parseFloat(RandomStringUtils.insecure().nextNumeric(1, 3)) / 100).setScale(2, RoundingMode.HALF_UP);
         private static final String DATE_FORMAT = "yyyy-MM-dd";
         private static final String LOCALE = "de_DE";
 
         private final FromJsonHelper fromJsonHelper = new FromJsonHelper();
         private final ExternalAssetOwner externalAssetOwner = new ExternalAssetOwner();
-        private final Long loanId = Long.valueOf(RandomStringUtils.randomNumeric(2));
-        private final String externalLoanId = RandomStringUtils.randomAlphanumeric(10);
-        private final Long loanProductId = Long.valueOf(RandomStringUtils.randomNumeric(2));
-        private final String loanProductShortName = RandomStringUtils.randomAlphanumeric(10);
-        private final String ownerExternalId = RandomStringUtils.randomAlphanumeric(10);
-        private final String transferExternalId = RandomStringUtils.randomAlphanumeric(10);
-        private final String transferExternalGroupId = RandomStringUtils.randomAlphanumeric(10);
+        private final Long loanId = Long.valueOf(RandomStringUtils.insecure().nextNumeric(2));
+        private final String externalLoanId = RandomStringUtils.insecure().nextAlphanumeric(10);
+        private final Long loanProductId = Long.valueOf(RandomStringUtils.insecure().nextNumeric(2));
+        private final String loanProductShortName = RandomStringUtils.insecure().nextAlphanumeric(10);
+        private final String ownerExternalId = RandomStringUtils.insecure().nextAlphanumeric(10);
+        private final String transferExternalId = RandomStringUtils.insecure().nextAlphanumeric(10);
+        private final String transferExternalGroupId = RandomStringUtils.insecure().nextAlphanumeric(10);
         private final LocalDate settlementDate = LocalDate.parse("9999-08-22");
         private final String jsonCommand = String.format("""
                 {
